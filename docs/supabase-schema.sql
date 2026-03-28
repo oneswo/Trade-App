@@ -10,9 +10,10 @@ CREATE TABLE IF NOT EXISTS admins (
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 插入初始管理员（上线前务必修改密码或改为 bcrypt hash）
+-- 插入初始管理员 —— 将 email 和 password 替换为你的真实值再执行
+-- 与 Vercel 环境变量 ADMIN_EMAIL / ADMIN_PASSWORD 保持一致
 INSERT INTO admins (id, email, password, created_at)
-VALUES ('admin-1', 'admin@kxtj.com', 'admin123456', NOW())
+VALUES ('admin-1', 'your_email@example.com', 'your_strong_password', NOW())
 ON CONFLICT (email) DO NOTHING;
 
 -- ─── inquiries ──────────────────────────────────────────────────
@@ -74,3 +75,14 @@ CREATE TABLE IF NOT EXISTS articles (
 
 CREATE INDEX IF NOT EXISTS idx_articles_published_at ON articles (published_at DESC);
 CREATE INDEX IF NOT EXISTS idx_articles_status ON articles (status);
+
+-- ─── page_contents ──────────────────────────────────────────────
+-- 每行对应一个页面 + 语言的全部静态字段，data 是 key-value 的 JSON 对象
+CREATE TABLE IF NOT EXISTS page_contents (
+  page_id     TEXT NOT NULL,           -- home | about | services | products | insights | contact
+  locale      TEXT NOT NULL,           -- zh | en
+  data        JSONB NOT NULL DEFAULT '{}',
+  updated_at  TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (page_id, locale)
+);
+

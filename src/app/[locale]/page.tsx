@@ -7,6 +7,7 @@ import NumberTicker from '@/components/ui/number-ticker';
 import AutoCarousel from '@/components/ui/auto-carousel';
 import { useInquirySubmit } from '@/hooks/useInquirySubmit';
 import { useLocale } from 'next-intl';
+import { usePageContent } from '@/hooks/usePageContent';
 import type { ArticleRecord } from '@/lib/data/repository';
 
 interface NewsItem {
@@ -19,15 +20,16 @@ interface NewsItem {
 }
 
 const FALLBACK_NEWS: NewsItem[] = [
-  {tag: "装船实况", date: "Oct 24, 2026", country: "🇳🇬 Lagos, Nigeria", title: "Three CAT 336 heavy excavators refurbished and shipped to West Africa.", img: "/hero.png"},
-  {tag: "交机签收", date: "Oct 15, 2026", country: "🇦🇪 Dubai, UAE", title: "Volvo three-unit assembly accepted and commissioned in Abu Dhabi port heat.", img: "/loader.png"},
-  {tag: "发车纪实", date: "Oct 02, 2026", country: "🇨🇱 Santiago, Chile", title: "First South American order! Two Komatsu D155 dozers cleared customs for the Andes.", img: "/hero.png"},
-  {tag: "开箱验车", date: "Sep 18, 2026", country: "🇧🇷 São Paulo, Brazil", title: "Batch of Volvo wheel loaders arrived in São Paulo for South American distribution.", img: "/loader.png"},
+  {tag: "Shipment", date: "Oct 24, 2026", country: "🇳🇬 Lagos, Nigeria", title: "Three CAT 336 heavy excavators refurbished and shipped to West Africa.", img: "/hero.png"},
+  {tag: "Delivery", date: "Oct 15, 2026", country: "🇦🇪 Dubai, UAE", title: "Volvo three-unit assembly accepted and commissioned in Abu Dhabi port heat.", img: "/loader.png"},
+  {tag: "Dispatch", date: "Oct 02, 2026", country: "🇨🇱 Santiago, Chile", title: "First South American order! Two Komatsu D155 dozers cleared customs for the Andes.", img: "/hero.png"},
+  {tag: "Unboxing", date: "Sep 18, 2026", country: "🇧🇷 São Paulo, Brazil", title: "Batch of Volvo wheel loaders arrived in São Paulo for South American distribution.", img: "/loader.png"},
 ];
 
 export default function Home() {
   const locale = useLocale();
   const isZh = locale === 'zh';
+  const { get: c } = usePageContent('home');
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [isFactoryVideoPlaying, setIsFactoryVideoPlaying] = useState(false);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
@@ -90,7 +92,7 @@ export default function Home() {
             className="absolute inset-0 w-full h-full object-cover opacity-90"
           >
              {/* 届时换成您上传的真实工业视频 MP4 链接即可 */}
-             <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" type="video/mp4" />
+             <source src={c('hero.videoUrl', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4')} type="video/mp4" />
           </video>
           {/* 轻量滤镜，确保能看清后方机械细节，同时保证白色大标题清晰可读 */}
           <div className="absolute inset-0 bg-black/40"></div>
@@ -101,30 +103,30 @@ export default function Home() {
         <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-8 flex flex-col items-center text-center pt-20">
           <div className="inline-flex items-center gap-3 px-5 py-2.5 border border-white/20 backdrop-blur-md mb-8">
              <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
-             <span className="text-white text-xs font-bold uppercase tracking-[0.2em]">{isZh ? '面向国际市场的高端二手工程机械' : 'PREMIUM USED HEAVY EQUIPMENT FOR GLOBAL MARKETS'}</span>
+             <span className="text-white text-xs font-bold uppercase tracking-[0.2em]">{c('hero.tag', isZh ? '面向国际市场的高端二手工程机械' : 'PREMIUM USED HEAVY EQUIPMENT FOR GLOBAL MARKETS')}</span>
           </div>
 
-          <h1 className={`text-[10vw] sm:text-[8vw] md:text-7xl lg:text-[7vw] xl:text-[110px] font-black tracking-tight text-white leading-tight uppercase drop-shadow-2xl w-full ${isZh ? 'whitespace-nowrap' : 'whitespace-normal'}`}>
-            {isZh ? '铸塑未来的' : 'Built to Power'} <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#D4AF37] via-[#F3E5AB] to-[#8C7322] drop-shadow-2xl px-2">{isZh ? '重工力量' : "the World's Work"}</span>
+          <h1 className="hero-title-home">
+            {c('hero.title1', isZh ? '铸塑未来的' : 'Built to Power')} <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#D4AF37] via-[#F3E5AB] to-[#8C7322] drop-shadow-2xl px-2">{c('hero.titleGold', isZh ? '重工力量' : "the World's Work")}</span>
           </h1>
           <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
-             <Link href="/products" className="w-full sm:w-[230px] h-[56px] rounded-full border border-transparent bg-[#D4AF37] text-white text-[14px] font-bold tracking-widest uppercase hover:bg-white hover:text-[#111111] transition-all duration-300 shadow-xl flex items-center justify-center gap-3 group">
-               {isZh ? '探索核心机械' : 'Browse Equipment'}
+             <Link href="/products" className="w-full sm:w-[230px] h-[56px] rounded-full border border-transparent bg-[#D4AF37] text-white text-[14px] font-bold tracking-widest hover:bg-white hover:text-[#111111] transition-all duration-300 shadow-xl flex items-center justify-center gap-3 group">
+               {c('hero.btn1', isZh ? '探索核心机械' : 'Browse Equipment')}
                <ArrowRight size={18} className="rotate-90 sm:rotate-0 group-hover:translate-x-1 transition-transform" />
              </Link>
              <button 
                 onClick={toggleHeroVideo} 
-                className={`w-full sm:w-[230px] h-[56px] rounded-full border border-white/30 text-[14px] font-bold tracking-widest uppercase transition-all duration-500 backdrop-blur-md flex items-center justify-center gap-3 group shadow-xl ${isPlayingVideo ? 'bg-white text-[#111111]' : 'bg-black/40 text-white hover:bg-white hover:text-[#111111]'}`}
+                className={`w-full sm:w-[230px] h-[56px] rounded-full border border-white/30 text-[14px] font-bold tracking-widest transition-all duration-500 backdrop-blur-md flex items-center justify-center gap-3 group shadow-xl ${isPlayingVideo ? 'bg-white text-[#111111]' : 'bg-black/40 text-white hover:bg-white hover:text-[#111111]'}`}
              >
                {isPlayingVideo ? (
                  <>
                    <Pause size={18} className="text-current fill-current relative left-0.5" />
-                   {isZh ? '暂停实景视频' : 'Pause Video'}
+                   {c('hero.btn2', isZh ? '暂停实景视频' : 'Pause Video')}
                  </>
                ) : (
                  <>
                    <Play size={18} className="text-current fill-current relative left-0.5" />
-                   {isZh ? '播放实景视频' : 'Play Video'}
+                   {c('hero.btn2', isZh ? '播放实景视频' : 'Play Video')}
                  </>
                )}
              </button>
@@ -139,21 +141,21 @@ export default function Home() {
         <div className="max-w-[1440px] mx-auto px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] lg:items-end mb-12 gap-8">
             <div>
-              <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#111111] uppercase">{isZh ? '全矩阵设备覆盖' : 'Full-Spectrum Equipment Coverage'}</h2>
+              <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#111111]">{c('categories.title', isZh ? '全矩阵设备覆盖' : 'Full-Spectrum Equipment Coverage')}</h2>
             </div>
             <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block">
-              <p className="text-gray-500 text-sm leading-relaxed font-medium">{isZh ? '无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。' : 'Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum — from mass excavation and heavy loading to precision grading and compaction.'}</p>
+              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('categories.desc', isZh ? '无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。' : 'Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum.')}</p>
             </div>
           </div>
         </div>
         
         {/* 注入刚才写好的轮播组件 */}
         <AutoCarousel categories={[
-            {name: '大型挖掘机', type: 'Excavators', img: '/hero.png'}, 
-            {name: '轮式装载机', type: 'Wheel Loaders', img: '/loader.png'}, 
-            {name: '重型推土机', type: 'Bulldozers', img: '/hero.png'}, 
-            {name: '平地机与压路机', type: 'Graders & Rollers', img: '/loader.png'},
-            {name: '工业叉车', type: 'Forklifts', img: '/hero.png'}
+            {name: isZh ? '大型挖掘机' : 'Excavators', type: 'Excavators', img: '/hero.png'}, 
+            {name: isZh ? '轮式装载机' : 'Wheel Loaders', type: 'Wheel Loaders', img: '/loader.png'}, 
+            {name: isZh ? '重型推土机' : 'Bulldozers', type: 'Bulldozers', img: '/hero.png'}, 
+            {name: isZh ? '平地机与压路机' : 'Graders & Rollers', type: 'Graders & Rollers', img: '/loader.png'},
+            {name: isZh ? '工业叉车' : 'Forklifts', type: 'Forklifts', img: '/hero.png'}
         ]} />
       </section>
 
@@ -164,22 +166,22 @@ export default function Home() {
         <div className="max-w-[1440px] mx-auto px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] lg:items-end mb-16 gap-8">
             <div>
-              <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#111111] uppercase">{isZh ? '严选热销机皇' : 'Top-Rated Machines, Handpicked'}</h2>
+              <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#111111]">{c('hot.title', isZh ? '严选热销机皇' : 'Top-Rated Machines, Handpicked')}</h2>
             </div>
             <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block">
-              <p className="text-gray-500 text-sm leading-relaxed font-medium">{isZh ? '这些顶级现货机型经过 100 项全案严苛过滤，代表着本月极低的故障率和极高的投资回报比，是全球大型基建的首选制胜装备。' : 'Every unit in this selection has passed a rigorous 100-point inspection. These machines represent the lowest failure rates and highest return on investment of the month — the preferred choice for major infrastructure projects worldwide.'}</p>
+              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('hot.desc', isZh ? '这些顶级现货机型经过 100 项全案严苛过滤，代表着本月极低的故障率和极高的投资回报比，是全球大型基建的首选制胜装备。' : 'Every unit in this selection has passed a rigorous 100-point inspection. These machines represent the lowest failure rates and highest return on investment of the month — the preferred choice for major infrastructure projects worldwide.')}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* 扩容为 6 图高密度阵列展示 */}
             {[
-              {brand: "VOLVO", title:"L350H 巨型装载机", tag:"现货就绪", tagBg:"#D4AF37", bgImg:"/loader.png"},
-              {brand: "CATERPILLAR", title:"320D 履带挖掘机", tag:"仅剩 2 台", tagBg:"#ef4444", bgImg:"/hero.png"},
-              {brand: "KOMATSU", title:"D155A 履带推土机", tag:"现货就绪", tagBg:"#D4AF37", bgImg:"/hero.png"},
-              {brand: "CATERPILLAR", title:"140H 轮式平地机", tag:"近3日发往拉各斯", tagBg:"#374151", bgImg:"/loader.png"},
-              {brand: "VOLVO", title:"EC380D 重型挖掘机", tag:"现货就绪", tagBg:"#D4AF37", bgImg:"/hero.png"},
-              {brand: "XCMG", title:"LW500KV 装载机", tag:"仅剩 1 台", tagBg:"#ef4444", bgImg:"/loader.png"}
+              {brand: "VOLVO", title: isZh ? "L350H 巨型装载机" : "L350H Wheel Loader", tag: isZh ? "现货就绪" : "Ready to Ship", tagBg:"#D4AF37", bgImg:"/loader.png"},
+              {brand: "CATERPILLAR", title: isZh ? "320D 履带挖掘机" : "320D Excavator", tag: isZh ? "仅剩 2 台" : "Only 2 Left", tagBg:"#ef4444", bgImg:"/hero.png"},
+              {brand: "KOMATSU", title: isZh ? "D155A 履带推土机" : "D155A Bulldozer", tag: isZh ? "现货就绪" : "Ready to Ship", tagBg:"#D4AF37", bgImg:"/hero.png"},
+              {brand: "CATERPILLAR", title: isZh ? "140H 轮式平地机" : "140H Motor Grader", tag: isZh ? "近3日发往拉各斯" : "Shipping Soon", tagBg:"#374151", bgImg:"/loader.png"},
+              {brand: "VOLVO", title: isZh ? "EC380D 重型挖掘机" : "EC380D Excavator", tag: isZh ? "现货就绪" : "Ready to Ship", tagBg:"#D4AF37", bgImg:"/hero.png"},
+              {brand: "XCMG", title: isZh ? "LW500KV 装载机" : "LW500KV Loader", tag: isZh ? "仅剩 1 台" : "Only 1 Left", tagBg:"#ef4444", bgImg:"/loader.png"}
             ].map((item, index) => (
               <Link href="/products" key={index} className="group bg-white flex flex-col cursor-pointer hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden pb-8 border border-gray-200">
                 <div className="relative w-full aspect-[4/3] bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
@@ -218,8 +220,8 @@ export default function Home() {
           </div>
           
           <div className="mt-16 text-center">
-            <Link href="/products" className="h-14 px-10 rounded-full bg-[#111111] text-white text-[13px] font-bold uppercase tracking-[0.2em] hover:bg-[#D4AF37] hover:text-white transition-all shadow-xl inline-flex items-center justify-center gap-3 group">
-              {isZh ? '游览所有 300+ 在线设备' : 'View All 300+ Listed Machines'}
+            <Link href="/products" className="h-14 px-10 rounded-full bg-[#111111] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#D4AF37] hover:text-white transition-all shadow-xl inline-flex items-center justify-center gap-3 group">
+              {c('hot.btnText', isZh ? '游览所有 300+ 在线设备' : 'View All 300+ Listed Machines')}
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -234,29 +236,29 @@ export default function Home() {
           {/* 左侧：实力宣告与动态数字 */}
           <div className="p-14 md:p-20 lg:p-24 flex flex-col justify-center relative z-10 border-r border-white/10">
             <h2 className="text-4xl md:text-5xl font-black leading-tight mb-8 drop-shadow-lg">
-              {isZh ? '二十载深耕专注' : 'Two Decades of Expertise.'}<br/>{isZh ? '构筑起坚实底盘。' : 'A Foundation You Can Trust.'}
+              {c('depth.title1', isZh ? '二十载深耕专注' : 'Two Decades of Expertise.')}<br/>{c('depth.title2', isZh ? '构筑起坚实底盘。' : 'A Foundation You Can Trust.')}
             </h2>
             <p className="text-gray-400 leading-relaxed max-w-sm mb-12 text-sm">
-              {isZh ? '中国机械不仅仅是一家贸易商。我们在全球拥有自建的大型存放仓储与检测翻新基地。所有出海设备均由原厂级资深工程师亲手拆解、保养与极端测试，拒绝铁疙瘩，只发真战力。' : 'China Machinery is more than a trading company. We operate our own large-scale warehousing, inspection, and refurbishment facilities. Every machine destined for export is disassembled, serviced, and stress-tested by OEM-certified senior engineers. We ship real capability — not scrap iron.'}
+              {c('depth.desc', isZh ? '中国机械不仅仅是一家贸易商。我们在全球拥有自建的大型存放仓储与检测翻新基地。所有出海设备均由原厂级资深工程师亲手拆解、保养与极端测试，拒绝铁疙瘩，只发真战力。' : 'China Machinery is more than a trading company. We operate our own large-scale warehousing, inspection, and refurbishment facilities. Every machine destined for export is disassembled, serviced, and stress-tested by OEM-certified senior engineers. We ship real capability — not scrap iron.')}
             </p>
             
             {/* 合并：紧凑化的高能数据组 */}
             <div className="grid grid-cols-2 gap-x-6 gap-y-10">
                <div>
-                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={3000} /><span className="text-[#D4AF37]">+</span></h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{isZh ? '全球成功交付设备' : 'Machines Delivered Globally'}</p>
+                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={parseInt(c('depth.stat.0.num', '3000')) || 3000} /><span className="text-[#D4AF37]">+</span></h4>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{c('depth.stat.0.label', isZh ? '全球成功交付设备' : 'Machines Delivered Globally')}</p>
                </div>
                <div>
-                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={50} /><span className="text-[#D4AF37]">+</span></h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{isZh ? '无缝海运覆盖国家' : 'Countries Served by Sea'}</p>
+                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={parseInt(c('depth.stat.1.num', '50')) || 50} /><span className="text-[#D4AF37]">+</span></h4>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{c('depth.stat.1.label', isZh ? '无缝海运覆盖国家' : 'Countries Served by Sea')}</p>
                </div>
                <div>
-                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={2000} /><span className="text-[#D4AF37]">+</span></h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{isZh ? '平米超级仓储展区' : 'm² Warehousing & Prep Yard'}</p>
+                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={parseInt(c('depth.stat.2.num', '2000')) || 2000} /><span className="text-[#D4AF37]">+</span></h4>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{c('depth.stat.2.label', isZh ? '平米超级仓储展区' : 'm² Warehousing & Prep Yard')}</p>
                </div>
                <div>
-                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={100} /><span className="text-[#D4AF37]">%</span></h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{isZh ? '全节点拆机复检率' : 'Full-Teardown Inspection Rate'}</p>
+                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={parseInt(c('depth.stat.3.num', '100')) || 100} /><span className="text-[#D4AF37]">%</span></h4>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{c('depth.stat.3.label', isZh ? '全节点拆机复检率' : 'Full-Teardown Inspection Rate')}</p>
                </div>
             </div>
           </div>
@@ -265,7 +267,7 @@ export default function Home() {
           <div className="relative min-h-[400px] lg:min-h-full flex items-center justify-center group overflow-hidden bg-black">
             {isFactoryVideoPlaying ? (
               <video autoPlay controls className="absolute inset-0 w-full h-full object-cover z-20 animate-in fade-in duration-1000">
-                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4" />
+                <source src={c('depth.videoUrl', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4')} type="video/mp4" />
               </video>
             ) : (
               <>
@@ -291,18 +293,18 @@ export default function Home() {
       <section className="w-full py-32 bg-white">
         <div className="max-w-[1440px] mx-auto px-8">
           <div className="text-center mb-24">
-            <h2 className="text-5xl font-black tracking-tighter text-[#111111] uppercase mb-4">{isZh ? '世界级的交付与服务标准' : 'World-Class Delivery & After-Sales Standards'}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">{isZh ? '在跨国重装采购中，物流与售后往往是最大的阻碍。我们将为您彻底铲除这些摩擦力，提供真正的端到端出海服务体系。' : 'In cross-border heavy equipment procurement, logistics and after-sales support are often the greatest barriers. We eliminate that friction entirely, delivering a true end-to-end export service.'}</p>
+            <h2 className="text-5xl font-black tracking-tighter text-[#111111] mb-4">{c('s5.title', isZh ? '世界级的交付与服务标准' : 'World-Class Delivery & Service')}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto">{c('s5.desc', isZh ? '在跨国重装采购中，物流与售后往往是最大的阻碍。我们将为您彻底铲除这些摩擦力，提供真正的端到端出海服务体系。' : 'In cross-border heavy equipment procurement, logistics and after-sales support are often the greatest barriers. We eliminate that friction entirely, delivering a true end-to-end export service.')}</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
             {[
-              { icon: ShieldCheck, title: isZh ? "100项隐患全排查" : "100-Point Pre-Export Inspection", desc: isZh ? "从发动机、液压主泵到外观履带，严格执行原厂级全案检测体系，出具全流程权威视频报告。" : "From the engine and hydraulic main pump to undercarriage and bodywork, every unit undergoes a factory-grade full-system inspection, with a comprehensive video report issued upon completion." },
-              { icon: Factory, title: isZh ? "全自管翻新与喷漆" : "In-House Overhaul & Refinishing", desc: isZh ? "我们在国内拥有一流的数控机床与原厂喷漆房阵列，支持机器的动力总成大修与原厂化翻新装配。" : "Our facility houses precision CNC machinery and dedicated OEM-standard paint booths, capable of full powertrain overhauls and factory-grade refinishing to original specifications." },
-              { icon: Wrench, title: isZh ? "原厂级易损件直供" : "OEM-Grade Wear Parts Supply", desc: isZh ? "为海外发盘一次性备齐各类核心易损件打包（如滤芯、皮带、销轴），大幅延长基建区作业生命。" : "We supply a comprehensive set of critical wear parts — including filters, belts, and pin assemblies — packed with every overseas shipment to maximize uptime in remote jobsite environments." },
-              { icon: Settings, title: isZh ? "工况重度改装调校" : "Heavy-Duty Site Adaptation", desc: isZh ? "针对非洲极端高温和南美高湿度恶劣矿区，针对性地加强液压散热管线和冷媒，保障高温不沸腾。" : "For extreme heat in Africa and high-humidity mining sites in South America, we reinforce hydraulic cooling lines and upgrade coolant systems to prevent overheating under the most demanding conditions." },
-              { icon: PhoneCall, title: isZh ? "7x24 终身技术指导" : "24/7 Lifetime Technical Support", desc: isZh ? "拥有双语专家护航的紧急技术支援小队，提供无延迟的长途排错、图纸指引与跨国连线辅导。" : "Our bilingual technical response team provides zero-delay remote diagnostics, technical drawings, and live cross-border troubleshooting assistance around the clock." },
-              { icon: Globe, title: isZh ? "跨洋海运零盲区清关" : "Door-to-Port Shipping & Customs Clearance", desc: isZh ? "凭借深耕非洲、南美的高能航运合作伙伴，打磨出包税清关、滚装直航一体化的极简提货路线。" : "Backed by established shipping partners across Africa and South America, we provide a streamlined, all-inclusive solution covering duties, RO-RO direct sailing, and hassle-free port pickup." }
+              { icon: ShieldCheck, title: c('s5.card.0.title', isZh ? "100项隐患全排查" : "100-Point Pre-Export Inspection"), desc: c('s5.card.0.desc', isZh ? "从发动机、液压主泵到外观履带，严格执行原厂级全案检测体系，出具全流程权威视频报告。" : "From the engine and hydraulic main pump to undercarriage and bodywork, every unit undergoes a factory-grade full-system inspection, with a comprehensive video report issued upon completion.") },
+              { icon: Factory, title: c('s5.card.1.title', isZh ? "全自管翻新与喷漆" : "In-House Overhaul & Refinishing"), desc: c('s5.card.1.desc', isZh ? "我们在国内拥有一流的数控机床与原厂喷漆房阵列，支持机器的动力总成大修与原厂化翻新装配。" : "Our facility houses precision CNC machinery and dedicated OEM-standard paint booths, capable of full powertrain overhauls and factory-grade refinishing to original specifications.") },
+              { icon: Wrench, title: c('s5.card.2.title', isZh ? "原厂级易损件直供" : "OEM-Grade Wear Parts Supply"), desc: c('s5.card.2.desc', isZh ? "为海外发盘一次性备齐各类核心易损件打包（如滤芯、皮带、销轴），大幅延长基建区作业生命。" : "We supply a comprehensive set of critical wear parts — including filters, belts, and pin assemblies — packed with every overseas shipment to maximize uptime in remote jobsite environments.") },
+              { icon: Settings, title: c('s5.card.3.title', isZh ? "工况重度改装调校" : "Heavy-Duty Site Adaptation"), desc: c('s5.card.3.desc', isZh ? "针对非洲极端高温和南美高湿度恶劣矿区，针对性地加强液压散热管线和冷媒，保障高温不沸腾。" : "For extreme heat in Africa and high-humidity mining sites in South America, we reinforce hydraulic cooling lines and upgrade coolant systems to prevent overheating under the most demanding conditions.") },
+              { icon: PhoneCall, title: c('s5.card.4.title', isZh ? "7x24 终身技术指导" : "24/7 Lifetime Technical Support"), desc: c('s5.card.4.desc', isZh ? "拥有双语专家护航的紧急技术支援小队，提供无延迟的长途排错、图纸指引与跨国连线辅导。" : "Our bilingual technical response team provides zero-delay remote diagnostics, technical drawings, and live cross-border troubleshooting assistance around the clock.") },
+              { icon: Globe, title: c('s5.card.5.title', isZh ? "跨洋海运零盲区清关" : "Door-to-Port Shipping & Customs Clearance"), desc: c('s5.card.5.desc', isZh ? "凭借深耕非洲、南美的高能航运合作伙伴，打磨出包税清关、滚装直航一体化的极简提货路线。" : "Backed by established shipping partners across Africa and South America, we provide a streamlined, all-inclusive solution covering duties, RO-RO direct sailing, and hassle-free port pickup.") }
             ].map((feature, i) => (
               <div key={i} className="flex flex-col items-center text-center p-8 bg-gray-50 border border-gray-100 rounded-3xl hover:border-black transition-colors duration-500 shadow-sm hover:shadow-xl group">
                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 group-hover:bg-[#111111] transition-all duration-500">
@@ -315,8 +317,8 @@ export default function Home() {
           </div>
           
           <div className="text-center">
-             <Link href="/services" className="h-16 px-12 rounded-full bg-[#111111] text-white text-[13px] font-bold tracking-[0.2em] uppercase hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl inline-flex items-center gap-4">
-                 {isZh ? '探索完整增值出海体系' : 'Explore Our Full Export Service Suite'}
+             <Link href="/services" className="h-16 px-12 rounded-full bg-[#111111] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl inline-flex items-center gap-4">
+                 {c('s5.btnText', isZh ? '探索完整增值出海体系' : 'Explore Full Export Services')}
                  <ArrowRight size={16} />
              </Link>
           </div>
@@ -330,10 +332,10 @@ export default function Home() {
         <div className="max-w-[1440px] mx-auto px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] lg:items-end mb-16 gap-8">
             <div>
-              <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#111111] uppercase">{isZh ? '交机实录与动态' : 'Live Delivery Updates'}</h2>
+              <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#111111]">{c('news.title', isZh ? '交机实录与动态' : 'Live Delivery Updates')}</h2>
             </div>
             <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block">
-              <p className="text-gray-500 text-sm leading-relaxed font-medium">{isZh ? '真实发盘、跨国海运、开箱验收。我们为您展示实时的设备全球周转录像与物流快讯，亲眼见证我们的端到端跨国履约与重装交付能力。' : 'Real shipments. International ocean freight. On-site unboxing verification. We share live footage and logistics updates from active global dispatches so you can see our end-to-end delivery capability firsthand.'}</p>
+              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('news.desc', isZh ? '真实发盘、跨国海运、开箱验收。我们为您展示实时的设备全球周转录像与物流快讯，亲眼见证我们的端到端跨国履约与重装交付能力。' : 'Real shipments. International ocean freight. On-site unboxing verification. We share live footage and logistics updates from active global dispatches so you can see our end-to-end delivery capability firsthand.')}</p>
             </div>
           </div>
           
@@ -378,9 +380,9 @@ export default function Home() {
           <div className="bg-[#111111] p-10 md:p-16 lg:p-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[2rem] md:rounded-[3rem]">
             <div>
                <h2 className="text-3xl md:text-4xl xl:text-5xl font-black text-white mb-6 leading-tight whitespace-nowrap overflow-hidden">
-                 {isZh ? '未找到心仪的' : "Can't Find the"} <span className="text-[#D4AF37]">{isZh ? '特定机型？' : 'Right Machine?'}</span>
+                 {c('cta.title1', isZh ? '未找到心仪的' : "Can't Find the")} <span className="text-[#D4AF37]">{c('cta.titleGold', isZh ? '特定机型？' : 'Right Machine?')}</span>
                </h2>
-               <p className="text-gray-400 mb-10 leading-relaxed max-w-md">{isZh ? '提供您的工况需求和采买预算，我们的海外专属采购代表将在 12 小时内为您在全球自有仓储网络中匹配最佳的替代品方案。' : 'Share your operating requirements and target budget, and our dedicated sourcing representative will identify the best-matched alternatives from our global inventory network within 12 hours.'}</p>
+               <p className="text-gray-400 mb-10 leading-relaxed max-w-md">{c('cta.desc', isZh ? '提供您的工况需求和采买预算，我们的海外专属采购代表将在 12 小时内为您在全球自有仓储网络中匹配最佳的替代品方案。' : 'Share your operating requirements and target budget, and our dedicated sourcing representative will identify the best-matched alternatives from our global inventory network within 12 hours.')}</p>
                <div className="flex flex-col sm:flex-row gap-8 pt-8 border-t border-gray-800">
                   <div className="flex gap-4">
                      <div className="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center flex-shrink-0">
@@ -396,8 +398,8 @@ export default function Home() {
                         <Globe size={20} className="text-[#D4AF37]" />
                      </div>
                      <div>
-                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{isZh ? '总部寻址' : 'Headquarters'}</p>
-                        <p className="text-white font-bold tracking-wider">{isZh ? '中国，上海' : 'Shanghai, China'}</p>
+                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{c('cta.hqLabel', isZh ? '总部寻址' : 'Headquarters')}</p>
+                        <p className="text-white font-bold tracking-wider">{c('cta.hqAddr', isZh ? '中国上海市青浦区重型机械工业园 88 号' : 'No. 88 Heavy Machinery Park, Qingpu, Shanghai, China')}</p>
                      </div>
                   </div>
                </div>
@@ -412,7 +414,7 @@ export default function Home() {
                  className="hidden"
                  aria-hidden="true"
                />
-               <h3 className="text-2xl font-black text-[#111111] mb-8">{isZh ? '即刻获取定制报价' : 'Get Your Custom Quote Now'}</h3>
+               <h3 className="text-2xl font-black text-[#111111] mb-8">{c('cta.formTitle', isZh ? '即刻获取定制报价' : 'Get Your Custom Quote Now')}</h3>
                <div className="grid grid-cols-1 gap-6">
                  {/* 精简为最高转化的纯正 3 字段收网节点 */}
                  <div className="border-b border-gray-300 focus-within:border-[#111111] transition-colors group">
@@ -422,7 +424,7 @@ export default function Home() {
                    <input name="contact" required type="text" placeholder={isZh ? 'WhatsApp / 邮箱 *' : 'WhatsApp / Email *'} className="w-full py-3 text-sm focus:outline-none bg-transparent font-medium group-focus-within:placeholder:text-gray-400" />
                  </div>
                  <div className="border-b border-gray-300 focus-within:border-[#111111] transition-colors group pt-2">
-                   <textarea name="message" required placeholder={isZh ? '意向机械与特定工况需求 (必填)' : 'Machine of interest & specific operating requirements (required)'} rows={3} className="w-full py-3 text-sm focus:outline-none bg-transparent resize-none font-medium group-focus-within:placeholder:text-gray-400"></textarea>
+                   <textarea name="message" required placeholder={c('cta.formPlaceholder', isZh ? '意向机械与特定工况需求 (必填)' : 'Machine of interest & specific operating requirements (required)')} rows={3} className="w-full py-3 text-sm focus:outline-none bg-transparent resize-none font-medium group-focus-within:placeholder:text-gray-400"></textarea>
                  </div>
                </div>
                {submitMessage ? (
@@ -446,9 +448,9 @@ export default function Home() {
                  <button
                    type="submit"
                    disabled={submitState === "loading"}
-                   className="flex-1 w-full h-14 rounded-full bg-[#111111] text-white text-[13px] font-bold tracking-[0.2em] uppercase hover:bg-[#D4AF37] hover:text-black transition-colors flex items-center justify-center gap-3 shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+                   className="flex-1 w-full h-14 rounded-full bg-[#111111] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#D4AF37] hover:text-black transition-colors flex items-center justify-center gap-3 shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
                  >
-                   {submitState === "loading" ? (isZh ? '提交中...' : 'Submitting...') : (isZh ? '获取专属定制报价' : 'Request My Custom Quote')} <Send size={16} />
+                   {submitState === "loading" ? (isZh ? '提交中...' : 'Submitting...') : c('cta.submitBtn', isZh ? '获取专属定制报价' : 'Get Custom Quote')} <Send size={16} />
                  </button>
                </div>
             </form>

@@ -3,10 +3,12 @@ import { ArrowRight, FileText, LayoutGrid } from 'lucide-react';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
+import { usePageContent } from '@/hooks/usePageContent';
 
 export default function InsightsPage() {
   const locale = useLocale();
   const isZh = locale === 'zh';
+  const { get: c } = usePageContent('insights');
   
   const articles = [
     {
@@ -84,24 +86,24 @@ export default function InsightsPage() {
              {/* 顶部分类小提示 */}
              <div className="flex items-center justify-center gap-3 text-[#D4AF37] text-xs font-bold tracking-[0.2em] uppercase mb-8 border border-[#D4AF37]/20 rounded-full px-5 py-2 bg-[#D4AF37]/5 backdrop-blur-md shadow-lg">
                 <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span> 
-                {isZh ? '重装出海行业内参' : 'HEAVY EQUIPMENT EXPORT INSIGHTS'}
+                {c('hero.tag', isZh ? '重装出海行业内参' : 'HEAVY EQUIPMENT EXPORT INSIGHTS')}
              </div>
 
-             <h1 className="text-5xl md:text-[80px] font-black text-white tracking-[0.1em] mb-10 leading-none whitespace-nowrap drop-shadow-2xl">
-               {isZh ? '穿透迷雾，' : 'PIERCE THE FOG, '}<span className="text-[#D4AF37]">{isZh ? '掌握底牌。' : 'MASTER THE BUYING.'}</span>
+             <h1 className="hero-title">
+               {c('hero.title1', isZh ? '穿透迷雾，' : 'Cut the Fog, ')}<span className="text-[#D4AF37]">{c('hero.titleGold', isZh ? '掌握底牌。' : 'Own the Deal.')}</span>
              </h1>
 
              {/* 副标题 (Height Locked) */}
              <div className="w-full flex items-center justify-center min-h-[60px] md:min-h-[80px]">
                {isZh ? (
                  <div className="w-full text-gray-400 text-lg md:text-[21px] font-medium flex justify-between items-center opacity-90 max-w-[900px]">
-                    {"跳出信息不对称的陷阱。出海工程师每周为您深度拆解二手重装采购防坑逻辑、维护要略与真实市场走势。".split('').map((char, index) => (
+                    {c('hero.desc', "跳出信息不对称的陷阱。出海工程师每周为您深度拆解二手重装采购防坑逻辑、维护要略与真实市场走势。").split('').map((char, index) => (
                       <span key={index}>{char}</span>
                     ))}
                  </div>
                ) : (
                  <p className="text-gray-400 text-lg md:text-xl font-medium leading-relaxed max-w-3xl text-center mx-auto">
-                   Escape the trap of information asymmetry. Our senior engineers deliver weekly teardowns on used machinery export strategies, maintenance essentials, and real market trends.
+                   {c('hero.desc', "Escape the trap of information asymmetry. Our senior engineers deliver weekly teardowns on used machinery export strategies, maintenance essentials, and real market trends.")}
                  </p>
                )}
              </div>
@@ -171,7 +173,7 @@ export default function InsightsPage() {
                   </p>
                   
                   <div className="inline-flex items-center gap-3 text-[12px] font-bold tracking-[0.2em] uppercase text-[#111111] group-hover:text-[#D4AF37] transition-all mt-auto pt-6 border-t border-gray-100 group-hover:border-[#D4AF37]/20 w-max">
-                    {isZh ? '阅读专业内参' : 'READ FULL REPORT'} <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform" />
+                    {isZh ? '阅读专业内参' : 'Read Full Report'} <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform" />
                   </div>
                 </div>
               </Link>
@@ -180,8 +182,8 @@ export default function InsightsPage() {
 
           {/* Load More Action Button */}
           <div className="mt-28 text-center flex justify-center">
-            <button className="h-[64px] px-14 rounded-full bg-[#111111] text-white text-[13px] font-black tracking-[0.2em] uppercase hover:bg-[#D4AF37] hover:text-[#111111] transition-all duration-300 shadow-[0_20px_40px_rgba(17,17,17,0.15)] hover:shadow-[0_15px_30px_rgba(212,175,55,0.3)] hover:-translate-y-1 flex items-center gap-4 group">
-               {isZh ? '获取更多行业背书记录' : 'LOAD MORE INSIGHTS'}
+            <button className="h-[64px] px-14 rounded-full bg-[#111111] text-white text-[13px] font-black tracking-[0.2em] hover:bg-[#D4AF37] hover:text-[#111111] transition-all duration-300 shadow-[0_20px_40px_rgba(17,17,17,0.15)] hover:shadow-[0_15px_30px_rgba(212,175,55,0.3)] hover:-translate-y-1 flex items-center gap-4 group">
+               {c('list.viewMoreBtn', isZh ? '获取更多行业背书记录' : 'Load More Insights')}
                <ArrowRight size={16} className="group-hover:translate-y-1 group-hover:rotate-90 transition-transform duration-300" />
             </button>
           </div>

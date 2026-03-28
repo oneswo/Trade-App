@@ -1,8 +1,13 @@
 'use client';
 import { MapPin, Phone, Mail, Clock, Send, UserCheck, Globe, Building2, HeadphonesIcon } from 'lucide-react';
 import { useInquirySubmit } from "@/hooks/useInquirySubmit";
+import { useLocale } from 'next-intl';
+import { usePageContent } from '@/hooks/usePageContent';
 
 export default function ContactPage() {
+  const locale = useLocale();
+  const isZh = locale === 'zh';
+  const { get: c } = usePageContent('contact');
   const { submitState, submitMessage, handleSubmit } = useInquirySubmit({
     source: "contact-page-form",
   });
@@ -24,17 +29,23 @@ export default function ContactPage() {
          <div className="relative z-10 flex flex-col items-center px-4 w-full max-w-[1100px] mx-auto text-center mt-4">
 
 
-            <h1 className="text-5xl md:text-[80px] font-black text-white tracking-[0.1em] mb-10 leading-none whitespace-nowrap drop-shadow-2xl">
-              全球联络，<span className="text-[#D4AF37]">极速调度。</span>
+            <h1 className="hero-title">
+              {c('hero.title1', isZh ? '全球联络，' : 'Global Reach, ')}<span className="text-[#D4AF37]">{c('hero.titleGold', isZh ? '极速调度。' : 'Swift Dispatch.')}</span>
             </h1>
 
             {/* 副标题 (Height Locked) */}
             <div className="w-full flex items-center justify-center min-h-[60px] md:min-h-[80px]">
-               <div className="w-full text-gray-400 text-lg md:text-[21px] font-medium flex justify-between items-center opacity-90 max-w-[900px]">
-                  {"无论您身处哪一大洲的矿场机位，我们的特派工程师将提供 24 小时跨洋直连，为您敲定源头底价与专属航运配额。".split('').map((char, index) => (
+              {isZh ? (
+                <div className="w-full text-gray-400 text-lg md:text-[21px] font-medium flex justify-between items-center opacity-90 max-w-[900px]">
+                  {c('hero.desc', '无论您身处哪一大洲的矿场机位，我们的特派工程师将提供 24 小时跨洋直连，为您敲定源头底价与专属航运配额。').split('').map((char, index) => (
                     <span key={index}>{char}</span>
                   ))}
-               </div>
+                </div>
+              ) : (
+                <p className="text-gray-400 text-lg md:text-xl font-medium leading-relaxed max-w-3xl text-center mx-auto">
+                  {c('hero.desc', 'Wherever your mining operation is located, our dedicated engineers provide 24/7 cross-border support to secure factory pricing and exclusive shipping allocations.')}
+                </p>
+              )}
             </div>
          </div>
       </section>
@@ -47,10 +58,10 @@ export default function ContactPage() {
             {/* Left: Info Center */}
             <div className="w-full lg:w-[45%] flex flex-col justify-center p-12 md:p-20 bg-[#111111] text-white">
               <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-8 leading-tight pt-4">
-                全域出海调度中心
+                {c('info.hqTitle', isZh ? '全域出海调度中心' : 'Global Dispatch Center')}
               </h1>
               <p className="text-gray-400 text-[15px] font-medium leading-relaxed max-w-md mb-12">
-                 无视时区差与洲际屏障。我们的国际贸易工程师将在 12 小时内为您响应跨洋货单、极致型号垂询与实机验车请求。
+                 {c('info.hqDesc', isZh ? '无视时区差与洲际屏障。我们的国际贸易工程师将在 12 小时内为您响应跨洋货单、极致型号垂询与实机验车请求。' : 'We transcend time zones and continental barriers. Our international trade engineers respond within 12 hours to cross-border orders, specification inquiries, and live machine inspection requests.')}
               </p>
 
               <div className="flex flex-col gap-10">
@@ -59,10 +70,10 @@ export default function ContactPage() {
                     <MapPin className="text-[#D4AF37] group-hover:text-[#111111] transition-colors" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2 text-white">上海总部与调度中枢</h4>
+                    <h4 className="font-bold text-lg mb-2 text-white">{isZh ? '上海总部与调度中枢' : 'Shanghai HQ & Dispatch Hub'}</h4>
                     <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                      中国上海市奉贤区金海公路6055号<br/>
-                      (紧邻重载特大型滚装海运枢纽)
+                      {isZh ? c('info.addrZh', '中国上海市奉贤区金海公路6055号') : c('info.addrEn', 'No. 6055 Jinhai Road, Fengxian District')}<br/>
+                      {isZh ? '(紧邻重载特大型滚装海运枢纽)' : 'Shanghai, China (Adjacent to RO-RO Port)'}
                     </p>
                   </div>
                 </div>
@@ -72,9 +83,9 @@ export default function ContactPage() {
                     <Mail className="text-[#D4AF37] group-hover:text-[#111111] transition-colors" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2 text-white">全系底库报价专线</h4>
+                    <h4 className="font-bold text-lg mb-2 text-white">{isZh ? '全系底库报价专线' : 'Quotation Hotline'}</h4>
                     <a href="mailto:15156888267@163.com" className="text-gray-400 hover:text-[#D4AF37] transition-colors text-sm font-bold tracking-widest uppercase block mb-1">
-                      15156888267@163.com
+                      {c('info.email', '15156888267@163.com')}
                     </a>
                   </div>
                 </div>
@@ -84,11 +95,11 @@ export default function ContactPage() {
                     <HeadphonesIcon className="text-[#D4AF37] group-hover:text-[#111111] transition-colors" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2 text-white">24小时全球技术抢修部</h4>
+                    <h4 className="font-bold text-lg mb-2 text-white">{isZh ? '24小时全球技术抢修部' : '24/7 Technical Support'}</h4>
                     <a href="tel:+8617321077956" className="text-gray-400 hover:text-[#D4AF37] transition-colors text-sm font-bold tracking-widest uppercase block mb-1">
-                      +86 17321077956
+                      {c('info.phone', '+86 17321077956')}
                     </a>
-                    <p className="text-[#D4AF37]/60 text-[10px] font-bold uppercase tracking-widest mt-1">支持全时区实时连线 / 视频排障</p>
+                    <p className="text-[#D4AF37]/60 text-[10px] font-bold uppercase tracking-widest mt-1">{isZh ? '支持全时区实时连线 / 视频排障' : 'Live Video Support Across All Time Zones'}</p>
                   </div>
                 </div>
               </div>
@@ -112,7 +123,7 @@ export default function ContactPage() {
               {/* 中央自定义高端定位气泡 (替代谷歌原生白框的纯净展现) */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[130%] z-20 pointer-events-none flex flex-col items-center">
                  <div className="bg-[#111111] text-white px-6 py-4 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.4)] border border-white/5 flex flex-col items-center relative z-10">
-                    <span className="text-[#D4AF37] text-sm font-black tracking-widest mb-1">中国机械 亚太调度中枢</span>
+                    <span className="text-[#D4AF37] text-sm font-black tracking-widest mb-1">{isZh ? '中国机械 亚太调度中枢' : 'KXTJ Machinery HQ'}</span>
                     <span className="text-gray-400 text-[10px] tracking-[0.15em] uppercase">Shanghai Global Base</span>
                  </div>
                  {/* 向下的指示尖角 */}
@@ -128,9 +139,9 @@ export default function ContactPage() {
       <section className="w-full py-32 bg-white">
         <div className="max-w-[1440px] mx-auto px-8 relative z-10">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">直连大洲业务总控</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">{isZh ? '直连大洲业务总控' : 'Direct Regional Contacts'}</h2>
             <div className="w-12 h-1 bg-[#D4AF37] mx-auto mb-6"></div>
-            <p className="text-gray-500 text-sm font-medium">跳过漫长的转接等待。我们根据全球大洲划分了独立的业务战区，随时接管您的专线询盘。</p>
+            <p className="text-gray-500 text-sm font-medium">{isZh ? '跳过漫长的转接等待。我们根据全球大洲划分了独立的业务战区，随时接管您的专线询盘。' : 'Skip the long waiting queue. Our regional teams are divided by continent, ready to handle your inquiries directly.'}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -139,14 +150,14 @@ export default function ContactPage() {
             <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
               <div className="absolute inset-0 border-[2px] border-transparent p-2 rounded-3xl pointer-events-none group-hover:border-[url('/images/gradients/amber.jpg')] transition-opacity"></div>
               <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <img src="/images/avatars/yin.png" alt="尹世兵" className="w-full h-full object-cover" />
+                 <img src="/images/avatars/yin.png" alt="Steven Yin" className="w-full h-full object-cover" />
               </div>
-              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">尹世兵</h3>
-              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">亚太区执行董事</p>
+              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.0.name', isZh ? '尹世兵' : 'Steven Yin')}</h3>
+              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.0.title', isZh ? '亚太区执行董事' : 'APAC Executive Director')}</p>
               
               <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">专线直驳</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
                   <a href="tel:+8615156888267" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 15156888267</a>
                 </div>
                 <div className="flex items-center justify-between text-sm">
@@ -159,14 +170,14 @@ export default function ContactPage() {
             {/* Rep 2 */}
             <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
               <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <img src="/images/avatars/hong.png" alt="尹洪峰" className="w-full h-full object-cover" />
+                 <img src="/images/avatars/hong.png" alt="Frank Yin" className="w-full h-full object-cover" />
               </div>
-              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">尹洪峰</h3>
-              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">拉非高级代办</p>
+              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.1.name', isZh ? '尹洪峰' : 'Frank Yin')}</h3>
+              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.1.title', isZh ? '拉非高级代办' : 'LATAM & Africa Lead')}</p>
               
               <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">专线直驳</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
                   <a href="tel:+8619159103568" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 19159103568</a>
                 </div>
                 <div className="flex items-center justify-between text-sm">
@@ -179,14 +190,14 @@ export default function ContactPage() {
             {/* Rep 3 */}
             <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
               <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <img src="/images/avatars/anna.png" alt="安娜·李" className="w-full h-full object-cover" />
+                 <img src="/images/avatars/anna.png" alt="Anna Li" className="w-full h-full object-cover" />
               </div>
-              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">安娜·李</h3>
-              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">欧亚中东总监</p>
+              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.2.name', isZh ? '安娜·李' : 'Anna Li')}</h3>
+              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.2.title', isZh ? '欧亚中东总监' : 'EU & MENA Director')}</p>
               
               <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">专线直驳</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
                   <a href="tel:+8617321077956" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17321077956</a>
                 </div>
                 <div className="flex items-center justify-between text-sm">
@@ -199,14 +210,14 @@ export default function ContactPage() {
             {/* Rep 4 */}
             <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
               <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <img src="/images/avatars/annie.png" alt="安妮" className="w-full h-full object-cover" />
+                 <img src="/images/avatars/annie.png" alt="Annie" className="w-full h-full object-cover" />
               </div>
-              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">安妮</h3>
-              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">泛西非大区专员</p>
+              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.3.name', isZh ? '安妮' : 'Annie')}</h3>
+              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.3.title', isZh ? '泛西非大区专员' : 'West Africa Specialist')}</p>
               
               <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">专线直驳</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
                   <a href="tel:+8617317763969" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17317763969</a>
                 </div>
                 <div className="flex items-center justify-between text-sm">
@@ -227,8 +238,8 @@ export default function ContactPage() {
         
         <div className="max-w-[900px] mx-auto px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white mb-6">即刻开启您的 <span className="text-[#D4AF37]">重装之行</span></h2>
-            <p className="text-gray-400 text-sm font-medium">只需在联系表格中留下您的电子件或电话，我们即可向您发送各大厂牌机皇底价和私密库存表。</p>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white mb-6">{isZh ? '即刻开启您的' : 'Start Your'} <span className="text-[#D4AF37]">{isZh ? '重装之行' : 'Heavy Equipment Journey'}</span></h2>
+            <p className="text-gray-400 text-sm font-medium">{isZh ? '只需在联系表格中留下您的电子件或电话，我们即可向您发送各大厂牌机皇底价和私密库存表。' : 'Simply leave your email or phone number, and we will send you the best prices on top brands and exclusive inventory lists.'}</p>
           </div>
 
           <div className="bg-[#1A1A1A] p-10 md:p-14 shadow-[0_30px_60px_rgba(0,0,0,0.5)] border border-white/10 mx-auto rounded-[32px] relative overflow-hidden">
@@ -247,18 +258,18 @@ export default function ContactPage() {
                  />
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="bg-[#111111] rounded-2xl px-6 py-2 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
-                     <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">您的称谓</label>
-                     <input name="name" required type="text" placeholder="您的姓名 *" className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
+                     <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{isZh ? '您的称谓' : 'YOUR NAME'}</label>
+                     <input name="name" required type="text" placeholder={isZh ? '您的姓名 *' : 'Full Name *'} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
                    </div>
                    <div className="bg-[#111111] rounded-2xl px-6 py-2 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
-                     <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">联系方式 (WhatsApp / 邮箱)</label>
-                     <input name="contact" required type="text" placeholder="电子邮箱或 WhatsApp *" className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
+                     <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{isZh ? '联系方式 (WhatsApp / 邮箱)' : 'CONTACT (WHATSAPP/EMAIL)'}</label>
+                     <input name="contact" required type="text" placeholder={isZh ? '电子邮箱或 WhatsApp *' : 'Email or WhatsApp *'} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
                    </div>
                  </div>
                  
                  <div className="bg-[#111111] rounded-2xl px-6 py-4 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
-                   <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mb-2 block">所需机型的极限工况与型号</label>
-                   <textarea name="message" required placeholder="您需要哪些型号的重装机械报价? (例如: 需要三一 36C 挖掘机发往西非) *" rows={4} className="w-full py-2 text-sm focus:outline-none bg-transparent resize-none font-medium text-white placeholder:text-gray-600"></textarea>
+                   <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mb-2 block">{isZh ? '所需机型的极限工况与型号' : 'REQUIREMENTS'}</label>
+                   <textarea name="message" required placeholder={isZh ? '您需要哪些型号的重装机械报价? (例如: 需要三一 36C 挖掘机发往西非) *' : 'Which models do you need quotes for? (e.g. SANY 36C excavator to West Africa) *'} rows={4} className="w-full py-2 text-sm focus:outline-none bg-transparent resize-none font-medium text-white placeholder:text-gray-600"></textarea>
                  </div>
 
                  {submitMessage && (
@@ -285,7 +296,7 @@ export default function ContactPage() {
                      disabled={submitState === "loading"}
                      className="flex-1 w-full h-[60px] bg-[#D4AF37] text-[#111111] text-[13px] font-black tracking-[0.2em] uppercase hover:bg-white hover:text-black hover:shadow-[0_10px_30px_rgba(212,175,55,0.4)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 rounded-2xl disabled:opacity-60 disabled:cursor-not-allowed"
                    >
-                     {submitState === "loading" ? "提 交 中 ..." : "立即获取 CIF 底价"} <Send size={16} />
+                     {submitState === "loading" ? (isZh ? '提 交 中 ...' : 'SUBMITTING...') : (isZh ? '立即获取 CIF 底价' : 'GET CIF PRICE NOW')} <Send size={16} />
                    </button>
                  </div>
               </form>

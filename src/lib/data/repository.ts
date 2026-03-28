@@ -163,11 +163,28 @@ export interface ArticleRepo {
   remove(id: string): Promise<boolean>;
 }
 
+// ─── PageContent ─────────────────────────────────────────────────────────────
+
+export interface PageContentRecord {
+  pageId: string;
+  locale: string;
+  data: Record<string, string>;
+  updatedAt: string;
+}
+
+export interface PageContentRepo {
+  get(pageId: string, locale: string): Promise<PageContentRecord | null>;
+  upsert(pageId: string, locale: string, data: Record<string, string>): Promise<PageContentRecord>;
+}
+
+// ─── MockStore ───────────────────────────────────────────────────────────────
+
 interface MockStore {
   inquiries: InquiryRecord[];
   admins: AdminRecord[];
   products: ProductRecord[];
   articles: ArticleRecord[];
+  pageContents: Record<string, PageContentRecord>;
 }
 
 declare global {
@@ -177,6 +194,7 @@ declare global {
 function createInitialStore(): MockStore {
   const now = new Date().toISOString();
   return {
+    pageContents: {},
     articles: [
       {
         id: "art_1",
@@ -217,8 +235,8 @@ function createInitialStore(): MockStore {
     admins: [
       {
         id: "admin-local-1",
-        email: "admin@kxtj.com",
-        password: "admin123456",
+        email: process.env.ADMIN_EMAIL ?? "admin@kxtj.com",
+        password: process.env.ADMIN_PASSWORD ?? "admin123456",
         createdAt: new Date().toISOString(),
       },
     ],
@@ -268,6 +286,10 @@ function createInitialStore(): MockStore {
 function getMockStore(): MockStore {
   if (!globalThis.__kxtjMockStore__) {
     globalThis.__kxtjMockStore__ = createInitialStore();
+  }
+  // 热更新后旧 store 可能缺少新字段，补全它
+  if (!globalThis.__kxtjMockStore__.pageContents) {
+    globalThis.__kxtjMockStore__.pageContents = {};
   }
   return globalThis.__kxtjMockStore__;
 }
@@ -564,4 +586,32 @@ export function getArticleRepo(): ArticleRepo {
     return supabaseArticleRepo;
   }
   return mockArticleRepo;
+}
+
+// ─── PageContent mock + factory ──────────────────────────────────────────────
+
+const mockPageContentRepo: PageContentRepo = {
+  async get(pageId, locale) {
+    const store = getMockStore();
+    return store.pageContents[`${pageId}:${locale}`] ?? null;
+  },
+  async upsert(pageId, locale, data) {
+    const store = getMockStore();
+    const record: PageContentRecord = {
+      pageId,
+      locale,
+      data,
+      updatedAt: new Date().toISOString(),
+    };
+    store.pageContents[`${pageId}:${locale}`] = record;
+    return record;
+  },
+};
+
+export function getPageContentRepo(): PageContentRepo {
+  if (isSupabaseConfigured()) {
+    const { supabasePageContentRepo } = require("./supabase-repository") as typeof import("./supabase-repository");
+    return supabasePageContentRepo;
+  }
+  return mockPageContentRepo;
 }

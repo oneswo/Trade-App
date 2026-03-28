@@ -19,6 +19,8 @@ import type {
   InquiryRecord,
   InquiryRepo,
   InquiryStatus,
+  PageContentRecord,
+  PageContentRepo,
   ProductRecord,
   ProductRepo,
   UpdateArticleInput,
@@ -382,5 +384,48 @@ export const supabaseArticleRepo: ArticleRepo = {
     const db = getClient();
     const { error } = await db.from("articles").delete().eq("id", id);
     return !error;
+  },
+};
+
+// ─── PageContentRepo ─────────────────────────────────────────────────────────
+
+export const supabasePageContentRepo: PageContentRepo = {
+  async get(pageId: string, locale: string) {
+    const db = getClient();
+    const { data, error } = await db
+      .from("page_contents")
+      .select("*")
+      .eq("page_id", pageId)
+      .eq("locale", locale)
+      .single();
+    if (error || !data) return null;
+    const r = data as Record<string, unknown>;
+    return {
+      pageId: r.page_id as string,
+      locale: r.locale as string,
+      data: (r.data ?? {}) as Record<string, string>,
+      updatedAt: r.updated_at as string,
+    };
+  },
+
+  async upsert(pageId: string, locale: string, fields: Record<string, string>) {
+    const db = getClient();
+    const now = new Date().toISOString();
+    const { data, error } = await db
+      .from("page_contents")
+      .upsert(
+        { page_id: pageId, locale, data: fields, updated_at: now },
+        { onConflict: "page_id,locale" }
+      )
+      .select()
+      .single();
+    if (error || !data) throw new Error(error?.message ?? "upsert failed");
+    const r = data as Record<string, unknown>;
+    return {
+      pageId: r.page_id as string,
+      locale: r.locale as string,
+      data: (r.data ?? {}) as Record<string, string>,
+      updatedAt: r.updated_at as string,
+    };
   },
 };

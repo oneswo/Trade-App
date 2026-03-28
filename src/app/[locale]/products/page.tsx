@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { useCatalogProducts } from '@/hooks/useProductCatalog';
 
 import { useLocale } from 'next-intl';
+import { usePageContent } from '@/hooks/usePageContent';
 
 const FILTERS_ZH = {
   brands: ['卡特彼勒', '小松', '三一', '日立', '沃尔沃', '斗山'],
@@ -84,6 +85,7 @@ function matchesWeight(weightStr: string, filter: string): boolean {
 function ProductsContent() {
   const locale = useLocale();
   const isZh = locale === 'zh';
+  const { get: c } = usePageContent('products');
   const FILTERS = isZh ? FILTERS_ZH : FILTERS_EN;
 
   const { products, loading } = useCatalogProducts();
@@ -213,8 +215,8 @@ function ProductsContent() {
               {isZh ? '982 台实况现车整装待发' : '982 MACHINES READY FOR SHIPMENT'}
             </div>
 
-            <h1 className="text-5xl md:text-[80px] font-black text-white tracking-[0.1em] mb-10 leading-none whitespace-nowrap drop-shadow-2xl">
-              {isZh ? '全系现车，' : 'ALL IN STOCK, '}<span className="text-[#D4AF37]">{isZh ? '实盘底库。' : 'REAL DATA.'}</span>
+            <h1 className="hero-title">
+              {isZh ? '全系现车，' : 'All in Stock, '}<span className="text-[#D4AF37]">{isZh ? '实盘底库。' : 'Real Inventory.'}</span>
             </h1>
 
             {/* 搜框替换原副标题 (Height Locked) */}
@@ -225,7 +227,7 @@ function ProductsContent() {
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder={isZh ? "搜索型号，例如输入：CAT 320D" : "Search model, e.g. CAT 320D"}
+                  placeholder={c('filter.searchPlaceholder', isZh ? "搜索型号，例如输入：CAT 320D" : "Search model, e.g. CAT 320D")}
                   className="flex-1 bg-transparent text-white font-medium placeholder:text-gray-500 tracking-wider focus:outline-none text-base py-3"
                 />
                 <button className="bg-[#D4AF37] text-black font-black uppercase text-xs tracking-widest px-8 md:px-10 py-3.5 hover:bg-white hover:text-black hover:shadow-[0_10px_20px_rgba(212,175,55,0.3)] transition-all">

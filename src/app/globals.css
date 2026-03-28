@@ -128,3 +128,47 @@
     @apply font-sans;
   }
 }
+
+/* ========================================
+   Hero 标题多语言样式 - 使用 :lang() 避免 Hydration 闪烁
+   ======================================== */
+
+/* 首页 Hero 标题 */
+.hero-title-home {
+  @apply font-black tracking-tight text-white leading-tight drop-shadow-2xl w-full;
+}
+.hero-title-home:lang(zh) {
+  font-size: clamp(2.5rem, 10vw, 110px);
+  white-space: nowrap;
+}
+.hero-title-home:lang(en) {
+  font-size: clamp(2rem, 8vw, 90px);
+  white-space: normal;
+}
+@media (min-width: 640px) {
+  .hero-title-home:lang(zh) { font-size: clamp(3rem, 8vw, 110px); }
+  .hero-title-home:lang(en) { font-size: clamp(2.5rem, 6vw, 90px); }
+}
+@media (min-width: 768px) {
+  .hero-title-home:lang(zh) { font-size: clamp(4rem, 7vw, 110px); }
+  .hero-title-home:lang(en) { font-size: clamp(3rem, 6xl, 90px); }
+}
+@media (min-width: 1280px) {
+  .hero-title-home:lang(zh) { font-size: 110px; }
+  .hero-title-home:lang(en) { font-size: 90px; }
+}
+
+/* 通用内页 Hero 标题 */
+.hero-title {
+  @apply text-5xl font-black text-white tracking-[0.1em] mb-10 leading-none drop-shadow-2xl;
+}
+.hero-title:lang(zh) {
+  white-space: nowrap;
+}
+.hero-title:lang(en) {
+  white-space: normal;
+}
+@media (min-width: 768px) {
+  .hero-title:lang(zh) { font-size: 80px; }
+  .hero-title:lang(en) { font-size: 60px; }
+}
