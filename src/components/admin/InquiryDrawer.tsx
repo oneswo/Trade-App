@@ -32,6 +32,7 @@ interface InquiryDrawerProps {
   onClose: () => void;
   onMarkRead?: (id: string) => void;
   markingRead?: boolean;
+  onUpdateStatus?: (id: string, status: string) => void;
 }
 
 export default function InquiryDrawer({
@@ -39,6 +40,7 @@ export default function InquiryDrawer({
   onClose,
   onMarkRead,
   markingRead = false,
+  onUpdateStatus,
 }: InquiryDrawerProps) {
   useEffect(() => {
     if (inquiry) {
@@ -171,11 +173,13 @@ export default function InquiryDrawer({
                   {Object.entries(STATUS_MAP).map(([key, config]) => (
                     <button
                       key={key}
+                      onClick={() => onUpdateStatus?.(inquiry.id, key)}
+                      disabled={inquiry.status === key}
                       className={`
                         rounded-lg border py-2 text-[11px] font-bold tracking-wider uppercase transition-colors
-                        ${inquiry.status === key 
-                          ? `${config.bgColor} ${config.color} border-current ring-1 ring-current ring-offset-1` 
-                          : "border-black/[0.06] bg-white text-[#111111]/40 hover:bg-black/[0.02] hover:text-[#111111]"
+                        ${inquiry.status === key
+                          ? `${config.bgColor} ${config.color} border-current ring-1 ring-current ring-offset-1`
+                          : "border-black/[0.06] bg-white text-[#111111]/40 hover:bg-black/[0.02] hover:text-[#111111] cursor-pointer"
                         }
                       `}
                     >

@@ -1,26 +1,29 @@
 "use client";
 import { Link } from '@/i18n/routing';
+import { useLocale } from 'next-intl';
 
 export default function Footer() {
+  const locale = useLocale();
+  const isZh = locale === 'zh';
   return (
-    <footer className="w-full bg-[#111111] text-white pt-24 pb-8 border-t border-[#222]">
+    <footer className="w-full bg-[#111111] text-white pt-16 pb-8 border-t border-[#222]">
       <div className="max-w-[1440px] mx-auto px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-10">
           
           {/* Col 1: Brand & Contact Info */}
           <div className="lg:col-span-4 pr-8">
             <Link href="/" className="inline-block mb-10">
               <span className="text-4xl font-black tracking-tighter text-white">
-                KXTJ<span className="text-[#D4AF37]">.</span>
+                {isZh ? '中国机械' : 'CHINA MACHINERY'}
               </span>
             </Link>
             
-            <div className="flex flex-col gap-5 text-sm text-gray-400 font-medium mb-12">
-              <p className="flex items-center gap-4"><span className="text-gray-500 w-20">联系人:</span> Jack Yin</p>
-              <p className="flex items-center gap-4"><span className="text-gray-500 w-20">电话:</span> <span className="hover:text-white transition-colors cursor-pointer">+86 17321077956</span></p>
-              <p className="flex items-center gap-4"><span className="text-gray-500 w-20">邮箱:</span> <span className="hover:text-white transition-colors cursor-pointer">15156888267@163.com</span></p>
-              <p className="flex items-center gap-4"><span className="text-gray-500 w-20">WhatsApp:</span> <span className="hover:text-[#25D366] transition-colors cursor-pointer">+86 15375319246</span></p>
-              <p className="flex items-start gap-4 leading-relaxed"><span className="text-gray-500 w-20 shrink-0">公司地址:</span> <span>中国上海市奉贤区金海路6055号</span></p>
+            <div className="flex flex-col gap-4 text-sm text-gray-400 font-medium mb-8">
+              <p className="flex items-center gap-4"><span className="text-gray-500 w-20">{isZh ? '联系人:' : 'Contact:'}</span> Jack Yin</p>
+              <p className="flex items-center gap-4"><span className="text-gray-500 w-20">{isZh ? '电话:' : 'Phone:'}</span> <a href="tel:+8617321077956" className="hover:text-white transition-colors cursor-pointer">+86 17321077956</a></p>
+              <p className="flex items-center gap-4"><span className="text-gray-500 w-20">{isZh ? '邮箱:' : 'Email:'}</span> <a href="mailto:15156888267@163.com" className="hover:text-white transition-colors cursor-pointer">15156888267@163.com</a></p>
+              <p className="flex items-center gap-4"><span className="text-gray-500 w-20">WhatsApp:</span> <a href="https://wa.me/8615375319246" target="_blank" rel="noopener noreferrer" className="hover:text-[#25D366] transition-colors cursor-pointer">+86 15375319246</a></p>
+              <p className="flex items-start gap-4 leading-relaxed"><span className="text-gray-500 w-20 shrink-0">{isZh ? '公司地址:' : 'Address:'}</span> <span>{isZh ? '中国上海市奉贤区金海路6055号' : 'No. 6055, Jinhai Rd, Fengxian District, Shanghai, China'}</span></p>
             </div>
 
             {/* Circular Social Icons - 悬浮引爆平台色 */}
@@ -41,30 +44,36 @@ export default function Footer() {
 
           {/* Col 2: Quick Links */}
           <div className="lg:col-span-2 lg:col-start-7">
-            <h4 className="text-sm font-bold text-white mb-8 tracking-widest uppercase">快速链接</h4>
+            <h4 className="text-sm font-bold text-white mb-8 tracking-widest uppercase">{isZh ? '快速链接' : 'Quick Links'}</h4>
             <ul className="flex flex-col gap-4 text-sm text-gray-400 font-medium">
-              {['主页', '找设备', '合作品牌', '出海服务', '关于我们', '最新出海动态', '联系销售代表'].map(item => (
-                 <li key={item}><Link href="/" className="hover:text-[#D4AF37] transition-colors">{item}</Link></li>
+              {(isZh 
+                ? [{label:'主页', path:'/'}, {label:'找设备', path:'/products'}, {label:'联系销售代表', path:'/contact'}] 
+                : [{label:'Home', path:'/'}, {label:'Equipment', path:'/products'}, {label:'Contact Sales', path:'/contact'}]).map(item => (
+                 <li key={item.label}><Link href={item.path as any} className="hover:text-[#D4AF37] transition-colors">{item.label}</Link></li>
               ))}
             </ul>
           </div>
 
           {/* Col 3: Brands */}
           <div className="lg:col-span-2">
-            <h4 className="text-sm font-bold text-white mb-8 tracking-widest uppercase">品牌矩阵</h4>
+            <h4 className="text-sm font-bold text-white mb-8 tracking-widest uppercase">{isZh ? '品牌矩阵' : 'Brands'}</h4>
             <ul className="flex flex-col gap-4 text-sm text-gray-400 font-medium">
-              {['Caterpillar (卡特彼勒)', 'Komatsu (小松)', 'Hitachi (日立)', 'SANY (三一重工)', 'XCMG (徐工)', 'VOLVO (沃尔沃)'].map(item => (
-                 <li key={item}><Link href="/" className="hover:text-[#D4AF37] transition-colors">{item}</Link></li>
+              {(isZh 
+                 ? ['卡特彼勒', '小松', '日立', '三一重工', '徐工', '沃尔沃']
+                 : ['Caterpillar', 'Komatsu', 'Hitachi', 'SANY', 'XCMG', 'VOLVO']).map(item => (
+                 <li key={item}><Link href="/products" className="hover:text-[#D4AF37] transition-colors">{item}</Link></li>
               ))}
             </ul>
           </div>
 
           {/* Col 4: Equipment */}
           <div className="lg:col-span-2">
-            <h4 className="text-sm font-bold text-white mb-8 tracking-widest uppercase">核心类目</h4>
+            <h4 className="text-sm font-bold text-white mb-8 tracking-widest uppercase">{isZh ? '核心类目' : 'Categories'}</h4>
             <ul className="flex flex-col gap-4 text-sm text-gray-400 font-medium">
-              {['履带式挖掘机', '轮式装载机', '重型推土机', '平地机', '滑移装载机', '卡车直臂起重机', '振动路面压路机', '工业叉车'].map(item => (
-                 <li key={item}><Link href="/" className="hover:text-[#D4AF37] transition-colors">{item}</Link></li>
+              {(isZh 
+                 ? ['履带挖掘机', '轮式装载机', '重型推土机', '平地机', '压路机', '叉车']
+                 : ['Excavators', 'Wheel Loaders', 'Bulldozers', 'Graders', 'Rollers', 'Forklifts']).map(item => (
+                 <li key={item}><Link href="/products" className="hover:text-[#D4AF37] transition-colors">{item}</Link></li>
               ))}
             </ul>
           </div>
@@ -73,10 +82,10 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#222222] flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-bold text-gray-600 tracking-widest uppercase">
-          <p>版权所有 © 2026 KXTJ EXCAVATOR | <a href="#" className="hover:text-gray-400">www.kxtjexcavator.com</a></p>
+          <p>{isZh ? '版权所有' : 'Copyright'} © 2026 {isZh ? '中国机械' : 'CHINA MACHINERY'} | <a href="#" className="hover:text-gray-400">WWW.ONESWO.COM</a></p>
           <div className="flex items-center gap-6">
-             <Link href="#" className="hover:text-gray-400 transition-colors">Lifisher 网站地图</Link>
-             <Link href="#" className="hover:text-gray-400 transition-colors">隐私政策</Link>
+             <Link href="#" className="hover:text-gray-400 transition-colors">{isZh ? '隐私条款' : 'Privacy Policy'}</Link>
+             <Link href="#" className="hover:text-gray-400 transition-colors">{isZh ? '服务政策' : 'Terms of Service'}</Link>
           </div>
         </div>
       </div>

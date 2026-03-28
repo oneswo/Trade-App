@@ -10,48 +10,15 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import InquiryDrawer, { InquiryData } from "@/components/admin/InquiryDrawer";
 
-// ─── 模拟数据 ─────────────────────────────────────────────────
-const STATS = [
-  {
-    id: "total-products",
-    label: "产品总数",
-    value: "48",
-    sub: "含 12 件草稿",
-    icon: Package,
-    accent: "#111111",
-    badge: null,
-  },
-  {
-    id: "total-inquiries",
-    label: "询盘总数",
-    value: "237",
-    sub: "本周新增 18 条",
-    icon: MessageSquare,
-    accent: "#111111",
-    badge: null,
-  },
-  {
-    id: "unread-inquiries",
-    label: "未读询盘",
-    value: "7",
-    sub: "需要处理",
-    icon: Bell,
-    accent: "#f97316",
-    badge: "紧急",
-  },
-  {
-    id: "weekly-views",
-    label: "本周浏览量",
-    value: "1,842",
-    sub: "较上周 +23%",
-    icon: TrendingUp,
-    accent: "#111111",
-    badge: null,
-  },
-];
+interface DashboardStats {
+  totalProducts: number;
+  draftProducts: number;
+  totalInquiries: number;
+  unreadInquiries: number;
+}
 
 const RECENT_INQUIRIES = [
   {
@@ -120,7 +87,56 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 // ─── 页面 ─────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [activeInquiryId, setActiveInquiryId] = useState<string | null>(null);
-  
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/dashboard")
+      .then((r) => r.json())
+      .then((res: { ok: boolean; data: DashboardStats }) => {
+        if (res.ok) setStats(res.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const STATS = [
+    {
+      id: "total-products",
+      label: "产品总数",
+      value: stats ? String(stats.totalProducts) : "—",
+      sub: stats ? `含 ${stats.draftProducts} 件草稿` : "加载中...",
+      icon: Package,
+      accent: "#111111",
+      badge: null,
+    },
+    {
+      id: "total-inquiries",
+      label: "询盘总数",
+      value: stats ? String(stats.totalInquiries) : "—",
+      sub: "来自前台表单",
+      icon: MessageSquare,
+      accent: "#111111",
+      badge: null,
+    },
+    {
+      id: "unread-inquiries",
+      label: "未读询盘",
+      value: stats ? String(stats.unreadInquiries) : "—",
+      sub: "需要处理",
+      icon: Bell,
+      accent: "#f97316",
+      badge: stats && stats.unreadInquiries > 0 ? "紧急" : null,
+    },
+    {
+      id: "weekly-views",
+      label: "本周浏览量",
+      value: "—",
+      sub: "暂未接入统计",
+      icon: TrendingUp,
+      accent: "#111111",
+      badge: null,
+    },
+  ];
+
   // Transform RECENT_INQUIRIES slightly if needed or just find it. We'll cast to InquiryData locally
   const activeInq = RECENT_INQUIRIES.find(inq => inq.id === activeInquiryId) as unknown as InquiryData | null;
 

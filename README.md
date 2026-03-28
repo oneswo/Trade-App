@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 外贸站 — 项目说明
 
-## Getting Started
+基于 [Next.js](https://nextjs.org) 构建的二手工程机械外贸网站，包含前台展示和后台管理系统。
 
-First, run the development server:
+---
+
+## 本地启动
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+启动后访问 [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 后台管理
 
-## Learn More
+- **地址：** `/admin/login`
+- **邮箱：** `admin@kxtj.com`
+- **密码：** `admin123456`
 
-To learn more about Next.js, take a look at the following resources:
+> 注意：以上为开发阶段的测试账号，上线前需修改为加密存储。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 项目文档
 
-## Deploy on Vercel
+所有设计文档、分析报告和待办清单均在 `docs/` 目录下：
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| 文件 | 内容 |
+|------|------|
+| `docs/11_项目全局分析与待办总表.md` | 全局分析与分批待办清单（主要参考） |
+| `docs/10_后端完善任务清单.md` | 后端专项任务清单 |
+| `docs/02-架构文档.md` | 项目技术架构说明 |
+| `docs/03-多语言.md` | 多语言（i18n）实施方案 |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 部署
+
+项目计划部署到 [Vercel](https://vercel.com)，数据库使用外部服务，文件存储使用 Cloudflare R2。
+
+上线所需环境变量见 `.env.example`（第四批任务完成后生成）。
+
+---
+
+## 技术栈
+
+- **框架：** Next.js（App Router）
+- **样式：** Tailwind CSS
+- **多语言：** next-intl
+- **文件存储：** 本地开发用 `public/uploads/`，生产环境用 Cloudflare R2
+- **数据库：** 本地开发用内存 mock，生产环境用真实数据库（待接入）

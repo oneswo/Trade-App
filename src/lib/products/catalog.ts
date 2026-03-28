@@ -450,12 +450,25 @@ function toApiDetail(item: ApiProductDetailItem): CatalogProductDetail {
 }
 
 function mockList(locale: SupportedLocale) {
-  return MOCK_CARDS.map((item) => localizeCard(item, locale));
+  const extendedCards = [
+    ...MOCK_CARDS,
+    ...MOCK_CARDS.map(c => ({...c, id: c.id + '-v2', slug: c.slug + '-v2'})),
+    ...MOCK_CARDS.map(c => ({...c, id: c.id + '-v3', slug: c.slug + '-v3'}))
+  ];
+  return extendedCards.map((item) => localizeCard(item, locale));
 }
 
 function mockDetail(slug: string, locale: SupportedLocale) {
-  const item = MOCK_DETAIL_MAP.get(slug);
-  return item ? localizeDetail(item, locale) : null;
+  // To handle duplicated slugs from extendedCards
+  let baseSlug = slug;
+  if (slug.endsWith('-v2')) baseSlug = slug.replace('-v2', '');
+  if (slug.endsWith('-v3')) baseSlug = slug.replace('-v3', '');
+  
+  const item = MOCK_DETAIL_MAP.get(baseSlug);
+  if (!item) return null;
+  // clone item with current slug
+  const matchedItem = { ...item, slug, id: slug };
+  return localizeDetail(matchedItem, locale);
 }
 
 async function fetchJson<T>(url: string): Promise<T | null> {

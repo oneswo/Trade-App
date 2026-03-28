@@ -1,56 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, GripVertical, ChevronRight, ChevronDown, Folder, Image as ImageIcon, Globe, Save, Trash2 } from "lucide-react";
 import AdminModal from "@/components/admin/AdminModal";
+import type { CategoryStat } from "@/app/api/admin/categories/route";
 
-// ─── 模拟数据 ──────────────────────────────────────────────────
+// ─── 静态配置 ──────────────────────────────────────────────────
 const LOCALES = [
   { id: "en", label: "English" },
   { id: "zh", label: "中文" },
   { id: "ar", label: "العربية" },
 ];
 
-const MOCK_CATEGORIES = [
-  {
-    id: "cat-1",
-    name: "大型挖掘机",
-    count: 14,
-    isOpen: true,
-    children: [
-      { id: "cat-1-1", name: "矿用挖掘机", count: 5 },
-      { id: "cat-1-2", name: "采石挖掘机", count: 9 },
-    ],
-  },
-  {
-    id: "cat-2",
-    name: "中小型挖掘机",
-    count: 22,
-    isOpen: false,
-    children: [],
-  },
-  {
-    id: "cat-3",
-    name: "轮式挖掘机",
-    count: 8,
-    isOpen: false,
-    children: [],
-  },
-];
-
 export default function CategoriesPage() {
   const [activeTab, setActiveTab] = useState("en");
   const [isActive, setIsActive] = useState(true);
-  
-  // 用于静态演示时，展开折叠一些内容
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    "cat-1": true
-  });
+  const [categories, setCategories] = useState<CategoryStat[]>([]);
+  const [selectedCat, setSelectedCat] = useState<string | null>(null);
 
-  const toggleExpand = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
-  };
+  useEffect(() => {
+    fetch("/api/admin/categories")
+      .then((r) => r.json())
+      .then((res: { ok: boolean; data: CategoryStat[] }) => {
+        if (res.ok) {
+          setCategories(res.data);
+          if (res.data.length > 0) setSelectedCat(res.data[0].name);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // 用于静态演示时，展开折叠一些内容
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -93,43 +74,28 @@ export default function CategoriesPage() {
           </div>
           
           <div className="flex-1 overflow-y-auto p-3">
-            <div className="space-y-1">
-              {MOCK_CATEGORIES.map((cat) => (
-                <div key={cat.id}>
-                  {/* 父级 */}
-                  <div className="group flex items-center justify-between rounded-lg px-2 py-2.5 text-sm transition-colors hover:bg-black/[0.03] cursor-pointer bg-[#FAFAFA] border border-black/[0.02]">
+            {categories.length === 0 ? (
+              <p className="px-2 py-6 text-xs text-[#111111]/40">暂无分类（从产品中自动派生）</p>
+            ) : (
+              <div className="space-y-1">
+                {categories.map((cat) => (
+                  <div
+                    key={cat.name}
+                    onClick={() => setSelectedCat(cat.name)}
+                    className={`group flex items-center justify-between rounded-lg px-2 py-2.5 text-sm transition-colors cursor-pointer border ${selectedCat === cat.name ? "bg-black/[0.04] border-black/[0.06]" : "bg-[#FAFAFA] border-black/[0.02] hover:bg-black/[0.03]"}`}
+                  >
                     <div className="flex items-center gap-2">
-                      <GripVertical size={14} className="text-black/15 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <button onClick={(e) => toggleExpand(cat.id, e)} className="text-black/30 hover:text-black/60">
-                         {cat.children.length > 0 ? (
-                           expanded[cat.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />
-                         ) : (
-                           <span className="w-[14px] inline-block" />
-                         )}
-                      </button>
                       <Folder size={14} className="text-[#111111]/40" />
                       <span className="font-medium text-[#111111]">{cat.name}</span>
                     </div>
-                    <span className="text-[11px] text-[#111111]/30">{cat.count}</span>
-                  </div>
-
-                  {/* 子级渲染 */}
-                  {cat.children.length > 0 && expanded[cat.id] && (
-                    <div className="pl-9 pr-2 py-1 space-y-1 relative before:absolute before:left-[35px] before:top-0 before:bottom-2 before:w-px before:bg-black/10">
-                      {cat.children.map((child) => (
-                         <div key={child.id} className="group flex items-center justify-between rounded-lg px-2 py-2 text-[13px] transition-colors hover:bg-black/[0.03] cursor-pointer relative before:absolute before:-left-[10px] before:top-1/2 before:h-px before:w-2.5 before:bg-black/10">
-                           <div className="flex items-center gap-2">
-                             <GripVertical size={13} className="text-black/15 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
-                             <span className="text-[#111111]/80">{child.name}</span>
-                           </div>
-                           <span className="text-[11px] text-[#111111]/30">{child.count}</span>
-                         </div>
-                      ))}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-green-600 bg-green-50 border border-green-100 px-1.5 py-0.5 rounded-full">{cat.published}</span>
+                      <span className="text-[11px] text-[#111111]/30">{cat.total}</span>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

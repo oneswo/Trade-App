@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Cpu,
+  BookOpen,
 } from "lucide-react";
 
 // ─── 导航配置 ────────────────────────────────────────────────
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { href: "/admin/products",   label: "产品列表",    icon: Package },
   { href: "/admin/categories", label: "分类管理",  icon: FolderTree },
   { href: "/admin/inquiries",  label: "询盘管理",   icon: MessageSquare },
+  { href: "/admin/articles",   label: "行业智库",   icon: BookOpen },
   { href: "/admin/pages",      label: "页面内容",       icon: FileText },
   { href: "/admin/settings",   label: "全局设置",       icon: Settings },
 ];

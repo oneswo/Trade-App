@@ -116,6 +116,18 @@ export default function InquiriesPage() {
     }
   };
 
+  const handleUpdateStatus = async (id: string, status: string) => {
+    const response = await fetch(`/api/admin/inquiries/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (response.ok) {
+      await fetchInquiries();
+      setActiveInquiryId(id);
+    }
+  };
+
   return (
     <div className="relative h-[calc(100vh-100px)] flex flex-col pt-0">
       <div className="flex shrink-0 items-center justify-between gap-4 rounded-xl border border-black/[0.06] bg-white p-2 shadow-sm mb-6">
@@ -242,6 +254,7 @@ export default function InquiriesPage() {
         onClose={() => setActiveInquiryId(null)}
         onMarkRead={handleMarkRead}
         markingRead={markingRead}
+        onUpdateStatus={handleUpdateStatus}
       />
     </div>
   );

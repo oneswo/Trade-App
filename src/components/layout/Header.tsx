@@ -1,11 +1,14 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { Link } from '@/i18n/routing';
+import { useLocale } from 'next-intl';
 import { Search, Globe, ChevronDown, Home, Package, ShieldCheck, Lightbulb, Info, PhoneCall, Check, X, Factory } from 'lucide-react';
 
 export default function Header() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+  const locale = useLocale();
+  const isZh = locale === 'zh';
 
   // 监听点击外部关闭大区语言面板
   useEffect(() => {
@@ -35,12 +38,12 @@ export default function Header() {
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-1.5">
           {[
-            { label: '首页', href: '/', icon: Home },
-            { label: '产品', href: '/products', icon: Package },
-            { label: '服务', href: '/services', icon: ShieldCheck },
-            { label: '智库', href: '/insights', icon: Lightbulb },
-            { label: '关于', href: '/about', icon: Info },
-            { label: '联系', href: '/contact', icon: PhoneCall }
+            { label: isZh ? '首页' : 'Home', href: '/', icon: Home },
+            { label: isZh ? '产品' : 'Equipment', href: '/products', icon: Package },
+            { label: isZh ? '服务' : 'Services', href: '/services', icon: ShieldCheck },
+            { label: isZh ? '智库' : 'Insights', href: '/insights', icon: Lightbulb },
+            { label: isZh ? '关于' : 'About', href: '/about', icon: Info },
+            { label: isZh ? '联系' : 'Contact', href: '/contact', icon: PhoneCall }
           ].map((item) => {
             const Icon = item.icon;
             return (
@@ -69,7 +72,7 @@ export default function Header() {
             className="flex items-center gap-1.5 cursor-pointer text-[#111111] hover:text-[#D4AF37] transition-colors drop-shadow-sm"
           >
             <Globe size={18} strokeWidth={2} />
-            <span className="text-[14px] font-semibold tracking-wider">ZH</span>
+            <span className="text-[14px] font-semibold tracking-wider">{locale.toUpperCase()}</span>
             <ChevronDown size={14} strokeWidth={2} />
           </div>
 
@@ -77,7 +80,7 @@ export default function Header() {
              onClick={() => window.dispatchEvent(new Event('open-inquiry-modal'))}
              className="hidden md:block bg-[#111111] text-white text-[14px] font-semibold tracking-widest px-7 py-2.5 rounded-full hover:bg-[#D4AF37] hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all duration-300"
           >
-            立即询价
+            {isZh ? '立即询价' : 'Get a Quote'}
           </button>
         </div>
       </div>
@@ -94,11 +97,10 @@ export default function Header() {
            {/* Modal Header */}
            <div className="p-4 md:p-6 border-b border-gray-200 flex items-center justify-between bg-white rounded-t-md relative z-10">
               <div>
-                <h3 className="text-xl md:text-2xl font-black text-[#111111] tracking-tighter flex items-center gap-2">
+               <h3 className="text-xl md:text-2xl font-black text-[#111111] tracking-tighter flex items-center gap-2">
                   <Globe size={24} className="text-[#D4AF37] hidden md:block"/> 
-                  选择您的语言与地区
+                  {isZh ? '选择您的语言与地区' : 'Select language / region'}
                 </h3>
-                <p className="text-gray-500 font-bold text-[10px] md:text-xs uppercase tracking-widest mt-1">Select your preferred language / region</p>
               </div>
               <button 
                 onClick={() => setIsLangOpen(false)} 
@@ -111,33 +113,63 @@ export default function Header() {
            {/* Modal Body: Flag Grid */}
            <div className="p-4 md:p-6 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 max-h-[75vh] overflow-y-auto">
              {[
-               { flag: "🇨🇳", lang: "简体中文" },
-               { flag: "🇬🇧", lang: "English" },
-               { flag: "🇪🇸", lang: "Español" },
-               { flag: "🇫🇷", lang: "Français" },
-               { flag: "🇷🇺", lang: "Русский" },
-               { flag: "🇩🇪", lang: "Deutsch" },
-               { flag: "🇵🇹", lang: "Português" },
-               { flag: "🇸🇦", lang: "العربية" },
-               { flag: "🇮🇹", lang: "Italiano" },
-               { flag: "🇮🇩", lang: "Indonesia" },
-               { flag: "🇻🇳", lang: "Tiếng Việt" },
-               { flag: "🇹🇭", lang: "ภาษาไทย" },
-               { flag: "🇿🇦", lang: "Afrikaans" },
-               { flag: "🇯🇵", lang: "日本語" },
-               { flag: "🇰🇷", lang: "한국어" },
-             ].map((item, idx) => (
-               <a key={idx} href="#" className="bg-white border border-gray-200 p-4 flex flex-col items-center justify-center gap-3 hover:border-[#111111] hover:shadow-[0_10px_20px_rgba(0,0,0,0.05)] transition-all duration-300 group rounded-md relative overflow-hidden">
-                 {/* Active Status Mock */}
-                 {item.lang === "简体中文" && (
-                   <div className="absolute top-0 left-0 w-full h-[3px] bg-[#D4AF37]"></div>
-                 )}
-                 <span className="text-3xl md:text-4xl drop-shadow-sm group-hover:scale-110 transition-transform">{item.flag}</span>
-                 <span className={`text-[11px] md:text-[13px] font-bold transition-colors ${item.lang === "简体中文" ? "text-[#D4AF37]" : "text-gray-500 group-hover:text-[#111111]"}`}>
-                   {item.lang}
-                 </span>
-               </a>
-             ))}
+               { flag: "🇨🇳", lang: "简体中文", code: "zh", active: true },
+               { flag: "🇬🇧", lang: "English", code: "en", active: true },
+               { flag: "🇪🇸", lang: "Español", code: "es", active: false },
+               { flag: "🇫🇷", lang: "Français", code: "fr", active: false },
+               { flag: "🇷🇺", lang: "Русский", code: "ru", active: false },
+               { flag: "🇩🇪", lang: "Deutsch", code: "de", active: false },
+               { flag: "🇵🇹", lang: "Português", code: "pt", active: false },
+               { flag: "🇸🇦", lang: "العربية", code: "ar", active: false },
+               { flag: "🇮🇹", lang: "Italiano", code: "it", active: false },
+               { flag: "🇮🇩", lang: "Indonesia", code: "id", active: false },
+               { flag: "🇻🇳", lang: "Tiếng Việt", code: "vi", active: false },
+               { flag: "🇹🇭", lang: "ภาษาไทย", code: "th", active: false },
+               { flag: "🇿🇦", lang: "Afrikaans", code: "af", active: false },
+               { flag: "🇯🇵", lang: "日本語", code: "ja", active: false },
+               { flag: "🇰🇷", lang: "한국어", code: "ko", active: false },
+             ].map((item, idx) => {
+               const isCurrent = item.code === locale;
+               return (
+                 <a 
+                   key={idx} 
+                   href={item.active ? `/${item.code}` : "#"} 
+                   onClick={(e) => {
+                     if (!item.active) e.preventDefault();
+                   }}
+                   className={`
+                     p-4 flex flex-col items-center justify-center gap-3 rounded-md relative overflow-hidden transition-all duration-300
+                     ${item.active 
+                        ? 'bg-white border border-gray-200 hover:border-[#111111] hover:shadow-[0_10px_20px_rgba(0,0,0,0.05)] group' 
+                        : 'bg-white border border-gray-200 cursor-not-allowed'
+                     }
+                   `}
+                 >
+                   {/* 维护中 Tag */}
+                   {!item.active && (
+                     <div className="absolute top-2 right-2 flex items-center">
+                       <span className="text-[9px] font-bold bg-amber-50 text-[#D4AF37] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded-sm tracking-widest shadow-sm">
+                         {isZh ? '更新中' : 'UPDATING'}
+                       </span>
+                     </div>
+                   )}
+
+                   {/* Active Status Indicator */}
+                   {isCurrent && (
+                     <div className="absolute top-0 left-0 w-full h-[3px] bg-[#D4AF37]"></div>
+                   )}
+
+                   <span className={`text-3xl md:text-4xl drop-shadow-sm transition-transform ${item.active ? 'group-hover:scale-110' : 'opacity-40 grayscale-[60%]'}`}>
+                     {item.flag}
+                   </span>
+                   <span className={`text-[11px] md:text-[13px] font-bold transition-colors 
+                     ${isCurrent ? 'text-[#D4AF37]' : item.active ? 'text-gray-500 group-hover:text-[#111111]' : 'text-gray-300'}
+                   `}>
+                     {item.lang}
+                   </span>
+                 </a>
+               );
+             })}
            </div>
 
         </div>

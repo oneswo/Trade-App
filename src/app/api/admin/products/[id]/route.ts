@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { hasAdminSession } from "@/lib/auth/session";
 import { getProductRepo } from "@/lib/data/repository";
+import { deleteR2Objects } from "@/lib/storage/media-storage";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -157,11 +158,23 @@ export async function DELETE(request: Request, context: RouteContext) {
 
   const { id } = await context.params;
   const repo = getProductRepo();
-  const removed = await repo.remove(id);
+  const product = await repo.findById(id);
 
+  if (!product) {
+    return Response.json({ ok: false, error: "not_found" }, { status: 404 });
+  }
+
+  const removed = await repo.remove(id);
   if (!removed) {
     return Response.json({ ok: false, error: "not_found" }, { status: 404 });
   }
+
+  // 同步清理 R2 文件（若已配置 R2）
+  await deleteR2Objects([
+    product.coverImageUrl,
+    product.videoUrl,
+    ...product.galleryImageUrls,
+  ]);
 
   return Response.json({ ok: true });
 }

@@ -25,10 +25,16 @@ export interface CreateInquiryInput {
   pagePath?: string | null;
 }
 
+export interface UpdateInquiryInput {
+  status?: InquiryStatus;
+  isRead?: boolean;
+}
+
 export interface InquiryRepo {
   create(input: CreateInquiryInput): Promise<InquiryRecord>;
   list(): Promise<InquiryRecord[]>;
   markRead(id: string): Promise<InquiryRecord | null>;
+  update(id: string, input: UpdateInquiryInput): Promise<InquiryRecord | null>;
 }
 
 export interface AdminRecord {
@@ -100,10 +106,68 @@ export interface ProductRepo {
   remove(id: string): Promise<boolean>;
 }
 
+export type ArticleStatus = "DRAFT" | "PUBLISHED";
+
+export interface ArticleRecord {
+  id: string;
+  title: string;
+  titleZh: string | null;
+  slug: string;
+  category: string;
+  summary: string;
+  summaryZh: string | null;
+  content: string;
+  contentZh: string | null;
+  coverImageUrl: string | null;
+  readTime: string | null;
+  status: ArticleStatus;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateArticleInput {
+  title: string;
+  titleZh?: string | null;
+  slug: string;
+  category: string;
+  summary: string;
+  summaryZh?: string | null;
+  content: string;
+  contentZh?: string | null;
+  coverImageUrl?: string | null;
+  readTime?: string | null;
+  status?: ArticleStatus;
+}
+
+export interface UpdateArticleInput {
+  title?: string;
+  titleZh?: string | null;
+  slug?: string;
+  category?: string;
+  summary?: string;
+  summaryZh?: string | null;
+  content?: string;
+  contentZh?: string | null;
+  coverImageUrl?: string | null;
+  readTime?: string | null;
+  status?: ArticleStatus;
+}
+
+export interface ArticleRepo {
+  list(statusFilter?: ArticleStatus): Promise<ArticleRecord[]>;
+  findById(id: string): Promise<ArticleRecord | null>;
+  findBySlug(slug: string): Promise<ArticleRecord | null>;
+  create(input: CreateArticleInput): Promise<ArticleRecord>;
+  update(id: string, input: UpdateArticleInput): Promise<ArticleRecord | null>;
+  remove(id: string): Promise<boolean>;
+}
+
 interface MockStore {
   inquiries: InquiryRecord[];
   admins: AdminRecord[];
   products: ProductRecord[];
+  articles: ArticleRecord[];
 }
 
 declare global {
@@ -111,7 +175,44 @@ declare global {
 }
 
 function createInitialStore(): MockStore {
+  const now = new Date().toISOString();
   return {
+    articles: [
+      {
+        id: "art_1",
+        title: "Comprehensive Guide for Buying Used Excavators from China",
+        titleZh: "从中国购买二手挖掘机的全面避坑指南与跨国交割总结",
+        slug: "buying-used-excavators-from-china-guide",
+        category: "GUIDE",
+        summary: "From inspecting the swing motor to checking undercarriage blind spots, this guide helps you avoid costly pitfalls.",
+        summaryZh: "从查验回转马达到审查底盘件盲区，这篇详尽的出海提货指南将帮你避免损失数万美金的暗坑。",
+        content: "Full article content goes here.",
+        contentZh: "完整文章内容。",
+        coverImageUrl: "/images/insights/1.jpg",
+        readTime: "8 MIN READ",
+        status: "PUBLISHED",
+        publishedAt: new Date("2026-10-24").toISOString(),
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: "art_2",
+        title: "Maximizing Excavator ROI: Lifespan Extension & Simplified Maintenance",
+        titleZh: "挖掘机投资效益最大化：延长使用寿命和极简化维保策略",
+        slug: "maximizing-excavator-roi-maintenance",
+        category: "MAINTENANCE",
+        summary: "An experienced engineer tears down the Volvo EC210D cooling system to reveal the secrets of hydraulic longevity.",
+        summaryZh: "资深工程师亲自拆解沃尔沃 EC210D 的冷却系统，带您掌握核心液压部件的长效存活指标。",
+        content: "Full article content goes here.",
+        contentZh: "完整文章内容。",
+        coverImageUrl: "/images/insights/2.jpg",
+        readTime: "5 MIN READ",
+        status: "PUBLISHED",
+        publishedAt: new Date("2026-09-18").toISOString(),
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
     inquiries: [],
     admins: [
       {
@@ -211,6 +312,17 @@ const mockInquiryRepo: InquiryRepo = {
     inquiry.isRead = true;
     inquiry.updatedAt = new Date().toISOString();
     return inquiry;
+  },
+
+  async update(id, input) {
+    const store = getMockStore();
+    const inquiry = store.inquiries.find((item) => item.id === id);
+    if (!inquiry) return null;
+
+    if (input.status !== undefined) inquiry.status = input.status;
+    if (input.isRead !== undefined) inquiry.isRead = input.isRead;
+    inquiry.updatedAt = new Date().toISOString();
+    return { ...inquiry };
   },
 };
 
@@ -322,14 +434,134 @@ const mockProductRepo: ProductRepo = {
   },
 };
 
+function cloneArticle(record: ArticleRecord): ArticleRecord {
+  return { ...record };
+}
+
+const mockArticleRepo: ArticleRepo = {
+  async list(statusFilter) {
+    const store = getMockStore();
+    const items = statusFilter
+      ? store.articles.filter((a) => a.status === statusFilter)
+      : [...store.articles];
+    return items
+      .sort(
+        (a, b) =>
+          new Date(b.publishedAt ?? b.createdAt).getTime() -
+          new Date(a.publishedAt ?? a.createdAt).getTime()
+      )
+      .map(cloneArticle);
+  },
+
+  async findById(id) {
+    const store = getMockStore();
+    const item = store.articles.find((a) => a.id === id);
+    return item ? cloneArticle(item) : null;
+  },
+
+  async findBySlug(slug) {
+    const store = getMockStore();
+    const target = slug.trim().toLowerCase();
+    const item = store.articles.find(
+      (a) => a.slug.trim().toLowerCase() === target
+    );
+    return item ? cloneArticle(item) : null;
+  },
+
+  async create(input) {
+    const now = new Date().toISOString();
+    const record: ArticleRecord = {
+      id: `art_${crypto.randomUUID()}`,
+      title: input.title,
+      titleZh: input.titleZh ?? null,
+      slug: input.slug,
+      category: input.category,
+      summary: input.summary,
+      summaryZh: input.summaryZh ?? null,
+      content: input.content,
+      contentZh: input.contentZh ?? null,
+      coverImageUrl: input.coverImageUrl ?? null,
+      readTime: input.readTime ?? null,
+      status: input.status ?? "DRAFT",
+      publishedAt:
+        input.status === "PUBLISHED" ? now : null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const store = getMockStore();
+    store.articles.unshift(record);
+    return cloneArticle(record);
+  },
+
+  async update(id, input) {
+    const store = getMockStore();
+    const item = store.articles.find((a) => a.id === id);
+    if (!item) return null;
+
+    if (input.title !== undefined) item.title = input.title;
+    if (input.titleZh !== undefined) item.titleZh = input.titleZh;
+    if (input.slug !== undefined) item.slug = input.slug;
+    if (input.category !== undefined) item.category = input.category;
+    if (input.summary !== undefined) item.summary = input.summary;
+    if (input.summaryZh !== undefined) item.summaryZh = input.summaryZh;
+    if (input.content !== undefined) item.content = input.content;
+    if (input.contentZh !== undefined) item.contentZh = input.contentZh;
+    if ("coverImageUrl" in input) item.coverImageUrl = input.coverImageUrl ?? null;
+    if (input.readTime !== undefined) item.readTime = input.readTime;
+    if (input.status !== undefined) {
+      const wasPublished = item.status === "PUBLISHED";
+      item.status = input.status;
+      if (!wasPublished && input.status === "PUBLISHED" && !item.publishedAt) {
+        item.publishedAt = new Date().toISOString();
+      }
+    }
+    item.updatedAt = new Date().toISOString();
+    return cloneArticle(item);
+  },
+
+  async remove(id) {
+    const store = getMockStore();
+    const index = store.articles.findIndex((a) => a.id === id);
+    if (index < 0) return false;
+    store.articles.splice(index, 1);
+    return true;
+  },
+};
+
+function isSupabaseConfigured() {
+  return !!(
+    process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
+
 export function getInquiryRepo(): InquiryRepo {
+  if (isSupabaseConfigured()) {
+    const { supabaseInquiryRepo } = require("./supabase-repository") as typeof import("./supabase-repository");
+    return supabaseInquiryRepo;
+  }
   return mockInquiryRepo;
 }
 
 export function getAdminAuthRepo(): AdminAuthRepo {
+  if (isSupabaseConfigured()) {
+    const { supabaseAdminAuthRepo } = require("./supabase-repository") as typeof import("./supabase-repository");
+    return supabaseAdminAuthRepo;
+  }
   return mockAdminAuthRepo;
 }
 
 export function getProductRepo(): ProductRepo {
+  if (isSupabaseConfigured()) {
+    const { supabaseProductRepo } = require("./supabase-repository") as typeof import("./supabase-repository");
+    return supabaseProductRepo;
+  }
   return mockProductRepo;
+}
+
+export function getArticleRepo(): ArticleRepo {
+  if (isSupabaseConfigured()) {
+    const { supabaseArticleRepo } = require("./supabase-repository") as typeof import("./supabase-repository");
+    return supabaseArticleRepo;
+  }
+  return mockArticleRepo;
 }
