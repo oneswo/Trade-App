@@ -1,0 +1,44 @@
+{
+  "common": {
+    "search": "Search",
+    "submit": "Submit",
+    "loading": "Loading",
+    "close": "Close",
+    "backToTop": "Back to Top"
+  },
+  "header": {
+    "brand": "KXTJ Machinery",
+    "nav": {
+      "home": "Home",
+      "products": "Products",
+      "services": "Services",
+      "insights": "Insights",
+      "about": "About",
+      "contact": "Contact"
+    },
+    "cta": "Get Quote",
+    "languageTitle": "Select language and region",
+    "languageSubtitle": "Select your preferred language and region"
+  },
+  "footer": {
+    "quickLinks": "Quick Links",
+    "brands": "Brand Matrix",
+    "categories": "Core Categories",
+    "copyright": "Copyright © 2026 KXTJ EXCAVATOR"
+  },
+  "inquiry": {
+    "title": "Get a fast quote and sourcing support",
+    "subtitle": "Our export specialists will provide 1-on-1 support and quote your landed cost.",
+    "namePlaceholder": "Your name *",
+    "contactPlaceholder": "WhatsApp / Email *",
+    "messagePlaceholder": "Machine model and working condition requirements *",
+    "submitIdle": "Get Custom Quote",
+    "submitLoading": "Submitting..."
+  },
+  "products": {
+    "sortBy": "Sort by",
+    "available": "Available",
+    "loading": "Loading product data...",
+    "viewDetails": "View Details"
+  }
+}
