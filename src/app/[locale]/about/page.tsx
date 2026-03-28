@@ -16,7 +16,7 @@ export default function AboutPage() {
       <section className="relative w-full h-[450px] md:h-[500px] flex items-center justify-center bg-[#111111] overflow-hidden">
          {/* 背景暗纹蒙版与网格 */}
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
-         <div className="absolute inset-0 opacity-60 bg-[url('/images/hero/about.png')] bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]"></div>
+         <div className="absolute inset-0 opacity-60 bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]" style={{ backgroundImage: `url('${c('hero.bgImage', '/images/hero/about.png')}')` }}></div>
          <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-[#111111]/10 pointer-events-none"></div>
          
          {/* 琥珀色微光 (Radiant Glow) */}
@@ -61,7 +61,7 @@ export default function AboutPage() {
             {/* Block A: 左图右文 - 现代化总库 */}
             <div className="relative flex flex-col md:flex-row items-center justify-between group">
               <div className="w-full md:w-1/2 relative aspect-[4/3] rounded-3xl shadow-[-20px_20px_0_#EEEEEE] group-hover:shadow-[-20px_20px_0_#D4AF37] transition-all duration-500 overflow-hidden border border-gray-200">
-                <img src="/images/about/office.jpg" alt="上海现代化总库" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                <img src={c('blockA.image', '/images/about/office.jpg')} alt="上海现代化总库" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
               </div>
               <div className="w-full md:w-5/12 text-left mt-16 md:mt-0 relative md:pl-16">
                 <h2 className="text-4xl md:text-5xl font-black text-[#111111] leading-tight tracking-tighter mb-8 pt-4">
@@ -94,7 +94,7 @@ export default function AboutPage() {
             {/* Block B: 右图左文 - 全球声誉 */}
             <div className="relative flex flex-col md:flex-row-reverse items-center justify-between group">
               <div className="w-full md:w-1/2 relative aspect-[4/3] rounded-3xl shadow-[20px_20px_0_#EEEEEE] group-hover:shadow-[20px_20px_0_#111111] transition-all duration-500 overflow-hidden border border-gray-200">
-                <img src="/images/about/yard.jpg" alt="全球机械停放阵列" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                <img src={c('blockB.image', '/images/about/yard.jpg')} alt="全球机械停放阵列" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
               </div>
               <div className="w-full md:w-5/12 text-left mt-16 md:mt-0 relative md:pr-16">
                 <h2 className="text-4xl md:text-5xl font-black text-[#111111] leading-tight tracking-tighter mb-8 pt-4">

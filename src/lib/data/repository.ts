@@ -615,3 +615,109 @@ export function getPageContentRepo(): PageContentRepo {
   }
   return mockPageContentRepo;
 }
+
+// ─── SiteSettings 站点全局配置 ─────────────────────────────────────────────
+
+export interface SiteSettings {
+  // 品牌标识
+  siteName: string;           // 站点名称（浏览器标题）
+  siteNameEn: string;         // 英文站点名称
+  logoText: string;           // 导航栏 Logo 文字（中文）
+  logoTextEn: string;         // 导航栏 Logo 文字（英文）
+  logoImageUrl: string | null; // Logo 图片 URL（可选）
+  
+  // 功能开关
+  enableInsights: boolean;    // 是否开启智库功能
+  
+  // 联系信息
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  contactWhatsApp: string;
+  contactAddress: string;
+  contactAddressEn: string;
+  
+  // 社交媒体链接
+  socialX: string;
+  socialInstagram: string;
+  socialFacebook: string;
+  socialYoutube: string;
+  socialTiktok: string;
+  socialLinkedin: string;
+  
+  // 版权信息
+  copyrightText: string;      // 版权文字（中文）
+  copyrightTextEn: string;    // 版权文字（英文）
+  copyrightUrl: string;       // 版权链接
+  
+  updatedAt: string;
+}
+
+export interface SiteSettingsRepo {
+  get(): Promise<SiteSettings>;
+  update(settings: Partial<Omit<SiteSettings, 'updatedAt'>>): Promise<SiteSettings>;
+}
+
+const DEFAULT_SITE_SETTINGS: SiteSettings = {
+  siteName: "KXTJ 重工机械",
+  siteNameEn: "KXTJ Heavy Machinery",
+  logoText: "中国机械",
+  logoTextEn: "CHINA MACHINERY",
+  logoImageUrl: null,
+  enableInsights: true,
+  contactName: "Jack Yin",
+  contactPhone: "+86 17321077956",
+  contactEmail: "15156888267@163.com",
+  contactWhatsApp: "+86 15375319246",
+  contactAddress: "中国上海市奉贤区金海路6055号",
+  contactAddressEn: "No. 6055, Jinhai Rd, Fengxian District, Shanghai, China",
+  socialX: "",
+  socialInstagram: "",
+  socialFacebook: "",
+  socialYoutube: "",
+  socialTiktok: "",
+  socialLinkedin: "",
+  copyrightText: "中国机械",
+  copyrightTextEn: "CHINA MACHINERY",
+  copyrightUrl: "WWW.ONESWO.COM",
+  updatedAt: new Date().toISOString(),
+};
+
+// 扩展 MockStore
+interface MockStoreWithSettings extends MockStore {
+  siteSettings: SiteSettings;
+}
+
+function getMockStoreWithSettings(): MockStoreWithSettings {
+  const store = getMockStore() as MockStoreWithSettings;
+  if (!store.siteSettings) {
+    store.siteSettings = { ...DEFAULT_SITE_SETTINGS };
+  }
+  return store;
+}
+
+const mockSiteSettingsRepo: SiteSettingsRepo = {
+  async get() {
+    const store = getMockStoreWithSettings();
+    return { ...store.siteSettings };
+  },
+  async update(input) {
+    const store = getMockStoreWithSettings();
+    store.siteSettings = {
+      ...store.siteSettings,
+      ...input,
+      updatedAt: new Date().toISOString(),
+    };
+    return { ...store.siteSettings };
+  },
+};
+
+export function getSiteSettingsRepo(): SiteSettingsRepo {
+  if (isSupabaseConfigured()) {
+    const { supabaseSiteSettingsRepo } = require("./supabase-repository") as typeof import("./supabase-repository");
+    return supabaseSiteSettingsRepo;
+  }
+  return mockSiteSettingsRepo;
+}
+
+export { DEFAULT_SITE_SETTINGS };

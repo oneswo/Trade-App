@@ -3,12 +3,30 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
 import { Search, Globe, ChevronDown, Home, Package, ShieldCheck, Lightbulb, Info, PhoneCall, Check, X, Factory } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function Header() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
   const isZh = locale === 'zh';
+  const { settings } = useSiteSettings();
+
+  // 获取 Logo 文字
+  const logoText = isZh ? settings.logoText : settings.logoTextEn;
+  // 拆分 Logo 文字（中文前两字高亮，英文第一个单词高亮）
+  const logoMain = isZh ? logoText.slice(0, 2) : logoText.split(' ')[0];
+  const logoAccent = isZh ? logoText.slice(2) : logoText.split(' ').slice(1).join(' ');
+
+  // 构建导航菜单（根据配置决定是否显示智库）
+  const navItems = [
+    { label: isZh ? '首页' : 'Home', href: '/', icon: Home },
+    { label: isZh ? '产品' : 'Equipment', href: '/products', icon: Package },
+    { label: isZh ? '服务' : 'Services', href: '/services', icon: ShieldCheck },
+    ...(settings.enableInsights ? [{ label: isZh ? '智库' : 'Insights', href: '/insights', icon: Lightbulb }] : []),
+    { label: isZh ? '关于' : 'About', href: '/about', icon: Info },
+    { label: isZh ? '联系' : 'Contact', href: '/contact', icon: PhoneCall }
+  ];
 
   // 监听点击外部关闭大区语言面板
   useEffect(() => {
@@ -31,25 +49,18 @@ export default function Header() {
             <Factory size={20} className="text-[#D4AF37]" strokeWidth={2.5} />
           </div>
           <span className="text-[22px] font-bold tracking-widest text-[#111111]">
-            中国<span className="text-[#D4AF37]">机械</span>
+            {logoMain}<span className="text-[#D4AF37]">{logoAccent}</span>
           </span>
         </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-1.5">
-          {[
-            { label: isZh ? '首页' : 'Home', href: '/', icon: Home },
-            { label: isZh ? '产品' : 'Equipment', href: '/products', icon: Package },
-            { label: isZh ? '服务' : 'Services', href: '/services', icon: ShieldCheck },
-            { label: isZh ? '智库' : 'Insights', href: '/insights', icon: Lightbulb },
-            { label: isZh ? '关于' : 'About', href: '/about', icon: Info },
-            { label: isZh ? '联系' : 'Contact', href: '/contact', icon: PhoneCall }
-          ].map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link 
                 key={item.label} 
-                href={item.href} 
+                href={item.href as any} 
                 className="group flex items-center gap-2 rounded-full px-4 py-2 text-[15px] font-medium text-[#2D333A] transition-all duration-300 hover:bg-[#D4AF37] hover:text-white hover:shadow-lg hover:shadow-[#D4AF37]/30"
               >
                 <Icon size={17} strokeWidth={2} className="text-[#9CA3AF] transition-colors group-hover:text-white" />

@@ -200,7 +200,7 @@ function ProductsContent() {
       <section className="relative w-full h-[450px] md:h-[500px] flex items-center justify-center bg-[#111111] overflow-hidden">
          {/* 背景暗纹蒙版与网格 */}
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
-         <div className="absolute inset-0 opacity-60 bg-[url('/images/hero/products.png')] bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]"></div>
+         <div className="absolute inset-0 opacity-60 bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]" style={{ backgroundImage: `url('${c('hero.bgImage', '/images/hero/products.png')}')` }}></div>
          <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-[#111111]/10 pointer-events-none"></div>
          
          {/* 琥珀色微光 (Radiant Glow) */}

@@ -5,11 +5,23 @@ import "../globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import GlobalFab from "@/components/ui/global-fab";
+import { getSiteSettingsRepo } from "@/lib/data/repository";
 
-export const metadata: Metadata = {
-  title: "KXTJ Excavator | Heavy Machinery",
-  description: "Global Leader in Heavy Machinery.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const repo = getSiteSettingsRepo();
+  const settings = await repo.get();
+  
+  const title = locale === "zh" ? settings.siteName : settings.siteNameEn;
+  const description = locale === "zh" 
+    ? "全球领先的重工机械供应商" 
+    : "Global Leader in Heavy Machinery";
+  
+  return {
+    title,
+    description,
+  };
+}
 
 export default async function RootLayout({
   children,

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, createContext, useContext } from "react";
-import { Save, Globe, ImageIcon, Home, Package, Wrench, Info, BookOpen, Phone, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback, createContext, useContext, useRef } from "react";
+import { Save, Globe, ImageIcon, Home, Package, Wrench, Info, BookOpen, Phone, CheckCircle, AlertCircle, Loader2, X } from "lucide-react";
 
 // ─── 页面列表 ─────────────────────────────────────────────────────────────────
 
@@ -99,18 +99,111 @@ function DarkArea({ name, defaultValue = "", rows = 2 }: { name: string; default
   );
 }
 
-function ImageUpload({ label, hint, aspectHint }: { label: string; hint?: string; aspectHint?: string }) {
+function ImageUpload({ name, label, hint, aspectHint }: { name: string; label: string; hint?: string; aspectHint?: string }) {
+  const { get, set } = useContext(Ctx);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const currentUrl = get(name, "");
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("kind", "image");
+      const res = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json();
+      if (json.ok && json.data?.url) {
+        set(name, json.data.url);
+      } else {
+        setError(json.error || "上传失败");
+      }
+    } catch {
+      setError("网络错误");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleUpload(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) handleUpload(file);
+  };
+
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline gap-2">
         <label className="text-[10px] font-semibold tracking-[0.12em] text-[#111111]/40 uppercase">{label}</label>
         {hint && <span className="text-[10px] text-[#111111]/25">{hint}</span>}
       </div>
-      <div className="flex h-28 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-black/[0.1] bg-[#FAFAFA] transition-colors hover:border-black/20 hover:bg-black/[0.02]">
-        <ImageIcon size={20} className="text-[#111111]/25" />
-        <span className="text-[11px] text-[#111111]/40 font-medium">点击上传 / 拖拽图片到此处</span>
-        {aspectHint && <span className="text-[10px] text-[#111111]/25">{aspectHint}</span>}
-      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      {currentUrl ? (
+        <div className="relative group">
+          <img
+            src={currentUrl}
+            alt="已上传图片"
+            className="w-full h-32 object-cover rounded-xl border border-black/[0.08]"
+          />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="px-3 py-1.5 bg-white text-[11px] font-medium rounded-lg hover:bg-gray-100"
+            >
+              更换
+            </button>
+            <button
+              type="button"
+              onClick={() => set(name, "")}
+              className="px-3 py-1.5 bg-red-500 text-white text-[11px] font-medium rounded-lg hover:bg-red-600"
+            >
+              删除
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div
+          onClick={() => !uploading && inputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          className={`flex h-28 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors ${
+            uploading
+              ? "border-blue-300 bg-blue-50"
+              : "border-black/[0.1] bg-[#FAFAFA] hover:border-black/20 hover:bg-black/[0.02]"
+          }`}
+        >
+          {uploading ? (
+            <>
+              <Loader2 size={20} className="text-blue-500 animate-spin" />
+              <span className="text-[11px] text-blue-500 font-medium">上传中...</span>
+            </>
+          ) : (
+            <>
+              <ImageIcon size={20} className="text-[#111111]/25" />
+              <span className="text-[11px] text-[#111111]/40 font-medium">点击上传 / 拖拽图片到此处</span>
+              {aspectHint && <span className="text-[10px] text-[#111111]/25">{aspectHint}</span>}
+            </>
+          )}
+        </div>
+      )}
+      {error && <p className="text-[11px] text-red-500">{error}</p>}
     </div>
   );
 }
@@ -135,7 +228,7 @@ function HomeFields({ zh }: { zh: boolean }) {
         <FieldRow label="背景视频资源 URL" hint="MP4 直链">
           <TextInput name="hero.videoUrl" defaultValue="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" />
         </FieldRow>
-        <ImageUpload label="视频封面图（poster）" hint="视频加载前显示" aspectHint="建议 16:9，JPG / PNG，最大 5MB" />
+        <ImageUpload name="hero.posterUrl" label="视频封面图（poster）" hint="视频加载前显示" aspectHint="建议 16:9，JPG / PNG，最大 5MB" />
         <FieldRow label="顶部小标签文字">
           <TextInput name="hero.tag" defaultValue={zh ? "面向国际市场的高端二手工程机械" : "PREMIUM USED HEAVY EQUIPMENT FOR GLOBAL MARKETS"} />
         </FieldRow>
@@ -228,7 +321,7 @@ function HomeFields({ zh }: { zh: boolean }) {
         <FieldRow label="右侧工厂宣传视频 URL" hint="MP4 直链">
           <TextInput name="depth.videoUrl" defaultValue="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" />
         </FieldRow>
-        <ImageUpload label="右侧封面图（播放前显示）" aspectHint="建议 16:9，JPG / PNG" />
+        <ImageUpload name="depth.posterUrl" label="右侧封面图（播放前显示）" aspectHint="建议 16:9，JPG / PNG" />
       </div>
 
       <div className="space-y-5">
@@ -311,7 +404,7 @@ function ProductsFields({ zh }: { zh: boolean }) {
     <div className="space-y-12">
       <div className="space-y-5">
         <SectionHeader title="模块一：Hero 头图区" />
-        <ImageUpload label="Hero 背景图片" aspectHint="建议比例 16:5，JPG / PNG，最大 5MB" />
+        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="建议比例 16:5，JPG / PNG，最大 5MB" />
         <FieldRow label="顶部小标签">
           <TextInput name="hero.tag" defaultValue={zh ? "全球二手重工机械直采平台" : "GLOBAL USED HEAVY EQUIPMENT DIRECT SOURCING"} />
         </FieldRow>
@@ -346,7 +439,7 @@ function ServicesFields({ zh }: { zh: boolean }) {
 
       <div className="space-y-5">
         <SectionHeader title="模块一：Hero 头图区" />
-        <ImageUpload label="Hero 背景图片" aspectHint="对应 /images/hero/services.png，建议 16:5" />
+        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="对应 /images/hero/services.png，建议 16:5" />
         <FieldRow label="顶部小标签">
           <TextInput name="hero.tag" defaultValue={zh ? "重资产出海专属服务" : "HEAVY EQUIPMENT EXPORT SERVICES"} />
         </FieldRow>
@@ -417,7 +510,7 @@ function ServicesFields({ zh }: { zh: boolean }) {
         ].map((s, i) => (
           <div key={i} className="rounded-xl border border-black/[0.06] p-4 space-y-3 bg-[#FAFAFA]">
             <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">步骤 0{i+1}</span>
-            <ImageUpload label="步骤图片" aspectHint={`对应 /images/services/${s.img}`} />
+            <ImageUpload name={`process.${i}.image`} label="步骤图片" aspectHint={`对应 /images/services/${s.img}`} />
             <FieldRow label="步骤标题"><TextInput name={`process.${i}.title`} defaultValue={zh ? s.zh_t : s.en_t} /></FieldRow>
             <FieldRow label="步骤描述"><TextArea name={`process.${i}.desc`} rows={3} defaultValue={zh ? s.zh_d : s.en_d} /></FieldRow>
           </div>
@@ -455,7 +548,7 @@ function AboutFields({ zh }: { zh: boolean }) {
 
       <div className="space-y-5">
         <SectionHeader title="模块一：Hero 头图区" />
-        <ImageUpload label="Hero 背景图片" aspectHint="对应 /images/hero/about.png，建议 16:5" />
+        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="对应 /images/hero/about.png，建议 16:5" />
         <FieldRow label="顶部小标签">
           <TextInput name="hero.tag" defaultValue={zh ? "全球工程机械发运枢纽" : "GLOBAL MACHINERY HUB"} />
         </FieldRow>
@@ -472,7 +565,7 @@ function AboutFields({ zh }: { zh: boolean }) {
 
       <div className="space-y-5">
         <SectionHeader title="模块二 — Block A：长三角核心源头底库基地（左图右文）" />
-        <ImageUpload label="左侧图片" aspectHint="对应 /images/about/office.jpg，建议 4:3" />
+        <ImageUpload name="blockA.image" label="左侧图片" aspectHint="对应 /images/about/office.jpg，建议 4:3" />
         <FieldRow label="板块标题">
           <TextInput name="blockA.title" defaultValue={zh ? "长三角核心 源头底库基地" : "Core Yangtze Delta Base of Operations"} />
         </FieldRow>
@@ -494,7 +587,7 @@ function AboutFields({ zh }: { zh: boolean }) {
 
       <div className="space-y-5">
         <SectionHeader title="模块二 — Block B：跨越极限工况的重载交付力（右图左文）" />
-        <ImageUpload label="右侧图片" aspectHint="对应 /images/about/yard.jpg，建议 4:3" />
+        <ImageUpload name="blockB.image" label="右侧图片" aspectHint="对应 /images/about/yard.jpg，建议 4:3" />
         <FieldRow label="板块标题">
           <TextInput name="blockB.title" defaultValue={zh ? "跨越极限工况的 重载交付力" : "Heavy-Duty Delivery Beyond Extreme Conditions"} />
         </FieldRow>
@@ -550,7 +643,7 @@ function AboutFields({ zh }: { zh: boolean }) {
           ].map((c, i) => (
             <div key={i} className="rounded-xl border border-black/[0.06] p-3 space-y-2 bg-[#FAFAFA]">
               <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">证书 {i+1}</span>
-              <ImageUpload label="证书图片" aspectHint="JPG / PNG" />
+              <ImageUpload name={`cert.${i}.image`} label="证书图片" aspectHint="JPG / PNG" />
               <FieldRow label="中文名称"><TextInput name={`cert.${i}.name`} defaultValue={c.zh_n} /></FieldRow>
               <FieldRow label="英文代码"><TextInput name={`cert.${i}.code`} defaultValue={c.en_code} /></FieldRow>
             </div>
@@ -588,7 +681,7 @@ function InsightsFields({ zh }: { zh: boolean }) {
     <div className="space-y-12">
       <div className="space-y-5">
         <SectionHeader title="模块一：Hero 头图区" />
-        <ImageUpload label="Hero 背景图片" aspectHint="建议比例 16:5，JPG / PNG，最大 5MB" />
+        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="建议比例 16:5，JPG / PNG，最大 5MB" />
         <FieldRow label="顶部小标签">
           <TextInput name="hero.tag" defaultValue={zh ? "全球工程机械前沿资讯" : "GLOBAL HEAVY EQUIPMENT INSIGHTS"} />
         </FieldRow>
@@ -622,7 +715,7 @@ function ContactFields({ zh }: { zh: boolean }) {
     <div className="space-y-12">
       <div className="space-y-5">
         <SectionHeader title="模块一：Hero 头图区" />
-        <ImageUpload label="Hero 背景图片" aspectHint="建议比例 16:5，JPG / PNG，最大 5MB" />
+        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="建议比例 16:5，JPG / PNG，最大 5MB" />
         <FieldRow label="主标题 — 普通色部分">
           <TextInput name="hero.title1" defaultValue={zh ? "全球联络，" : "GLOBAL CONTACT,"} />
         </FieldRow>

@@ -86,3 +86,38 @@ CREATE TABLE IF NOT EXISTS page_contents (
   PRIMARY KEY (page_id, locale)
 );
 
+-- ─── site_settings 站点全局配置 ───────────────────────────────────
+CREATE TABLE IF NOT EXISTS site_settings (
+  id                  TEXT PRIMARY KEY DEFAULT 'default',
+  -- 品牌标识
+  site_name           TEXT DEFAULT 'KXTJ 重工机械',
+  site_name_en        TEXT DEFAULT 'KXTJ Heavy Machinery',
+  logo_text           TEXT DEFAULT '中国机械',
+  logo_text_en        TEXT DEFAULT 'CHINA MACHINERY',
+  logo_image_url      TEXT,
+  -- 功能开关
+  enable_insights     BOOLEAN DEFAULT TRUE,
+  -- 联系信息
+  contact_name        TEXT DEFAULT 'Jack Yin',
+  contact_phone       TEXT DEFAULT '+86 17321077956',
+  contact_email       TEXT DEFAULT '15156888267@163.com',
+  contact_whatsapp    TEXT DEFAULT '+86 15375319246',
+  contact_address     TEXT DEFAULT '中国上海市奉贤区金海路6055号',
+  contact_address_en  TEXT DEFAULT 'No. 6055, Jinhai Rd, Fengxian District, Shanghai, China',
+  -- 社交媒体
+  social_x            TEXT DEFAULT '',
+  social_instagram    TEXT DEFAULT '',
+  social_facebook     TEXT DEFAULT '',
+  social_youtube      TEXT DEFAULT '',
+  social_tiktok       TEXT DEFAULT '',
+  social_linkedin     TEXT DEFAULT '',
+  -- 版权信息
+  copyright_text      TEXT DEFAULT '中国机械',
+  copyright_text_en   TEXT DEFAULT 'CHINA MACHINERY',
+  copyright_url       TEXT DEFAULT 'WWW.ONESWO.COM',
+  updated_at          TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 插入默认配置行
+INSERT INTO site_settings (id) VALUES ('default') ON CONFLICT (id) DO NOTHING;
+
