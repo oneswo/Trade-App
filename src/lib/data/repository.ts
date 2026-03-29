@@ -355,6 +355,7 @@ function createInitialStore(): MockStore {
         type: "BUG",
         status: "RESOLVED",
         reply: "已为您接通全球 CDN 加速节点，并对视频进行了 WebM 格式压缩，现在手机端应该是秒开了，您可以清下缓存试试！",
+        screenshots: [],
         createdAt: "2026-03-25T10:00:00.000Z",
         updatedAt: "2026-03-25T14:00:00.000Z",
       },
@@ -365,6 +366,7 @@ function createInitialStore(): MockStore {
         type: "FEATURE",
         status: "PROCESSING",
         reply: "收到，设计稿已经出好了，预计今晚给您上线这个新模块。",
+        screenshots: [],
         createdAt: "2026-03-28T14:30:00.000Z",
         updatedAt: "2026-03-28T15:30:00.000Z",
       }
