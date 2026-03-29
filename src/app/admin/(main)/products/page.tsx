@@ -218,6 +218,7 @@ export default function ProductsPage() {
                 className="group grid grid-cols-[auto_2fr_1fr_1fr_1fr_auto] items-center gap-4 px-6 py-4 transition-colors hover:bg-[#F8F9FA]"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-black/[0.06] bg-black/[0.02] overflow-hidden">
+                  {/* eslint-disable @next/next/no-img-element */}
                   {product.coverImageUrl ? (
                     <img
                       src={product.coverImageUrl}

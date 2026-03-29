@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { Send, CheckCircle2, ShieldCheck, Globe, Trophy, Award } from "lucide-react";
 import { useLocale } from 'next-intl';
 import { useInquirySubmit } from "@/hooks/useInquirySubmit";
@@ -61,7 +62,7 @@ export default function AboutPage() {
             {/* Block A: 左图右文 - 现代化总库 */}
             <div className="relative flex flex-col md:flex-row items-center justify-between group">
               <div className="w-full md:w-1/2 relative aspect-[4/3] rounded-3xl shadow-[-20px_20px_0_#EEEEEE] group-hover:shadow-[-20px_20px_0_#D4AF37] transition-all duration-500 overflow-hidden border border-gray-200">
-                <img src={c('blockA.image', '/images/about/office.jpg')} alt="上海现代化总库" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                <Image fill unoptimized src={c('blockA.image', '/images/about/office.jpg')} alt="上海现代化总库" className="object-cover group-hover:scale-105 transition-transform duration-1000" />
               </div>
               <div className="w-full md:w-5/12 text-left mt-16 md:mt-0 relative md:pl-16">
                 <h2 className="text-4xl md:text-5xl font-black text-[#111111] leading-tight tracking-tighter mb-8 pt-4">
@@ -94,7 +95,7 @@ export default function AboutPage() {
             {/* Block B: 右图左文 - 全球声誉 */}
             <div className="relative flex flex-col md:flex-row-reverse items-center justify-between group">
               <div className="w-full md:w-1/2 relative aspect-[4/3] rounded-3xl shadow-[20px_20px_0_#EEEEEE] group-hover:shadow-[20px_20px_0_#111111] transition-all duration-500 overflow-hidden border border-gray-200">
-                <img src={c('blockB.image', '/images/about/yard.jpg')} alt="全球机械停放阵列" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                <Image fill unoptimized src={c('blockB.image', '/images/about/yard.jpg')} alt="全球机械停放阵列" className="object-cover group-hover:scale-105 transition-transform duration-1000" />
               </div>
               <div className="w-full md:w-5/12 text-left mt-16 md:mt-0 relative md:pr-16">
                 <h2 className="text-4xl md:text-5xl font-black text-[#111111] leading-tight tracking-tighter mb-8 pt-4">
@@ -172,7 +173,7 @@ export default function AboutPage() {
                 <ShieldCheck size={24} />
               </div>
               <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
-                <img src="/images/about/cert.jpg" alt="Verified Supplier Certificate" className="w-full h-full object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                <Image fill unoptimized src="/images/about/cert.jpg" alt="Verified Supplier Certificate" className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
               </div>
               <div>
                 <h4 className="text-[#111111] font-black text-lg tracking-wide mb-1">{isZh ? '重工溯源认证' : 'Verified Supplier'}</h4>
@@ -186,7 +187,7 @@ export default function AboutPage() {
                 <Globe size={24} />
               </div>
               <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
-                <img src="/images/about/cert.jpg" alt="CE Conformity Certificate" className="w-full h-full object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                <Image fill unoptimized src="/images/about/cert.jpg" alt="CE Conformity Certificate" className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
               </div>
               <div>
                 <h4 className="text-[#111111] font-black text-lg tracking-wide mb-1">{isZh ? '欧盟通行准入' : 'CE Conformity'}</h4>
@@ -200,7 +201,7 @@ export default function AboutPage() {
                 <Trophy size={24} />
               </div>
               <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
-                <img src="/images/about/cert.jpg" alt="ISO 9001 Certificate" className="w-full h-full object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                <Image fill unoptimized src="/images/about/cert.jpg" alt="ISO 9001 Certificate" className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
               </div>
               <div>
                 <h4 className="text-[#111111] font-black text-lg tracking-wide mb-1">{isZh ? '国际质控标准' : 'ISO 9001:2015'}</h4>
@@ -214,7 +215,7 @@ export default function AboutPage() {
                 <Award size={24} />
               </div>
               <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
-                <img src="/images/about/cert.jpg" alt="SGS Inspection Report" className="w-full h-full object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                <Image fill unoptimized src="/images/about/cert.jpg" alt="SGS Inspection Report" className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
               </div>
               <div>
                 <h4 className="text-[#111111] font-black text-lg tracking-wide mb-1">{isZh ? '第三方驻场终检' : 'SGS Inspection'}</h4>

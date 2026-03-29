@@ -1,40 +1,87 @@
+import { z } from "zod";
 import { hasAdminSession } from "@/lib/auth/session";
-import { getProductRepo } from "@/lib/data/repository";
+import { getCategoryRepo } from "@/lib/data/repository";
 
-export interface CategoryStat {
-  name: string;
-  total: number;
-  published: number;
-  draft: number;
+const createSchema = z.object({
+  slug: z.string().min(1),
+  nameZh: z.string().min(1),
+  nameEn: z.string().min(1),
+  imageUrl: z.string().nullable().optional(),
+  sortOrder: z.number().int().optional(),
+  enabled: z.boolean().optional(),
+});
+
+const updateSchema = createSchema.partial().extend({
+  id: z.string().min(1),
+});
+
+function auth(request: Request) {
+  if (!hasAdminSession(request)) {
+    return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
+  return null;
 }
 
-/**
- * GET /api/admin/categories
- * 返回从产品中派生的分类列表（含统计数据）。
- * 上线接 Supabase 后自动使用真实数据。
- */
 export async function GET(request: Request) {
-  if (!hasAdminSession(request)) {
-    return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  const deny = auth(request);
+  if (deny) return deny;
+  try {
+    const repo = getCategoryRepo();
+    const data = await repo.list();
+    return Response.json({ ok: true, data });
+  } catch {
+    return Response.json({ ok: false, error: "unexpected_error" }, { status: 500 });
   }
+}
 
-  const repo = getProductRepo();
-  const products = await repo.list();
-
-  const map = new Map<string, CategoryStat>();
-  for (const p of products) {
-    const cat = p.category.trim();
-    if (!cat) continue;
-    const existing = map.get(cat) ?? { name: cat, total: 0, published: 0, draft: 0 };
-    existing.total += 1;
-    if (p.status === "PUBLISHED") existing.published += 1;
-    else existing.draft += 1;
-    map.set(cat, existing);
+export async function POST(request: Request) {
+  const deny = auth(request);
+  if (deny) return deny;
+  try {
+    const body = await request.json();
+    const parsed = createSchema.safeParse(body);
+    if (!parsed.success) {
+      return Response.json({ ok: false, error: "invalid_input", detail: parsed.error.flatten() }, { status: 400 });
+    }
+    const repo = getCategoryRepo();
+    const data = await repo.create(parsed.data);
+    return Response.json({ ok: true, data }, { status: 201 });
+  } catch {
+    return Response.json({ ok: false, error: "unexpected_error" }, { status: 500 });
   }
+}
 
-  const data = Array.from(map.values()).sort((a, b) =>
-    b.total - a.total
-  );
+export async function PUT(request: Request) {
+  const deny = auth(request);
+  if (deny) return deny;
+  try {
+    const body = await request.json();
+    const parsed = updateSchema.safeParse(body);
+    if (!parsed.success) {
+      return Response.json({ ok: false, error: "invalid_input", detail: parsed.error.flatten() }, { status: 400 });
+    }
+    const { id, ...input } = parsed.data;
+    const repo = getCategoryRepo();
+    const data = await repo.update(id, input);
+    if (!data) return Response.json({ ok: false, error: "not_found" }, { status: 404 });
+    return Response.json({ ok: true, data });
+  } catch {
+    return Response.json({ ok: false, error: "unexpected_error" }, { status: 500 });
+  }
+}
 
-  return Response.json({ ok: true, data });
+export async function DELETE(request: Request) {
+  const deny = auth(request);
+  if (deny) return deny;
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) return Response.json({ ok: false, error: "id_required" }, { status: 400 });
+    const repo = getCategoryRepo();
+    const ok = await repo.remove(id);
+    if (!ok) return Response.json({ ok: false, error: "not_found" }, { status: 404 });
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ ok: false, error: "unexpected_error" }, { status: 500 });
+  }
 }

@@ -18,65 +18,8 @@ interface DashboardStats {
   draftProducts: number;
   totalInquiries: number;
   unreadInquiries: number;
+  recentInquiries: InquiryData[];
 }
-
-const RECENT_INQUIRIES = [
-  {
-    id: "inq-1",
-    name: "Ahmed Al-Rashid",
-    email: "ahmed.r@middleeast-construction.com",
-    product: "KXTJ-360 液压挖掘机",
-    country: "🇦🇪",
-    region: "阿联酋",
-    time: "8分钟前",
-    isUnread: true,
-    status: "PENDING",
-  },
-  {
-    id: "inq-2",
-    name: "Dmitri Volkov",
-    email: "d.volkov@sibstroy.ru",
-    product: "KXTJ-220 小型挖掘机",
-    country: "🇷🇺",
-    region: "俄罗斯",
-    time: "1小时前",
-    isUnread: true,
-    status: "PENDING",
-  },
-  {
-    id: "inq-3",
-    name: "Carlos Mendoza",
-    email: "c.mendoza@latam-mining.com",
-    product: "KXTJ-580 大型挖掘机",
-    country: "🇲🇽",
-    region: "墨西哥",
-    time: "3小时前",
-    isUnread: true,
-    status: "PENDING",
-  },
-  {
-    id: "inq-4",
-    name: "James Okonkwo",
-    email: "j.okonkwo@africaninfra.ng",
-    product: "KXTJ-360 液压挖掘机",
-    country: "🇳🇬",
-    region: "尼日利亚",
-    time: "昨天",
-    isUnread: false,
-    status: "CONTACTED",
-  },
-  {
-    id: "inq-5",
-    name: "Fatima Al-Hassan",
-    email: "fatima.h@ksa-projects.sa",
-    product: "通用询盘",
-    country: "🇸🇦",
-    region: "沙特阿拉伯",
-    time: "2天前",
-    isUnread: false,
-    status: "CONTACTED",
-  },
-];
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
   PENDING:   { label: "待处理",   color: "bg-orange-50 text-orange-600 border-orange-200" },
@@ -137,8 +80,8 @@ export default function DashboardPage() {
     },
   ];
 
-  // Transform RECENT_INQUIRIES slightly if needed or just find it. We'll cast to InquiryData locally
-  const activeInq = RECENT_INQUIRIES.find(inq => inq.id === activeInquiryId) as unknown as InquiryData | null;
+  const activeInq = stats?.recentInquiries?.find(inq => inq.id === activeInquiryId) || null;
+  const displayedInquiries = stats?.recentInquiries || [];
 
   return (
     <div className="space-y-8">
@@ -209,10 +152,15 @@ export default function DashboardPage() {
 
         {/* 数据行 */}
         <ul className="divide-y divide-black/[0.04]">
-          {RECENT_INQUIRIES.map((inq) => (
-            <li key={inq.id}>
-              <button
-                onClick={() => setActiveInquiryId(inq.id)}
+          {displayedInquiries.length === 0 ? (
+            <li className="px-6 py-8 text-center text-[13px] text-[#111111]/40">
+              暂无最新询盘数据
+            </li>
+          ) : (
+            displayedInquiries.map((inq) => (
+              <li key={inq.id}>
+                <button
+                  onClick={() => setActiveInquiryId(inq.id)}
                 className="
                   group relative grid grid-cols-[2fr_2fr_1fr_1fr_1fr] gap-4 items-center px-6 py-4 text-left
                   transition-colors duration-150 hover:bg-black/[0.02] cursor-pointer block w-full
@@ -254,8 +202,9 @@ export default function DashboardPage() {
                   <ChevronRight size={14} className="text-[#111111]/20 transition-transform group-hover:translate-x-1 group-hover:text-[#111111]/40" />
                 </div>
               </button>
-            </li>
-          ))}
+              </li>
+            ))
+          )}
         </ul>
 
       </div>

@@ -538,6 +538,7 @@ export default function ProductEditorForm({
               </label>
               {form.coverImageUrl ? (
                 <div className="overflow-hidden rounded-lg border border-black/10 bg-black/[0.02]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={form.coverImageUrl}
                     alt="cover"
@@ -585,6 +586,7 @@ export default function ProductEditorForm({
                 <div className="grid grid-cols-3 gap-2">
                   {form.galleryImageUrls.map((url) => (
                     <div key={url} className="relative overflow-hidden rounded-md border border-black/10">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={url} alt="gallery" className="h-20 w-full object-cover" />
                       <button
                         type="button"

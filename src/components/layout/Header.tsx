@@ -1,14 +1,16 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Link } from '@/i18n/routing';
+import Image from 'next/image';
+import { Link, usePathname } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
-import { Search, Globe, ChevronDown, Home, Package, ShieldCheck, Lightbulb, Info, PhoneCall, Check, X, Factory } from 'lucide-react';
+import { Search, Globe, ChevronDown, Home, Package, ShieldCheck, Lightbulb, Info, PhoneCall, X, Factory } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function Header() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
+  const pathname = usePathname();
   const isZh = locale === 'zh';
   const { settings } = useSiteSettings();
 
@@ -18,12 +20,11 @@ export default function Header() {
   const logoMain = isZh ? logoText.slice(0, 2) : logoText.split(' ')[0];
   const logoAccent = isZh ? logoText.slice(2) : logoText.split(' ').slice(1).join(' ');
 
-  // 构建导航菜单（根据配置决定是否显示智库）
   const navItems = [
     { label: isZh ? '首页' : 'Home', href: '/', icon: Home },
     { label: isZh ? '产品' : 'Equipment', href: '/products', icon: Package },
     { label: isZh ? '服务' : 'Services', href: '/services', icon: ShieldCheck },
-    ...(settings.enableInsights ? [{ label: isZh ? '智库' : 'Insights', href: '/insights', icon: Lightbulb }] : []),
+    { label: isZh ? '智库' : 'Insights', href: '/insights', icon: Lightbulb },
     { label: isZh ? '关于' : 'About', href: '/about', icon: Info },
     { label: isZh ? '联系' : 'Contact', href: '/contact', icon: PhoneCall }
   ];
@@ -45,8 +46,12 @@ export default function Header() {
       <div className="max-w-[1440px] mx-auto px-8 h-[72px] flex items-center justify-between">
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#111111] to-[#2A2A2A] shadow-md transition-transform group-hover:scale-105">
-            <Factory size={20} className="text-[#D4AF37]" strokeWidth={2.5} />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#111111] to-[#2A2A2A] shadow-md transition-transform group-hover:scale-105 overflow-hidden">
+            {settings.logoImageUrl ? (
+              <Image width={36} height={36} unoptimized src={settings.logoImageUrl} alt={logoText} className="h-full w-full object-contain" />
+            ) : (
+              <Factory size={20} className="text-[#D4AF37]" strokeWidth={2.5} />
+            )}
           </div>
           <span className="text-[22px] font-bold tracking-widest text-[#111111]">
             {logoMain}<span className="text-[#D4AF37]">{logoAccent}</span>
@@ -60,7 +65,7 @@ export default function Header() {
             return (
               <Link 
                 key={item.label} 
-                href={item.href as any} 
+                href={item.href as `/${string}`} 
                 className="group flex items-center gap-2 rounded-full px-4 py-2 text-[15px] font-medium text-[#2D333A] transition-all duration-300 hover:bg-[#D4AF37] hover:text-white hover:shadow-lg hover:shadow-[#D4AF37]/30"
               >
                 <Icon size={17} strokeWidth={2} className="text-[#9CA3AF] transition-colors group-hover:text-white" />
@@ -142,11 +147,13 @@ export default function Header() {
              ].map((item, idx) => {
                const isCurrent = item.code === locale;
                return (
-                 <a 
+                 <Link 
                    key={idx} 
-                   href={item.active ? `/${item.code}` : "#"} 
+                   href={item.active ? pathname : "#"}
+                   locale={item.active ? (item.code as "en" | "zh") : undefined}
                    onClick={(e) => {
-                     if (!item.active) e.preventDefault();
+                     if (!item.active) { e.preventDefault(); return; }
+                     setIsLangOpen(false);
                    }}
                    className={`
                      p-4 flex flex-col items-center justify-center gap-3 rounded-md relative overflow-hidden transition-all duration-300
@@ -178,7 +185,7 @@ export default function Header() {
                    `}>
                      {item.lang}
                    </span>
-                 </a>
+                 </Link>
                );
              })}
            </div>

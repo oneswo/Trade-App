@@ -1,4 +1,5 @@
 import { getPageContentRepo } from "@/lib/data/repository";
+import { hasAdminSession } from "@/lib/auth/session";
 
 const VALID_PAGES = ["home", "products", "services", "about", "insights", "contact"];
 const VALID_LOCALES = ["zh", "en"];
@@ -21,6 +22,10 @@ export async function GET(req: Request) {
 
 // POST /api/page-content  body: { pageId, locale, data }
 export async function POST(req: Request) {
+  if (!hasAdminSession(req)) {
+    return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json().catch(() => null);
   const { pageId, locale, data } = body ?? {};
 

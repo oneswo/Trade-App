@@ -70,6 +70,8 @@ class LocalMediaStorage implements MediaStorage {
 
 const localMediaStorage = new LocalMediaStorage();
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 // ─── R2 存储适配器 ─────────────────────────────────────────────
 // 仅在以下 4 个环境变量全部存在时启用：
 // R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME

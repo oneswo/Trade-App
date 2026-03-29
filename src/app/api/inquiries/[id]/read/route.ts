@@ -1,10 +1,15 @@
 import { getInquiryRepo } from "@/lib/data/repository";
+import { hasAdminSession } from "@/lib/auth/session";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-export async function POST(_request: Request, context: RouteContext) {
+export async function POST(request: Request, context: RouteContext) {
+  if (!hasAdminSession(request)) {
+    return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
+
   const { id } = await context.params;
   const repo = getInquiryRepo();
   const updated = await repo.markRead(id);
@@ -24,4 +29,3 @@ export async function POST(_request: Request, context: RouteContext) {
     data: updated,
   });
 }
-

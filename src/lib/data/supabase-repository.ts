@@ -13,21 +13,30 @@ import type {
   ArticleRecord,
   ArticleRepo,
   ArticleStatus,
+  CategoryRecord,
+  CategoryRepo,
   CreateArticleInput,
+  CreateCategoryInput,
   CreateInquiryInput,
   CreateProductInput,
+  CreateTicketInput,
   InquiryRecord,
   InquiryRepo,
   InquiryStatus,
-  PageContentRecord,
   PageContentRepo,
   ProductRecord,
   ProductRepo,
   SiteSettings,
   SiteSettingsRepo,
+  TicketRecord,
+  TicketRepo,
+  TicketStatus,
+  TicketType,
   UpdateArticleInput,
+  UpdateCategoryInput,
   UpdateInquiryInput,
   UpdateProductInput,
+  UpdateTicketInput,
 } from "./repository";
 import { DEFAULT_SITE_SETTINGS } from "./repository";
 
@@ -134,6 +143,12 @@ export const supabaseInquiryRepo: InquiryRepo = {
       .single();
     if (error || !data) return null;
     return rowToInquiry(data as Record<string, unknown>);
+  },
+
+  async remove(id: string) {
+    const db = getClient();
+    const { error } = await db.from("inquiries").delete().eq("id", id);
+    return !error;
   },
 };
 
@@ -442,7 +457,6 @@ function rowToSiteSettings(r: Record<string, unknown>): SiteSettings {
     logoText: (r.logo_text as string) || DEFAULT_SITE_SETTINGS.logoText,
     logoTextEn: (r.logo_text_en as string) || DEFAULT_SITE_SETTINGS.logoTextEn,
     logoImageUrl: (r.logo_image_url as string | null) ?? null,
-    enableInsights: r.enable_insights !== false,
     contactName: (r.contact_name as string) || DEFAULT_SITE_SETTINGS.contactName,
     contactPhone: (r.contact_phone as string) || DEFAULT_SITE_SETTINGS.contactPhone,
     contactEmail: (r.contact_email as string) || DEFAULT_SITE_SETTINGS.contactEmail,
@@ -488,7 +502,6 @@ export const supabaseSiteSettingsRepo: SiteSettingsRepo = {
     if (input.logoText !== undefined) patch.logo_text = input.logoText;
     if (input.logoTextEn !== undefined) patch.logo_text_en = input.logoTextEn;
     if (input.logoImageUrl !== undefined) patch.logo_image_url = input.logoImageUrl;
-    if (input.enableInsights !== undefined) patch.enable_insights = input.enableInsights;
     if (input.contactName !== undefined) patch.contact_name = input.contactName;
     if (input.contactPhone !== undefined) patch.contact_phone = input.contactPhone;
     if (input.contactEmail !== undefined) patch.contact_email = input.contactEmail;
@@ -516,5 +529,171 @@ export const supabaseSiteSettingsRepo: SiteSettingsRepo = {
     
     if (error) throw error;
     return rowToSiteSettings(data as Record<string, unknown>);
+  },
+};
+
+// ─── CategoryRepo ─────────────────────────────────────────────
+
+function rowToCategory(r: Record<string, unknown>): CategoryRecord {
+  return {
+    id: r.id as string,
+    slug: r.slug as string,
+    nameZh: (r.name_zh ?? "") as string,
+    nameEn: (r.name_en ?? "") as string,
+    imageUrl: (r.image_url ?? null) as string | null,
+    sortOrder: (r.sort_order ?? 0) as number,
+    enabled: Boolean(r.enabled),
+    createdAt: r.created_at as string,
+    updatedAt: r.updated_at as string,
+  };
+}
+
+export const supabaseCategoryRepo: CategoryRepo = {
+  async list() {
+    const db = getClient();
+    const { data, error } = await db
+      .from("categories")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    return (data as Record<string, unknown>[]).map(rowToCategory);
+  },
+
+  async findById(id: string) {
+    const db = getClient();
+    const { data, error } = await db
+      .from("categories")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error || !data) return null;
+    return rowToCategory(data as Record<string, unknown>);
+  },
+
+  async create(input: CreateCategoryInput) {
+    const db = getClient();
+    const now = nowIso();
+    const { data, error } = await db
+      .from("categories")
+      .insert({
+        id: `cat_${crypto.randomUUID()}`,
+        slug: input.slug,
+        name_zh: input.nameZh,
+        name_en: input.nameEn,
+        image_url: input.imageUrl ?? null,
+        sort_order: input.sortOrder ?? 99,
+        enabled: input.enabled ?? true,
+        created_at: now,
+        updated_at: now,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return rowToCategory(data as Record<string, unknown>);
+  },
+
+  async update(id: string, input: UpdateCategoryInput) {
+    const db = getClient();
+    const patch: Record<string, unknown> = { updated_at: nowIso() };
+    if (input.slug !== undefined) patch.slug = input.slug;
+    if (input.nameZh !== undefined) patch.name_zh = input.nameZh;
+    if (input.nameEn !== undefined) patch.name_en = input.nameEn;
+    if ("imageUrl" in input) patch.image_url = input.imageUrl ?? null;
+    if (input.sortOrder !== undefined) patch.sort_order = input.sortOrder;
+    if (input.enabled !== undefined) patch.enabled = input.enabled;
+    const { data, error } = await db
+      .from("categories")
+      .update(patch)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error || !data) return null;
+    return rowToCategory(data as Record<string, unknown>);
+  },
+
+  async remove(id: string) {
+    const db = getClient();
+    const { error } = await db.from("categories").delete().eq("id", id);
+    return !error;
+  },
+};
+
+// ─── TicketRepo ───────────────────────────────────────────────
+
+function rowToTicket(r: Record<string, unknown>): TicketRecord {
+  return {
+    id: r.id as string,
+    title: r.title as string,
+    description: r.description as string,
+    type: r.type as TicketType,
+    status: r.status as TicketStatus,
+    reply: (r.reply ?? null) as string | null,
+    createdAt: r.created_at as string,
+    updatedAt: r.updated_at as string,
+  };
+}
+
+export const supabaseTicketRepo: TicketRepo = {
+  async list() {
+    const db = getClient();
+    const { data, error } = await db
+      .from("tickets")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data as Record<string, unknown>[]).map(rowToTicket);
+  },
+
+  async findById(id: string) {
+    const db = getClient();
+    const { data, error } = await db
+      .from("tickets")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error || !data) return null;
+    return rowToTicket(data as Record<string, unknown>);
+  },
+
+  async create(input: CreateTicketInput) {
+    const db = getClient();
+    const now = nowIso();
+    const { data, error } = await db
+      .from("tickets")
+      .insert({
+        title: input.title,
+        description: input.description,
+        type: input.type,
+        status: "PENDING",
+        reply: null,
+        created_at: now,
+        updated_at: now,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return rowToTicket(data as Record<string, unknown>);
+  },
+
+  async update(id: string, input: UpdateTicketInput) {
+    const db = getClient();
+    const patch: Record<string, unknown> = { updated_at: nowIso() };
+    if (input.status !== undefined) patch.status = input.status;
+    if (input.reply !== undefined) patch.reply = input.reply;
+
+    const { data, error } = await db
+      .from("tickets")
+      .update(patch)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error || !data) return null;
+    return rowToTicket(data as Record<string, unknown>);
+  },
+
+  async remove(id: string) {
+    const db = getClient();
+    const { error } = await db.from("tickets").delete().eq("id", id);
+    return !error;
   },
 };

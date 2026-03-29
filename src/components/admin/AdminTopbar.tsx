@@ -13,8 +13,7 @@ const ROUTE_LABELS: Record<string, string> = {
   inquiries:  "询盘管理",
   pages:      "页面内容",
   settings:   "全局设置",
-  new:        "新建产品",
-  edit:       "编辑",
+  articles:   "文章管理",
 };
 
 function useBreadcrumbs() {
@@ -22,10 +21,21 @@ function useBreadcrumbs() {
   // /admin/products/new → ["products", "new"]
   const segments = pathname.replace(/^\/admin\/?/, "").split("/").filter(Boolean);
 
-  return segments.map((seg, idx) => ({
-    label: ROUTE_LABELS[seg] ?? seg,
-    isLast: idx === segments.length - 1,
-  }));
+  return segments.map((seg, idx) => {
+    let label = ROUTE_LABELS[seg] ?? seg;
+    if (seg === "new") {
+      if (segments[idx - 1] === "products") label = "新建产品";
+      else if (segments[idx - 1] === "articles") label = "新建文章";
+      else label = "新建";
+    } else if (seg === "edit") {
+      label = "编辑";
+    }
+
+    return {
+      label,
+      isLast: idx === segments.length - 1,
+    };
+  });
 }
 
 // ─── 组件 ─────────────────────────────────────────────────────

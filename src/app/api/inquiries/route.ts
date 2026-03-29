@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { getInquiryRepo } from "@/lib/data/repository";
+import { hasAdminSession } from "@/lib/auth/session";
 
 const inquirySchema = z.object({
   name: z.string().trim().min(1, "name_required").max(80, "name_too_long"),
-  contact: z.string().trim().min(3, "contact_required").max(120, "contact_invalid"),
+  contact: z.string().trim().min(2, "contact_required").max(120, "contact_invalid"),
   message: z
     .string()
     .trim()
-    .min(5, "message_too_short")
+    .min(2, "message_too_short")
     .max(2000, "message_too_long"),
   locale: z.string().trim().min(2).max(10).optional(),
   source: z.string().trim().max(100).optional(),
@@ -130,7 +131,11 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!hasAdminSession(request)) {
+    return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
+
   const repo = getInquiryRepo();
   const inquiries = await repo.list();
 

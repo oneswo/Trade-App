@@ -7,8 +7,8 @@ interface AdminModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  title: string;
-  description?: string;
+  title: React.ReactNode;
+  description?: React.ReactNode;
   loading?: boolean;
   isDestructive?: boolean;
   confirmLabel?: string;

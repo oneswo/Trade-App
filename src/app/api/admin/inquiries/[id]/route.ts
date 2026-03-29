@@ -42,3 +42,19 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   return Response.json({ ok: true, data: updated });
 }
+
+export async function DELETE(request: Request, context: RouteContext) {
+  if (!hasAdminSession(request)) {
+    return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+  const repo = getInquiryRepo();
+  const success = await repo.remove(id);
+
+  if (!success) {
+    return Response.json({ ok: false, error: "Not found" }, { status: 404 });
+  }
+
+  return Response.json({ ok: true });
+}

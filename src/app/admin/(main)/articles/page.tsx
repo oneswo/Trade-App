@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Edit2, Plus, Search, Trash2 } from "lucide-react";
 import AdminModal from "@/components/admin/AdminModal";
 import type { ArticleRecord } from "@/lib/data/repository";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("zh-CN");
-}
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   PUBLISHED: { label: "已发布", className: "bg-green-50 text-green-700 border-green-200" },
@@ -84,13 +81,13 @@ export default function ArticlesPage() {
             className="w-full bg-transparent text-sm text-[#111111] placeholder:text-[#111111]/30 outline-none"
           />
         </div>
-        <a
+        <Link
           href="/admin/articles/new"
           className="flex items-center gap-2 rounded-xl bg-[#111111] px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-black/80 transition-colors"
         >
           <Plus size={15} />
           新建文章
-        </a>
+        </Link>
       </div>
 
       {/* 列表 */}
@@ -135,13 +132,13 @@ export default function ArticlesPage() {
                     </button>
                   </div>
                   <div className="flex items-center justify-end gap-2">
-                    <a
+                    <Link
                       href={`/admin/articles/${article.id}/edit`}
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/[0.03] text-[#111111]/50 hover:bg-[#111111] hover:text-white transition-colors"
                       title="编辑"
                     >
                       <Edit2 size={13} />
-                    </a>
+                    </Link>
                     <button
                       onClick={() => setDeleteId(article.id)}
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/[0.03] text-[#111111]/50 hover:bg-red-500 hover:text-white transition-colors"

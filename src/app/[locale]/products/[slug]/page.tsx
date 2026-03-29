@@ -5,15 +5,18 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { useParams } from 'next/navigation';
 import { 
-  ChevronRight, Share2, Printer, Play, 
+  ChevronRight, Play, 
   CheckCircle2, ShieldCheck, Ship,
-  Download, ArrowUpRight, Anchor, Target, Factory, ArrowRight
+  ArrowUpRight, Anchor, Target, Factory, ArrowRight
 } from 'lucide-react';
 import { useInquirySubmit } from "@/hooks/useInquirySubmit";
 import { useCatalogProductDetail } from '@/hooks/useProductCatalog';
+import { useLocale } from 'next-intl';
 
 export default function ProductDetailPage() {
   const params = useParams<{ slug: string | string[] }>();
+  const locale = useLocale();
+  const isZh = locale === 'zh';
   const rawSlug = params?.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug || '';
   const { product, relatedProducts, loading } = useCatalogProductDetail(slug);
@@ -34,7 +37,7 @@ export default function ProductDetailPage() {
       <main className="w-full bg-[#FAFAFA] min-h-screen pt-[100px] pb-20">
         <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12">
           <div className="rounded-xl border border-black/[0.06] bg-white px-6 py-12 text-sm text-[#111111]/55">
-            正在加载产品详情...
+            {isZh ? '正在加载产品详情...' : 'Loading product details...'}
           </div>
         </div>
       </main>
@@ -46,7 +49,7 @@ export default function ProductDetailPage() {
       <main className="w-full bg-[#FAFAFA] min-h-screen pt-[100px] pb-20">
         <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12">
           <div className="rounded-xl border border-black/[0.06] bg-white px-6 py-12 text-sm text-[#111111]/55">
-            未找到该产品，请返回列表查看其他设备。
+            {isZh ? '未找到该产品，请返回列表查看其他设备。' : 'Product not found. Please go back to browse other machines.'}
           </div>
         </div>
       </main>
@@ -73,23 +76,15 @@ export default function ProductDetailPage() {
           <span className="text-[#111111] max-w-[120px] sm:max-w-none truncate">{product.title}</span>
         </nav>
         
-        <div className="hidden md:flex items-center gap-6">
-          <button className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-[#111111] transition-colors group">
-            <Share2 size={16} className="group-hover:scale-110 transition-transform" /> 分享图鉴
-          </button>
-          <button className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-[#111111] transition-colors group">
-            <Printer size={16} className="group-hover:scale-110 transition-transform" /> 打印验车单
-          </button>
-        </div>
+
       </div>
 
       {/* ======================= 版块 1：首屏二分栏极速验机 (The Hero Overview) ======================= */}
-      <section className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 flex flex-col lg:flex-row gap-10 xl:gap-16 items-stretch relative mb-24 lg:mb-32">
-        
-        {/* ---- 左侧：高清吸顶画廊 (Sticky Vision Gallery) ---- */}
-        <div className="w-full lg:w-[55%] shrink-0 lg:sticky lg:top-[120px]">
+      <section className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 mb-24 lg:mb-32">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-y-4 lg:gap-y-6 gap-x-10 xl:gap-x-16 items-stretch">
           
-          <div className="relative w-full aspect-[16/10] bg-gray-100 border border-gray-200 overflow-hidden mb-4 group cursor-crosshair shrink-0">
+          {/* ----- [1] 左上角 (TOP LEFT) / ROW 1：主图 ----- */}
+          <div className="lg:col-span-7 order-1 relative w-full aspect-[16/10] bg-gray-100 border border-gray-200 overflow-hidden group cursor-crosshair rounded-2xl">
             {normalizedMediaIndex >= 0 ? (
               <Image 
                 src={product.images[normalizedMediaIndex] || product.image || '/images/products/1.jpg'} 
@@ -114,99 +109,114 @@ export default function ProductDetailPage() {
               )
             )}
             
-            <div className="absolute top-4 left-4 bg-[#111111] text-white px-3 py-1.5 font-black text-xs tracking-widest uppercase flex items-center shadow-lg pointer-events-none z-20">
+            <div className="absolute top-4 left-4 bg-[#111111] text-white px-3 py-1.5 font-black text-xs tracking-widest uppercase flex items-center shadow-lg pointer-events-none z-20 rounded-xl">
               {product.year} 款
             </div>
             
             <div className="absolute top-4 right-4 pointer-events-none gap-3 items-center flex z-20">
-              <span className="bg-white/90 backdrop-blur-sm px-3 py-1.5 flex items-center gap-2 border border-gray-200 shadow-sm">
+              <span className="bg-white/90 backdrop-blur-sm px-3.5 py-1.5 flex items-center gap-2 border border-gray-200 shadow-sm rounded-xl">
                 <span className="w-1.5 h-1.5 bg-[#25D366] rounded-full animate-pulse"></span>
-                <span className="text-[#111111] font-black text-[10px] uppercase tracking-widest">在库随时可看</span>
+                <span className="text-[#111111] font-black text-[11px] tracking-widest leading-none pt-[1px]">{isZh ? '库存现车: 3 台' : 'IN STOCK: 3'}</span>
               </span>
             </div>
           </div>
 
-          <div className="w-full flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] shrink-0 select-none">
-            
-            {product.videoUrl ? (
-              <button 
-                onClick={() => setActiveMedia(-1)}
-                className={`relative min-w-[100px] md:min-w-[120px] aspect-[4/3] flex flex-col items-center justify-center bg-[#111111] text-white border transition-all shrink-0 ${normalizedMediaIndex === -1 ? 'border-[#D4AF37] shadow-[0_0_0_2px_rgba(212,175,55,0.4)]' : 'border-transparent hover:border-gray-500'}`}
-              >
-                <Play size={20} className="mb-2" />
-                <span className="text-[9px] font-bold uppercase tracking-widest text-[#D4AF37]">实况视频</span>
-              </button>
-            ) : null}
-
-            {product.images.map((img, index) => (
-              <button 
-                key={index}
-                onClick={() => setActiveMedia(index)}
-                className={`relative min-w-[100px] md:min-w-[120px] aspect-[4/3] border transition-all overflow-hidden shrink-0 ${normalizedMediaIndex === index ? 'border-[#D4AF37] shadow-[0_0_0_2px_rgba(212,175,55,0.4)]' : 'border-gray-200 hover:border-black'}`}
-              >
-                <Image src={img} alt={`Thumbnail ${index + 1}`} fill className="object-cover" />
-                <div className={`absolute inset-0 bg-black/40 transition-opacity ${normalizedMediaIndex === index ? 'opacity-0' : 'opacity-100 hover:opacity-0'}`}></div>
-              </button>
-            ))}
-          </div>
-          
-        </div>
-
-        {/* ---- 右侧：核心速览区 (Quick Summary) ---- */}
-        <div className="flex-1 w-full flex flex-col justify-between h-full lg:pt-2 mt-8 lg:mt-0">
-          
-          <div className="w-full">
-            <div className="mb-6"> 
+          {/* ----- [2] 右上角 (TOP RIGHT) / ROW 1：标题与核心参数 ----- */}
+          <div className="lg:col-span-5 order-3 lg:order-2 flex flex-col h-full pt-8 lg:pt-1 pb-1">
+            <div className="w-full mb-5 xl:mb-6">
               <h1 className="text-2xl md:text-3xl lg:text-[38px] xl:text-[42px] font-black text-[#111111] leading-[1.15] mb-5 tracking-tight">
                 {product.title}
               </h1>
               
-              {/* 三个标签放一排 */}
-              <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1">
-                <div className="flex shrink-0 items-center gap-1.5 bg-white px-2.5 py-1.5 border border-gray-200 shadow-sm">
-                  <CheckCircle2 size={13} className="text-[#25D366]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#111111]">第三方 SGS 检测</span>
+              {/* 满宽三等分对齐标签 */}
+              <div className="grid grid-cols-3 gap-3 w-full mt-2">
+                <div className="flex items-center justify-center gap-2 bg-white px-2 py-2.5 border border-gray-200 shadow-sm rounded-xl">
+                  <CheckCircle2 size={15} className="text-[#25D366] shrink-0" />
+                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-widest text-[#111111] whitespace-nowrap">{isZh ? '第三方 SGS 检测' : 'SGS Certified'}</span>
                 </div>
-                <div className="flex shrink-0 items-center gap-1.5 bg-white px-2.5 py-1.5 border border-gray-200 shadow-sm">
-                  <ShieldCheck size={13} className="text-[#111111]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#111111]">100% 性能满载实测</span>
+                <div className="flex items-center justify-center gap-2 bg-white px-2 py-2.5 border border-gray-200 shadow-sm rounded-xl">
+                  <ShieldCheck size={15} className="text-[#111111] shrink-0" />
+                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-widest text-[#111111] whitespace-nowrap">{isZh ? '100% 性能满载实测' : '100% Performance Tst'}</span>
                 </div>
-                <div className="flex shrink-0 items-center gap-1.5 bg-[#111111] px-2.5 py-1.5 text-white shadow-md">
-                  <Ship size={13} className="text-[#D4AF37]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">准现车滚装发运</span>
+                <div className="flex items-center justify-center gap-2 bg-[#111111] px-2 py-2.5 text-white shadow-md rounded-xl">
+                  <Ship size={15} className="text-[#D4AF37] shrink-0" />
+                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-widest text-[#D4AF37] whitespace-nowrap">{isZh ? '准现车滚装发运' : 'Ro-Ro Ready'}</span>
                 </div>
               </div>
             </div>
 
-            {/* 绝对对齐的核心参数 (Top 4 Params) */}
-            <div className="w-full bg-white border border-gray-200 p-6 xl:p-8 mb-8 lg:mb-0 shadow-sm">
-              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-5 flex items-center justify-between">
-                <span>机皇核心指标</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-y-6 gap-x-6">
+            {/* 绝对对齐的核心参数框 - 充满剩余高度 (Fill remaining flex height) */}
+            <div className="w-full flex-1 bg-white border border-gray-200 p-6 xl:p-8 shadow-sm flex flex-col overflow-hidden rounded-2xl">
+              <div className="flex flex-col items-center mb-6 xl:mb-8 shrink-0">
+                <h3 className="text-[12px] xl:text-[13px] font-black uppercase tracking-[0.3em] text-[#111111]">
+                  {isZh ? '机皇核心指标' : 'Core Specifications'}
+                </h3>
+                <div className="w-8 h-1 bg-[#D4AF37] mt-3 rounded-full"></div>
+              </div>
+              
+              <div className="grid grid-cols-2 auto-rows-fr gap-3 xl:gap-4 flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                 {product.coreSpecs.map((spec, i) => (
-                  <div key={i} className="flex flex-col">
-                    <span className="text-[9px] xl:text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">{spec.label}</span>
-                    <span className="text-sm xl:text-base font-black text-[#111111]">{spec.value}</span>
+                  <div key={i} className="flex flex-col items-center justify-center bg-[#F8F8F9] rounded-xl p-3 text-center transition-colors hover:bg-gray-100">
+                    <span className="text-[10px] xl:text-[11px] text-gray-400 font-bold uppercase tracking-[0.15em] mb-1.5 xl:mb-2">{spec.label}</span>
+                    <span className="text-base sm:text-lg xl:text-[20px] font-black text-[#111111]">{spec.value}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* 压迫感重力转化按钮 (Anchor CTA) */}
-          <button 
-             onClick={() => scrollToAnchor('inquiry-cta')}
-             className="w-full bg-[#111111] text-white p-5 xl:p-6 border border-[#111111] relative overflow-hidden group flex items-center justify-between mt-6 lg:mt-0 shadow-lg"
-          >
-            <div className="absolute top-0 left-0 w-full h-full bg-[#D4AF37] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out z-0"></div>
-            
-            <div className="relative z-10 flex flex-col items-start text-left">
-              <span className="text-lg md:text-xl xl:text-2xl font-black mb-1 group-hover:text-black transition-colors">获取私密底价与实车视频</span>
-              <span className="text-[11px] xl:text-[12px] font-bold tracking-widest text-gray-400 group-hover:text-black/70 transition-colors">10 分钟内连线售前工程师</span>
-            </div>
-            <ArrowUpRight size={28} className="relative z-10 text-[#D4AF37] group-hover:text-black transition-colors" />
-          </button>
+          {/* ----- [3] 左下角 (BOTTOM LEFT) / ROW 2：缩略图矩阵 ----- */}
+          <div className="lg:col-span-7 order-2 lg:order-3 w-full grid grid-cols-5 gap-2 md:gap-3 shrink-0 select-none">
+            {product.videoUrl ? (
+              <button 
+                onClick={() => setActiveMedia(-1)}
+                className={`relative w-full aspect-square border-2 p-[2px] transition-all outline-none group overflow-hidden bg-white rounded-xl ${normalizedMediaIndex === -1 ? 'border-[#111111]' : 'border-transparent hover:border-gray-300'}`}
+              >
+                <div className="w-full h-full relative overflow-hidden bg-gray-100 rounded-[8px]">
+                  <Image src={product.images[0] || '/images/products/1.jpg'} alt="Video Thumbnail" fill className="object-cover" />
+                  
+                  {/* 半透明遮罩与播放按钮 */}
+                  <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center transition-colors group-hover:bg-black/40 z-10">
+                    <div className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:bg-[#D4AF37] transition-colors shadow-lg">
+                      <Play size={14} className="text-white fill-white ml-0.5" />
+                    </div>
+                  </div>
+                  
+                  {/* Spotlight White Overlay for Unselected State */}
+                  {normalizedMediaIndex !== -1 && <div className="absolute inset-0 bg-white/40 z-20 transition-opacity duration-300 group-hover:opacity-0"></div>}
+                </div>
+              </button>
+            ) : null}
+
+            {product.images.slice(0, product.videoUrl ? 4 : 5).map((img, index) => (
+              <button 
+                key={index}
+                onClick={() => setActiveMedia(index)}
+                className={`relative w-full aspect-square border-2 p-[2px] transition-all outline-none group rounded-xl ${normalizedMediaIndex === index ? 'border-[#111111]' : 'border-transparent hover:border-gray-300'}`}
+              >
+                <div className="w-full h-full relative overflow-hidden bg-gray-100 rounded-[8px]">
+                  <Image src={img} alt={`Thumbnail ${index + 1}`} fill className="object-cover" />
+                  {normalizedMediaIndex !== index && <div className="absolute inset-0 bg-white/40 transition-opacity duration-300 group-hover:opacity-0"></div>}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* ----- [4] 右下角 (BOTTOM RIGHT) / ROW 2：大号黑金转化按钮 ----- */}
+          <div className="lg:col-span-5 order-4 flex items-stretch pt-2 lg:pt-0">
+            <button 
+               onClick={() => scrollToAnchor('inquiry-cta')}
+               className="w-full h-full bg-[#111111] text-white p-5 xl:p-6 border border-[#111111] relative overflow-hidden group flex items-center justify-between shadow-lg rounded-2xl"
+            >
+              <div className="absolute top-0 left-0 w-full h-full bg-[#D4AF37] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out z-0"></div>
+              
+              <div className="relative z-10 flex flex-col items-start text-left">
+                <span className="text-lg md:text-xl xl:text-2xl font-black mb-1 xl:mb-2 group-hover:text-black transition-colors">{isZh ? '获取私密底价与实车视频' : 'Get Private Quote & Videos'}</span>
+                <span className="text-[11px] xl:text-[12px] font-bold tracking-widest text-gray-400 group-hover:text-black/70 transition-colors">{isZh ? '10 分钟内连线售前工程师' : 'Talk to Engineer in 10 mins'}</span>
+              </div>
+              <ArrowUpRight size={28} className="relative z-10 text-[#D4AF37] group-hover:text-black transition-colors" />
+            </button>
+          </div>
           
         </div>
 
@@ -214,27 +224,50 @@ export default function ProductDetailPage() {
 
       {/* ======================= 版块 2：专业总成全宽参数墙 (Full-Width Tech Specs Wall) ======================= */}
       <section className="w-full bg-[#F5F5F7] border-y border-gray-200 py-16 lg:py-24 mb-24 lg:mb-32">
-        <div className="w-full max-w-[1000px] mx-auto px-4 md:px-8 xl:px-12">
+        <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8 xl:px-12">
            
-           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
-             <h2 className="text-2xl md:text-3xl lg:text-[34px] font-black text-[#111111] tracking-tight">完整机械参数档案单</h2>
-             <button className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#111111] hover:text-[#D4AF37] bg-white border border-gray-300 px-5 py-2.5 transition-colors shadow-sm shrink-0">
-               <Download size={15} /> 下载 PDF 报告
-             </button>
-           </div>
-           
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-0">
-             {product.detailedSpecs.map((spec, index) => (
-               <div key={index} className="group flex items-center justify-between py-6 border-b border-gray-200 hover:border-[#111111] transition-colors">
-                 <span className="text-[13px] md:text-[14px] font-bold text-gray-500 tracking-wider w-[45%]">{spec.label}</span>
-                 <span className="text-[15px] md:text-[17px] font-black text-[#111111] w-[55%] text-right">{spec.value}</span>
+           <div className="bg-white rounded-3xl p-8 md:p-12 lg:p-16 xl:p-20 shadow-2xl shadow-gray-200/50 relative overflow-hidden">
+             
+             {/* 装饰水印背景 */}
+             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-bl from-gray-50 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+             {/* 表头 */}
+             <div className="mb-12 border-b-2 border-[#111111] pb-6 flex items-end justify-between relative z-10">
+               <div>
+                 <h2 className="text-2xl md:text-3xl lg:text-[36px] font-black text-[#111111] tracking-tight mb-2">
+                   {isZh ? '详尽技术规格档案' : 'Detailed Technical Specifications'}
+                 </h2>
+                 <p className="text-gray-400 text-xs md:text-sm tracking-[0.2em] uppercase font-bold">
+                   {isZh ? '精确到毫米的严苛工况数据背书' : 'Precision engineering data backing'}
+                 </p>
                </div>
-             ))}
+               <div className="hidden md:flex items-center justify-center w-16 h-16 bg-[#25D366]/10 rounded-2xl text-[#25D366]">
+                 <ShieldCheck size={32} />
+               </div>
+             </div>
+             
+             {/* 参数阵列 (等分左右双列，严格左对齐中线) */}
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 xl:gap-x-24 gap-y-0 relative z-10">
+               {product.detailedSpecs.map((spec, index) => (
+                 <div key={index} className="flex flex-col sm:flex-row sm:items-center py-5 border-b border-dashed border-gray-200 hover:border-solid hover:border-[#111111] transition-all duration-300 group">
+                   <span className="text-[12px] xl:text-[13px] font-bold text-gray-400 tracking-widest uppercase w-full sm:w-[45%] mb-1 sm:mb-0 group-hover:text-gray-600 transition-colors">
+                     {spec.label}
+                   </span>
+                   <span className="text-[15px] xl:text-[17px] font-black text-[#111111] w-full sm:w-[55%] group-hover:translate-x-1 transition-transform duration-300">
+                     {spec.value}
+                   </span>
+                 </div>
+               ))}
+             </div>
+             
+             <div className="mt-12 pt-6 flex items-start gap-3 relative z-10">
+               <span className="text-[#D4AF37] mt-0.5">*</span>
+               <p className="text-[12px] text-gray-400 tracking-widest font-medium leading-relaxed max-w-3xl">
+                 {isZh ? '尺寸、工时和容量等运行数据可能因测量方式及设备后续加装套件不同而存在细微误差或变动，此表仅作为原厂出厂标准核算参考。最终成交前，请与您的专属顾问连线并获取精准的实车视频或第三方（SGS）出具的实时核实报告。' : 'Dimensions, operating hours, and capacities may slightly vary due to continuous usage or aftermarket attachments. Please confirm with your dedicated advisor.'}
+               </p>
+             </div>
+
            </div>
-           
-           <p className="mt-8 text-[12px] text-gray-400 tracking-widest font-medium leading-relaxed">
-             * 尺寸和容量信息可能因测量方式存在细微误差，请与您的专属机械工程师连线获取精准核实。
-           </p>
 
         </div>
       </section>
@@ -243,45 +276,56 @@ export default function ProductDetailPage() {
       <section className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 mb-24 lg:mb-32">
         <h2 className="text-sm font-black text-center uppercase tracking-[0.3em] text-gray-400 mb-12 flex items-center justify-center gap-4">
           <span className="w-12 h-px bg-gray-200"></span>
-          KXTJ GLOBAL 交付实力保障
+          KXTJ GLOBAL {isZh ? '交付实力保障' : 'DELIVERY EXCELLENCE'}
           <span className="w-12 h-px bg-gray-200"></span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 xl:gap-10">
           
-          <div className="flex flex-col bg-white border border-gray-200 h-full">
-            <div className="w-full aspect-video bg-gray-100 relative overflow-hidden">
-               {/* Note: In real app use actual factory images. Placeholder fallback below */}
-               <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center text-white/50"><Target size={48}/></div>
+          {/* Card 1 */}
+          <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
+            <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
+               <Image src="/images/products/2.jpg" alt="Inspection" fill className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
+                 <Target size={56} strokeWidth={1.5} />
+               </div>
             </div>
-            <div className="p-8">
-              <h3 className="text-base font-black text-[#111111] mb-3">125 项底盘与液压深度检测</h3>
+            <div className="p-8 lg:p-10">
+              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{isZh ? '125 项底盘与液压深度检测' : '125-Point Hydraulic & Chassis Inspection'}</h3>
               <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                从冷机启动烟色、到液压大泵主阀的滴漏渗油排查，我们的场内工程师会对该设备出具近乎苛刻的验机报告。您将看到未经任何滤镜处理的高清细节。
+                {isZh ? '从冷机启动烟色、到液压大泵主阀的滴漏渗油排查，我们的场内工程师会对该设备出具近乎苛刻的验机报告。您将看到未经任何滤镜处理的高清细节。' : 'From cold-start smoke analysis to main pump leak detection, our engineers provide an uncompromising report. You will see raw, unfiltered high-definition footage.'}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col bg-white border border-gray-200 h-full">
-            <div className="w-full aspect-video bg-gray-100 relative overflow-hidden">
-               <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center text-white/50"><Factory size={48}/></div>
+          {/* Card 2 */}
+          <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
+            <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
+               <Image src="/images/products/4.jpg" alt="Warehouse" fill className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
+                 <Factory size={56} strokeWidth={1.5} />
+               </div>
             </div>
-            <div className="p-8">
-              <h3 className="text-base font-black text-[#111111] mb-3">3000+ 台场地现车集结结网</h3>
+            <div className="p-8 lg:p-10">
+              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{isZh ? '3000+ 台场地现车集结结网' : '3,000+ Units Ready in Storage'}</h3>
               <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                上海综保区直发。我们不是“空手套白狼”的中介机构，每一台设备均在我们的全硬化地坪仓库中真实趴放，接受您的视频连线抽检或第三方登船验收。
+                {isZh ? '上海综保区直发。我们不是“空手套白狼”的中介机构，每一台设备均在我们的全硬化地坪仓库中真实趴放，接受您的视频连线抽检或第三方登船验收。' : 'Shipped directly from Shanghai Bonded Zone. Every machine is physically sitting in our hardened yards, ready for your real-time video inspection or third-party (SGS) boarding verification.'}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col bg-white border border-gray-200 h-full">
-            <div className="w-full aspect-video bg-gray-100 relative overflow-hidden">
-               <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center text-white/50"><Anchor size={48}/></div>
+          {/* Card 3 */}
+          <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
+            <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
+               <Image src="/images/products/5.jpg" alt="Shipping" fill className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
+                 <Anchor size={56} strokeWidth={1.5} />
+               </div>
             </div>
-            <div className="p-8">
-              <h3 className="text-base font-black text-[#111111] mb-3">Ro-Ro 与 Flat Rack 深海装调</h3>
+            <div className="p-8 lg:p-10">
+              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{isZh ? 'Ro-Ro 与 Flat Rack 深海装调' : 'Ro-Ro & Flat Rack Deep-Sea Rigging'}</h3>
               <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                针对 20 吨及以上的重型怪兽，我们具有长达十余年的特种集装箱绑扎与滚装船订舱护航经验。确保您的钢铁资产横跨经纬线，安全登陆母港。
+                {isZh ? '针对 20 吨及以上的重型怪兽，我们具有长达十余年的特种集装箱绑扎与滚装船订舱护航经验。确保您的钢铁资产横跨经纬线，安全登陆母港。' : 'For 20-ton+ heavy monsters, we have over a decade of experience in special container lashing and Ro-Ro vessel booking. Ensuring your steel assets land safely across the oceans.'}
               </p>
             </div>
           </div>
@@ -291,7 +335,7 @@ export default function ProductDetailPage() {
 
       {/* ======================= 版块 4：压盖级横向全宽黑底金线大表单 (Transverse CTA Form) ======================= */}
       <section id="inquiry-cta" className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 mb-24 lg:mb-32 scroll-mt-32">
-        <div className="w-full bg-[#111111] text-white p-8 md:p-12 lg:p-16 xl:p-20 shadow-2xl relative overflow-hidden group flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20">
+        <div className="w-full bg-[#111111] text-white p-8 md:p-12 lg:p-16 xl:p-20 shadow-2xl relative overflow-hidden group flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20 rounded-3xl">
           
           <div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37] transform origin-left scale-x-50 group-hover:scale-x-100 transition-transform duration-700 ease-out"></div>
           
@@ -306,7 +350,7 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="lg:w-[50%] xl:w-[45%] w-full">
-            <form className="flex flex-col gap-6 w-full bg-white/5 p-8 border border-white/10 backdrop-blur-sm" onSubmit={handleSubmit}>
+            <form className="flex flex-col gap-6 w-full bg-white/5 p-8 border border-white/10 backdrop-blur-sm rounded-2xl" onSubmit={handleSubmit}>
               <input
                 type="text"
                 name="website"
@@ -354,7 +398,7 @@ export default function ProductDetailPage() {
               <button 
                 type="submit"
                 disabled={submitState === "loading"}
-                className="mt-6 w-full bg-[#D4AF37] text-black font-black uppercase tracking-[0.15em] text-xs py-5 hover:bg-white transition-colors flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="mt-6 w-full bg-[#D4AF37] text-black font-black uppercase tracking-[0.15em] text-xs py-5 hover:bg-white transition-colors flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl"
               >
                 {submitState === "loading" ? "提交中..." : "解锁验车绝密档案录"} <ArrowUpRight size={18} />
               </button>
@@ -372,10 +416,10 @@ export default function ProductDetailPage() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {relatedProducts.map(item => (
-            <Link key={item.id} href={`/products/${item.slug}`} className="bg-white border border-gray-200 hover:border-[#111111] transition-colors group flex flex-col relative">
+            <Link key={item.id} href={`/products/${item.slug}`} className="bg-white border border-gray-200 hover:border-[#111111] transition-colors group flex flex-col relative rounded-2xl overflow-hidden hover:shadow-xl">
               <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
                  <Image src={item.image || '/images/products/1.jpg'} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-[800ms] grayscale group-hover:grayscale-0" />
-                 <div className="absolute top-3 left-3 bg-[#111111] text-white px-3 py-1 font-black text-[13px] tracking-widest uppercase">
+                 <div className="absolute top-4 left-4 bg-[#111111] text-white px-3 py-1 font-black text-[13px] tracking-widest uppercase rounded-lg">
                    {item.year}
                  </div>
               </div>

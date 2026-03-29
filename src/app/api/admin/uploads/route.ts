@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { hasAdminSession } from "@/lib/auth/session";
-import { getMediaStorage, type MediaKind } from "@/lib/storage/media-storage";
+import { getMediaStorage, deleteR2Objects, type MediaKind } from "@/lib/storage/media-storage";
 
 export const runtime = "nodejs";
 
@@ -77,6 +77,12 @@ export async function POST(request: Request) {
 
     const storage = getMediaStorage();
     const uploaded = await storage.upload(fileValue, kindParsed.data);
+
+    // 上传成功后删除旧文件（防止 R2 积累垃圾）
+    const oldUrl = formData.get("oldUrl");
+    if (typeof oldUrl === "string" && oldUrl.trim()) {
+      await deleteR2Objects([oldUrl]);
+    }
 
     return Response.json({ ok: true, data: uploaded });
   } catch {

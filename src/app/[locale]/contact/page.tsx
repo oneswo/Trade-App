@@ -1,5 +1,6 @@
 'use client';
-import { MapPin, Phone, Mail, Clock, Send, UserCheck, Globe, Building2, HeadphonesIcon } from 'lucide-react';
+import Image from 'next/image';
+import { MapPin, Mail, Clock, Send, HeadphonesIcon } from 'lucide-react';
 import { useInquirySubmit } from "@/hooks/useInquirySubmit";
 import { useLocale } from 'next-intl';
 import { usePageContent } from '@/hooks/usePageContent';
@@ -28,6 +29,10 @@ export default function ContactPage() {
 
          <div className="relative z-10 flex flex-col items-center px-4 w-full max-w-[1100px] mx-auto text-center mt-4">
 
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-xs font-bold tracking-[0.2em] text-[#D4AF37] mb-8 uppercase">
+              <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span> 
+              {c('hero.tag', isZh ? '全球二手重装直发中心' : 'GLOBAL SALES & DISPATCH CENTER')}
+            </div>
 
             <h1 className="hero-title">
               {c('hero.title1', isZh ? '全球联络，' : 'Global Reach, ')}<span className="text-[#D4AF37]">{c('hero.titleGold', isZh ? '极速调度。' : 'Swift Dispatch.')}</span>
@@ -102,6 +107,18 @@ export default function ContactPage() {
                     <p className="text-[#D4AF37]/60 text-[10px] font-bold uppercase tracking-widest mt-1">{isZh ? '支持全时区实时连线 / 视频排障' : 'Live Video Support Across All Time Zones'}</p>
                   </div>
                 </div>
+
+                <div className="flex items-start gap-6 group">
+                  <div className="w-12 h-12 bg-[#1A1A1A] border border-white/5 flex items-center justify-center rounded-2xl shrink-0 group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] transition-all duration-300">
+                    <Clock className="text-[#D4AF37] group-hover:text-[#111111] transition-colors" size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-2 text-white">{isZh ? '营业时间' : 'Business Hours'}</h4>
+                    <p className="text-gray-500 text-sm font-medium leading-relaxed max-w-md">
+                      {c('info.hours', isZh ? '周一至周六 09:00 - 18:00 (UTC+8)，紧急询盘 24小时响应' : 'Mon–Sat 09:00–18:00 UTC+8, emergency inquiries answered 24/7')}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -150,7 +167,7 @@ export default function ContactPage() {
             <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
               <div className="absolute inset-0 border-[2px] border-transparent p-2 rounded-3xl pointer-events-none group-hover:border-[url('/images/gradients/amber.jpg')] transition-opacity"></div>
               <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <img src="/images/avatars/yin.png" alt="Steven Yin" className="w-full h-full object-cover" />
+                 <Image fill unoptimized src={c('team.0.photo', '/images/avatars/yin.png')} alt={c('team.0.name', isZh ? '尹世兵' : 'Steven Yin')} className="object-cover" />
               </div>
               <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.0.name', isZh ? '尹世兵' : 'Steven Yin')}</h3>
               <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.0.title', isZh ? '亚太区执行董事' : 'APAC Executive Director')}</p>
@@ -162,7 +179,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
-                  <a href="#" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 15156888267</a>
+                  <a href="https://wa.me/8615156888267" target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 15156888267</a>
                 </div>
               </div>
             </div>
@@ -170,7 +187,7 @@ export default function ContactPage() {
             {/* Rep 2 */}
             <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
               <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <img src="/images/avatars/hong.png" alt="Frank Yin" className="w-full h-full object-cover" />
+                 <Image fill unoptimized src={c('team.1.photo', '/images/avatars/hong.png')} alt={c('team.1.name', isZh ? '尹洪峰' : 'Frank Yin')} className="object-cover" />
               </div>
               <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.1.name', isZh ? '尹洪峰' : 'Frank Yin')}</h3>
               <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.1.title', isZh ? '拉非高级代办' : 'LATAM & Africa Lead')}</p>
@@ -182,7 +199,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
-                  <a href="#" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 19159103568</a>
+                  <a href="https://wa.me/8619159103568" target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 19159103568</a>
                 </div>
               </div>
             </div>
@@ -190,7 +207,7 @@ export default function ContactPage() {
             {/* Rep 3 */}
             <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
               <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <img src="/images/avatars/anna.png" alt="Anna Li" className="w-full h-full object-cover" />
+                 <Image fill unoptimized src={c('team.2.photo', '/images/avatars/anna.png')} alt={c('team.2.name', isZh ? '安娜·李' : 'Anna Li')} className="object-cover" />
               </div>
               <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.2.name', isZh ? '安娜·李' : 'Anna Li')}</h3>
               <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.2.title', isZh ? '欧亚中东总监' : 'EU & MENA Director')}</p>
@@ -202,7 +219,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
-                  <a href="#" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17321077956</a>
+                  <a href="https://wa.me/8617321077956" target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17321077956</a>
                 </div>
               </div>
             </div>
@@ -210,7 +227,7 @@ export default function ContactPage() {
             {/* Rep 4 */}
             <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
               <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <img src="/images/avatars/annie.png" alt="Annie" className="w-full h-full object-cover" />
+                 <Image fill unoptimized src={c('team.3.photo', '/images/avatars/annie.png')} alt={c('team.3.name', isZh ? '安妮' : 'Annie')} className="object-cover" />
               </div>
               <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.3.name', isZh ? '安妮' : 'Annie')}</h3>
               <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.3.title', isZh ? '泛西非大区专员' : 'West Africa Specialist')}</p>
@@ -222,7 +239,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
-                  <a href="#" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17317763969</a>
+                  <a href="https://wa.me/8617317763969" target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17317763969</a>
                 </div>
               </div>
             </div>

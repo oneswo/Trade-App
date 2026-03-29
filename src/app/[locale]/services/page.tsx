@@ -1,5 +1,5 @@
 'use client';
-import { Target, CheckCircle, ShieldCheck, Settings, Handshake, Shield, MonitorPlay, Send, Search, Wrench, Sparkles, Ship } from "lucide-react";
+import { Target, CheckCircle, ShieldCheck, Settings, Handshake, Shield, MonitorPlay, Send } from "lucide-react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { useInquirySubmit } from "@/hooks/useInquirySubmit";
@@ -177,7 +177,7 @@ export default function ServicesPage() {
                 <p className="text-gray-500 leading-relaxed font-medium text-[15px]">{c('process.0.desc', isZh ? '我们在全球各大矿场直接筛选出状态极致优秀的成色一手设备。只挑选底盘扎实、车况原版极品的高回本率神机，从货源源头上彻底扼杀事故车、水淹车和组装车。' : 'We source directly from major mining operations worldwide, selecting only first-owner units in exceptional condition. We exclusively target machines with solid undercarriages and unmolested original condition — eliminating accident-damaged, flood-damaged, and rebuilt units at the source.')}</p>
               </div>
               <div className="w-full md:w-5/12 mt-12 md:mt-0 relative aspect-video shadow-[20px_20px_0_#F5F5F5] group-hover:shadow-[20px_20px_0_#D4AF37] transition-shadow duration-500 overflow-hidden">
-                <img src={c('process.0.image', '/images/services/process-1.jpg')} alt="精准选机" className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                <Image fill unoptimized src={c('process.0.image', '/images/services/process-1.jpg')} alt="精准选机" className="object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </div>
 
@@ -191,7 +191,7 @@ export default function ServicesPage() {
                 <p className="text-gray-500 leading-relaxed font-medium text-[15px]">{c('process.1.desc', isZh ? '绝不只做表面功夫。老练的工程师会将上盖与液压泵彻底暴漏，实机测试怠速动作、极限复合动作，测试黑烟状态并对底盘四轮一带进行全面打分，出具百项检测报告书。' : 'We go far beyond cosmetic inspection. Experienced engineers expose the top cover and hydraulic pump for thorough assessment, conduct live idle and full combined-movement load tests, evaluate exhaust smoke quality, and score the complete undercarriage assembly — producing a 100-item inspection report.')}</p>
               </div>
               <div className="w-full md:w-5/12 mt-12 md:mt-0 relative aspect-video shadow-[-20px_20px_0_#F5F5F5] group-hover:shadow-[-20px_20px_0_#111111] transition-shadow duration-500 overflow-hidden">
-                <img src={c('process.1.image', '/images/services/process-2.jpg')} alt="核心复检" className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                <Image fill unoptimized src={c('process.1.image', '/images/services/process-2.jpg')} alt="核心复检" className="object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </div>
 
@@ -205,7 +205,7 @@ export default function ServicesPage() {
                 <p className="text-gray-500 leading-relaxed font-medium text-[15px]">{c('process.2.desc', isZh ? '任何设备出港前，均经过高压水流彻底剥离黄油垢与深层硬化泥土，视客户需求进行电脑无色差原厂漆调板翻新。保证每一根接管重获新生，消除隐藏漏油隐患。' : 'Before departure, every machine is subjected to high-pressure washing to fully strip grease buildup and hardened soil. Upon request, computer-matched OEM paint is applied for a factory-finish result. All hydraulic fittings and hoses are renewed to eliminate hidden leak risks.')}</p>
               </div>
               <div className="w-full md:w-5/12 mt-12 md:mt-0 relative aspect-video shadow-[20px_20px_0_#F5F5F5] group-hover:shadow-[20px_20px_0_#D4AF37] transition-shadow duration-500 overflow-hidden">
-                <img src={c('process.2.image', '/images/services/process-3.jpg')} alt="全车焕新" className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                <Image fill unoptimized src={c('process.2.image', '/images/services/process-3.jpg')} alt="全车焕新" className="object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </div>
 
@@ -219,7 +219,7 @@ export default function ServicesPage() {
                 <p className="text-gray-500 leading-relaxed font-medium text-[15px]">{c('process.3.desc', isZh ? '由客户参与实时视频动态验机。确认无误后，在专属押运专员护送下进行拆解打托装入集装箱，或直接开上港口 Frame 柜及滚装船甲板进行重型捆扎绑缚，随时在云端跟踪飘洋过海的回程路线。' : 'Clients participate in a real-time live video acceptance inspection. Once confirmed, units are loaded into containers on pallets under escort by our dedicated logistics coordinator, or driven directly onto flat rack or RO-RO vessels with professional heavy lashing applied. Full vessel tracking is available online throughout the voyage.')}</p>
               </div>
               <div className="w-full md:w-5/12 mt-12 md:mt-0 relative aspect-video shadow-[-20px_20px_0_#F5F5F5] group-hover:shadow-[-20px_20px_0_#111111] transition-shadow duration-500 overflow-hidden">
-                <img src={c('process.3.image', '/images/services/process-4.jpg')} alt="云验收" className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                <Image fill unoptimized src={c('process.3.image', '/images/services/process-4.jpg')} alt="云验收" className="object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </div>
             

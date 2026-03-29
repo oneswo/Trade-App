@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import bcryptjs from "bcryptjs";
 import { getAdminAuthRepo } from "@/lib/data/repository";
 import { ADMIN_SESSION_COOKIE } from "@/lib/auth/constants";
+import { signSession } from "@/lib/auth/session";
 
 const loginSchema = z.object({
   email: z.string().trim().email(),
@@ -26,17 +28,27 @@ export async function POST(request: Request) {
     const repo = getAdminAuthRepo();
     const admin = await repo.findByEmail(email);
 
-    if (!admin || admin.password !== password) {
+    // 支持 bcrypt 哈希密码（生产环境）和明文密码（dev 环境变量）
+    const isValid =
+      admin &&
+      (admin.password.startsWith("$2")
+        ? bcryptjs.compareSync(password, admin.password)
+        : admin.password === password);
+
+    if (!isValid) {
       return NextResponse.json(
         { ok: false, error: "invalid_credentials" },
         { status: 401 }
       );
     }
 
+    const payload = `${admin.id}.${Date.now()}`;
+    const token = signSession(payload);
+
     const response = NextResponse.json({ ok: true });
     response.cookies.set({
       name: ADMIN_SESSION_COOKIE,
-      value: `mock_${crypto.randomUUID()}`,
+      value: token,
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
@@ -52,4 +64,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

@@ -123,7 +123,7 @@ export default function Footer() {
               {(isZh 
                 ? [{label:'主页', path:'/'}, {label:'找设备', path:'/products'}, {label:'联系销售代表', path:'/contact'}] 
                 : [{label:'Home', path:'/'}, {label:'Equipment', path:'/products'}, {label:'Contact Sales', path:'/contact'}]).map(item => (
-                 <li key={item.label}><Link href={item.path as any} className="hover:text-[#D4AF37] transition-colors">{item.label}</Link></li>
+                 <li key={item.label}><Link href={item.path as `/${string}`} className="hover:text-[#D4AF37] transition-colors">{item.label}</Link></li>
               ))}
             </ul>
           </div>

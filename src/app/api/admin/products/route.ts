@@ -22,13 +22,29 @@ const mediaUrlSchema = z
     "invalid_media_url"
   );
 
+const coreMetricsSchema = z.object({
+  year: z.string().optional(),
+  hours: z.string().optional(),
+  tonnage: z.string().optional(),
+  location: z.string().optional(),
+  model: z.string().optional(),
+  brand: z.string().optional(),
+});
+
 const createProductSchema = z.object({
   name: z.string().trim().min(2).max(140),
-  slug: z.string().trim().min(1).max(140),
+  nameZh: z.string().trim().max(140).optional(),
+  nameEn: z.string().trim().max(140).optional(),
+  slug: z.string().trim().max(140).optional().default(""), // Allow backend auto-generation
   category: z.string().trim().min(1).max(80),
   summary: z.string().trim().max(300).optional().default(""),
+  summaryZh: z.string().trim().max(300).optional(),
+  summaryEn: z.string().trim().max(300).optional(),
   description: z.string().trim().max(10000).optional().default(""),
-  specs: z.array(specSchema).max(20).optional().default([]),
+  specs: z.array(specSchema).max(50).optional().default([]),
+  coreMetrics: coreMetricsSchema.optional(),
+  stockAmount: z.number().nonnegative().optional(),
+  enableTrustCards: z.boolean().optional().default(true),
   coverImageUrl: mediaUrlSchema.nullable().optional(),
   galleryImageUrls: z.array(mediaUrlSchema).max(20).optional().default([]),
   videoUrl: mediaUrlSchema.nullable().optional(),
@@ -105,33 +121,35 @@ export async function POST(request: Request) {
     }
 
     const payload = parsed.data;
-    const slug = normalizeSlug(payload.slug);
-
-    if (slug.length < 2) {
-      return Response.json(
-        { ok: false, error: "invalid_slug" },
-        { status: 400 }
-      );
+    // If slug is empty, auto-generate one based on name or timestamp
+    let slug = normalizeSlug(payload.slug);
+    if (!slug || slug.length < 2) {
+      slug = normalizeSlug(payload.nameEn || payload.name) || `prod-${Date.now()}`;
     }
 
     const repo = getProductRepo();
     const existing = await repo.findBySlug(slug);
 
     if (existing) {
-      return Response.json(
-        { ok: false, error: "slug_exists" },
-        { status: 409 }
-      );
+      // Append a random suffix to make it unique if auto-generated or duplicate
+      slug = `${slug}-${Math.floor(Math.random() * 10000)}`;
     }
 
     const galleryImageUrls = normalizeMediaList(payload.galleryImageUrls);
     const created = await repo.create({
       name: payload.name,
+      nameZh: payload.nameZh,
+      nameEn: payload.nameEn,
       slug,
       category: payload.category,
       summary: payload.summary,
+      summaryZh: payload.summaryZh,
+      summaryEn: payload.summaryEn,
       description: payload.description,
       specs: payload.specs,
+      coreMetrics: payload.coreMetrics,
+      stockAmount: payload.stockAmount,
+      enableTrustCards: payload.enableTrustCards,
       coverImageUrl: payload.coverImageUrl ?? null,
       galleryImageUrls,
       videoUrl: payload.videoUrl ?? null,

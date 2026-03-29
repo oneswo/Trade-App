@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, createContext, useContext, useRef } from "react";
-import { Save, Globe, ImageIcon, Home, Package, Wrench, Info, BookOpen, Phone, CheckCircle, AlertCircle, Loader2, X } from "lucide-react";
+import { Save, Globe, ImageIcon, Film, Home, Package, Wrench, Info, BookOpen, Phone, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 // ─── 页面列表 ─────────────────────────────────────────────────────────────────
 
@@ -31,8 +31,8 @@ const Ctx = createContext<{
 function SectionHeader({ title, note }: { title: string; note?: string }) {
   return (
     <div className="flex items-baseline gap-3 border-b border-black/[0.06] pb-3">
-      <h3 className="text-[13px] font-bold text-[#111111]">{title}</h3>
-      {note && <span className="text-[10px] text-[#111111]/30">{note}</span>}
+      <h3 className="text-base font-bold text-[#111111]">{title}</h3>
+      {note && <span className="text-[12px] text-[#111111]/30">{note}</span>}
     </div>
   );
 }
@@ -41,8 +41,8 @@ function FieldRow({ label, hint, children }: { label: string; hint?: string; chi
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline gap-2">
-        <label className="text-[10px] font-semibold tracking-[0.12em] text-[#111111]/40 uppercase">{label}</label>
-        {hint && <span className="text-[10px] text-[#111111]/25">{hint}</span>}
+        <label className="text-[13px] font-semibold tracking-[0.08em] text-[#111111]/40 uppercase">{label}</label>
+        {hint && <span className="text-[12px] text-[#111111]/25">{hint}</span>}
       </div>
       {children}
     </div>
@@ -57,7 +57,7 @@ function TextInput({ name, defaultValue = "" }: { name: string; defaultValue?: s
       type="text"
       value={get(name, defaultValue)}
       onChange={e => set(name, e.target.value)}
-      className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2.5 text-[14px] text-[#111111] transition-colors focus:border-black/30 outline-none"
+      className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2.5 text-[15px] text-[#111111] transition-colors focus:border-black/30 outline-none"
     />
   );
 }
@@ -69,7 +69,7 @@ function TextArea({ name, defaultValue = "", rows = 3 }: { name: string; default
       value={get(name, defaultValue)}
       onChange={e => set(name, e.target.value)}
       rows={rows}
-      className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2.5 text-[14px] text-[#111111] transition-colors focus:border-black/30 outline-none resize-none"
+      className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2.5 text-[15px] text-[#111111] transition-colors focus:border-black/30 outline-none resize-none"
     />
   );
 }
@@ -82,7 +82,7 @@ function DarkInput({ name, defaultValue = "", gold }: { name: string; defaultVal
       type="text"
       value={get(name, defaultValue)}
       onChange={e => set(name, e.target.value)}
-      className={`w-full rounded-lg border border-white/10 bg-[#1A1A1A] px-3 py-2.5 text-[14px] outline-none focus:border-white/30 ${gold ? "text-[#D4AF37]" : "text-white"}`}
+      className={`w-full rounded-lg border border-white/10 bg-[#1A1A1A] px-3 py-2.5 text-[15px] outline-none focus:border-white/30 ${gold ? "text-[#D4AF37]" : "text-white"}`}
     />
   );
 }
@@ -94,17 +94,17 @@ function DarkArea({ name, defaultValue = "", rows = 2 }: { name: string; default
       value={get(name, defaultValue)}
       onChange={e => set(name, e.target.value)}
       rows={rows}
-      className="w-full rounded-lg border border-white/10 bg-[#1A1A1A] px-3 py-2.5 text-[14px] text-gray-300 outline-none resize-none focus:border-white/30"
+      className="w-full rounded-lg border border-white/10 bg-[#1A1A1A] px-3 py-2.5 text-[15px] text-gray-300 outline-none resize-none focus:border-white/30"
     />
   );
 }
 
-function ImageUpload({ name, label, hint, aspectHint }: { name: string; label: string; hint?: string; aspectHint?: string }) {
+function ImageUpload({ name, label, hint, aspectHint, defaultValue = "" }: { name: string; label: string; hint?: string; aspectHint?: string; defaultValue?: string }) {
   const { get, set } = useContext(Ctx);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const currentUrl = get(name, "");
+  const currentUrl = get(name, defaultValue);
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -113,6 +113,7 @@ function ImageUpload({ name, label, hint, aspectHint }: { name: string; label: s
       const formData = new FormData();
       formData.append("file", file);
       formData.append("kind", "image");
+      if (currentUrl) formData.append("oldUrl", currentUrl);
       const res = await fetch("/api/admin/uploads", {
         method: "POST",
         body: formData,
@@ -144,8 +145,8 @@ function ImageUpload({ name, label, hint, aspectHint }: { name: string; label: s
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline gap-2">
-        <label className="text-[10px] font-semibold tracking-[0.12em] text-[#111111]/40 uppercase">{label}</label>
-        {hint && <span className="text-[10px] text-[#111111]/25">{hint}</span>}
+        <label className="text-[13px] font-semibold tracking-[0.08em] text-[#111111]/40 uppercase">{label}</label>
+        {hint && <span className="text-[12px] text-[#111111]/25">{hint}</span>}
       </div>
       <input
         ref={inputRef}
@@ -156,6 +157,7 @@ function ImageUpload({ name, label, hint, aspectHint }: { name: string; label: s
       />
       {currentUrl ? (
         <div className="relative group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={currentUrl}
             alt="已上传图片"
@@ -197,8 +199,108 @@ function ImageUpload({ name, label, hint, aspectHint }: { name: string; label: s
           ) : (
             <>
               <ImageIcon size={20} className="text-[#111111]/25" />
-              <span className="text-[11px] text-[#111111]/40 font-medium">点击上传 / 拖拽图片到此处</span>
+              <span className="text-[11px] text-[#111111]/40 font-medium">点击上传</span>
               {aspectHint && <span className="text-[10px] text-[#111111]/25">{aspectHint}</span>}
+            </>
+          )}
+        </div>
+      )}
+      {error && <p className="text-[11px] text-red-500">{error}</p>}
+    </div>
+  );
+}
+
+function VideoUpload({ name, label, hint }: { name: string; label: string; hint?: string }) {
+  const { get, set } = useContext(Ctx);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const currentUrl = get(name, "");
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("kind", "video");
+      if (currentUrl) formData.append("oldUrl", currentUrl);
+      const res = await fetch("/api/admin/uploads", { method: "POST", body: formData });
+      const json = await res.json();
+      if (json.ok && json.data?.url) {
+        set(name, json.data.url);
+      } else {
+        setError(json.error || "上传失败");
+      }
+    } catch {
+      setError("网络错误");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleUpload(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("video/")) handleUpload(file);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline gap-2">
+        <label className="text-[13px] font-semibold tracking-[0.08em] text-[#111111]/40 uppercase">{label}</label>
+        {hint && <span className="text-[12px] text-[#111111]/25">{hint}</span>}
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="video/mp4,video/webm,video/quicktime"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      {currentUrl ? (
+        <div className="relative group">
+          <video
+            src={currentUrl}
+            className="w-full h-32 rounded-xl border border-black/[0.08] bg-black object-cover"
+            muted
+            preload="metadata"
+          />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-3">
+            <button type="button" onClick={() => inputRef.current?.click()}
+              className="px-3 py-1.5 bg-white text-[11px] font-medium rounded-lg hover:bg-gray-100">
+              更换
+            </button>
+            <button type="button" onClick={() => set(name, "")}
+              className="px-3 py-1.5 bg-red-500 text-white text-[11px] font-medium rounded-lg hover:bg-red-600">
+              删除
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div
+          onClick={() => !uploading && inputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          className={`flex h-28 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors ${
+            uploading ? "border-blue-300 bg-blue-50" : "border-black/[0.1] bg-[#FAFAFA] hover:border-black/20 hover:bg-black/[0.02]"
+          }`}
+        >
+          {uploading ? (
+            <>
+              <Loader2 size={20} className="text-blue-500 animate-spin" />
+              <span className="text-[11px] text-blue-500 font-medium">上传中...</span>
+            </>
+          ) : (
+            <>
+              <Film size={20} className="text-[#111111]/25" />
+              <span className="text-[11px] text-[#111111]/40 font-medium">点击上传 / 拖拽视频到此处</span>
+              <span className="text-[10px] text-[#111111]/25">MP4 / WebM，最大 80MB</span>
             </>
           )}
         </div>
@@ -211,7 +313,7 @@ function ImageUpload({ name, label, hint, aspectHint }: { name: string; label: s
 function CardBlock({ index, label, children }: { index: number; label: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-black/[0.06] p-4 space-y-3 bg-[#FAFAFA]">
-      <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">{label} {index}</span>
+      <span className="text-[12px] font-bold tracking-widest text-[#111111]/30 uppercase">{label} {index}</span>
       {children}
     </div>
   );
@@ -224,11 +326,11 @@ function HomeFields({ zh }: { zh: boolean }) {
     <div className="space-y-12">
 
       <div className="space-y-5">
-        <SectionHeader title="模块一：Hero 全屏首屏" />
-        <FieldRow label="背景视频资源 URL" hint="MP4 直链">
-          <TextInput name="hero.videoUrl" defaultValue="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" />
-        </FieldRow>
-        <ImageUpload name="hero.posterUrl" label="视频封面图（poster）" hint="视频加载前显示" aspectHint="建议 16:9，JPG / PNG，最大 5MB" />
+        <SectionHeader title="模块一 — 全屏首页大图（Hero）" note="对应首页第一屏视频背景区域" />
+        <div className="grid grid-cols-2 gap-4">
+          <ImageUpload name="hero.posterUrl" label="视频封面图（poster）" hint="视频加载前显示" aspectHint="建议 16:9，JPG / PNG，最大 5MB" />
+          <VideoUpload name="hero.videoUrl" label="背景视频" hint="MP4，最大 80MB" />
+        </div>
         <FieldRow label="顶部小标签文字">
           <TextInput name="hero.tag" defaultValue={zh ? "面向国际市场的高端二手工程机械" : "PREMIUM USED HEAVY EQUIPMENT FOR GLOBAL MARKETS"} />
         </FieldRow>
@@ -249,52 +351,39 @@ function HomeFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块二：极速匹配品类画廊" />
-        <FieldRow label="板块主标题">
+        <SectionHeader title="模块二 — 品类画廊轮播" note="对应首页向下滚动第一个卡片轮播" />
+        <FieldRow label="板块大标题">
           <TextInput name="categories.title" defaultValue={zh ? "全矩阵设备覆盖" : "Full-Spectrum Equipment Coverage"} />
         </FieldRow>
-        <FieldRow label="右侧描述文字">
+        <FieldRow label="右侧辅助说明文字">
           <TextArea name="categories.desc" defaultValue={zh ? "无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。" : "Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum."} />
         </FieldRow>
-        <div className="space-y-2">
-          {[
-            { zh_n: "大型挖掘机",    en_n: "Excavators" },
-            { zh_n: "轮式装载机",    en_n: "Wheel Loaders" },
-            { zh_n: "重型推土机",    en_n: "Bulldozers" },
-            { zh_n: "平地机与压路机", en_n: "Graders & Rollers" },
-            { zh_n: "工业叉车",      en_n: "Forklifts" },
-          ].map((c, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-lg border border-black/[0.06] bg-white px-4 py-2.5">
-              <span className="text-[10px] font-bold text-[#111111]/25 w-5 shrink-0">0{i+1}</span>
-              <div className="flex-1">
-                <TextInput name={`category.${i}.name`} defaultValue={zh ? c.zh_n : c.en_n} />
-              </div>
-              <div className="w-[80px] shrink-0">
-                <div className="flex h-9 cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-black/[0.1] bg-[#FAFAFA] hover:border-black/20">
-                  <ImageIcon size={12} className="text-[#111111]/25" />
-                  <span className="text-[9px] text-[#111111]/30">图片</span>
-                </div>
-              </div>
-            </div>
-          ))}
+        {/* ⚠️ 分类卡片（名称 + 图片）已迁移至独立的「分类管理」模块统一管理 */}
+        <div className="rounded-xl border border-[#D4AF37]/30 bg-[#FFFBF0] p-4 space-y-1.5">
+          <p className="text-[13px] font-semibold text-[#B8860B]">📌 分类卡片由「分类管理」统一控制</p>
+          <p className="text-[12px] text-[#B8860B]/70 leading-relaxed">
+            品类画廊中展示的每张卡片（名称、图片、跳转链接）均在后台左侧菜单 →
+            <strong>「分类管理」</strong> 中新增、编辑和排序。<br />
+            在这里修改无效，请前往分类管理操作。
+          </p>
         </div>
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块三：严选热销机皇" note="产品卡片从产品库动态拉取" />
-        <FieldRow label="板块主标题">
+        <SectionHeader title="模块三 — 严选热销产品网格" note="产品卡片从「产品管理」动态拉取，无需在此维护" />
+        <FieldRow label="板块大标题">
           <TextInput name="hot.title" defaultValue={zh ? "严选热销机皇" : "Top-Rated Machines, Handpicked"} />
         </FieldRow>
-        <FieldRow label="右侧描述文字">
+        <FieldRow label="右侧辅助说明文字">
           <TextArea name="hot.desc" defaultValue={zh ? "这些顶级现货机型经过 100 项全案严苛过滤，代表着本月极低的故障率和极高的投资回报比，是全球大型基建的首选制胜装备。" : "Every unit has passed a rigorous 100-point inspection — the lowest failure rates and highest ROI of the month."} />
         </FieldRow>
-        <FieldRow label="底部按钮文字">
+        <FieldRow label="右下角「查看全部」按钮文字">
           <TextInput name="hot.btnText" defaultValue={zh ? "游览所有 300+ 在线设备" : "View All 300+ Listed Machines"} />
         </FieldRow>
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块四：二十载深耕实力展示" />
+        <SectionHeader title="模块四 — 公司实力 & 数字展示（深色双栏）" note="左侧文字 + 数字，右侧视频" />
         <FieldRow label="左侧主标题 — 第一行">
           <TextInput name="depth.title1" defaultValue={zh ? "二十载深耕专注" : "Two Decades of Expertise."} />
         </FieldRow>
@@ -318,14 +407,14 @@ function HomeFields({ zh }: { zh: boolean }) {
             </div>
           ))}
         </div>
-        <FieldRow label="右侧工厂宣传视频 URL" hint="MP4 直链">
-          <TextInput name="depth.videoUrl" defaultValue="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" />
-        </FieldRow>
-        <ImageUpload name="depth.posterUrl" label="右侧封面图（播放前显示）" aspectHint="建议 16:9，JPG / PNG" />
+        <div className="grid grid-cols-2 gap-4">
+          <ImageUpload name="depth.posterUrl" label="右侧封面图（播放前显示）" aspectHint="建议 16:9，JPG / PNG" />
+          <VideoUpload name="depth.videoUrl" label="右侧工厂宣传视频" hint="MP4，最大 80MB" />
+        </div>
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块五：核心出海服务体系" />
+        <SectionHeader title="模块五 — 六大核心服务卡片" note="对应首页六宫格服务图标卡片区" />
         <FieldRow label="板块主标题">
           <TextInput name="s5.title" defaultValue={zh ? "世界级的交付与服务标准" : "World-Class Delivery & After-Sales Standards"} />
         </FieldRow>
@@ -351,7 +440,7 @@ function HomeFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块六：交机实录与动态" note="文章卡片从资讯库动态拉取" />
+        <SectionHeader title="模块六 — 最新交机动态横向滚动" note="文章卡片从「资讯管理」动态拉取，无需在此维护" />
         <FieldRow label="板块主标题">
           <TextInput name="news.title" defaultValue={zh ? "交机实录与动态" : "Live Delivery Updates"} />
         </FieldRow>
@@ -361,7 +450,7 @@ function HomeFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块七：底部询单 CTA" />
+        <SectionHeader title="模块七 — 底部黑色询盘表单区（CTA）" note="页面最底部的深色背景询盘卡片" />
         <FieldRow label="主标题 — 普通色部分">
           <TextInput name="cta.title1" defaultValue={zh ? "未找到心仪的" : "Can't Find the"} />
         </FieldRow>
@@ -403,7 +492,7 @@ function ProductsFields({ zh }: { zh: boolean }) {
   return (
     <div className="space-y-12">
       <div className="space-y-5">
-        <SectionHeader title="模块一：Hero 头图区" />
+        <SectionHeader title="模块一：Hero 头图区" note="对应产品列表顶部的全宽背景与标题区" />
         <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="建议比例 16:5，JPG / PNG，最大 5MB" />
         <FieldRow label="顶部小标签">
           <TextInput name="hero.tag" defaultValue={zh ? "全球二手重工机械直采平台" : "GLOBAL USED HEAVY EQUIPMENT DIRECT SOURCING"} />
@@ -419,7 +508,7 @@ function ProductsFields({ zh }: { zh: boolean }) {
         </FieldRow>
       </div>
       <div className="space-y-5">
-        <SectionHeader title="模块二：筛选区文案" />
+        <SectionHeader title="模块二：筛选区文案" note="搜索框占位与列表无结果时的提示" />
         <FieldRow label="搜索框占位提示文字">
           <TextInput name="filter.searchPlaceholder" defaultValue={zh ? "搜索品牌、型号、工况..." : "Search brand, model, condition..."} />
         </FieldRow>
@@ -438,7 +527,7 @@ function ServicesFields({ zh }: { zh: boolean }) {
     <div className="space-y-12">
 
       <div className="space-y-5">
-        <SectionHeader title="模块一：Hero 头图区" />
+        <SectionHeader title="模块一：Hero 头图区" note="对应服务页顶部的全宽背景与标题区" />
         <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="对应 /images/hero/services.png，建议 16:5" />
         <FieldRow label="顶部小标签">
           <TextInput name="hero.tag" defaultValue={zh ? "重资产出海专属服务" : "HEAVY EQUIPMENT EXPORT SERVICES"} />
@@ -455,7 +544,7 @@ function ServicesFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块二：六大服务矩阵" />
+        <SectionHeader title="模块二：六大服务矩阵" note="前 5 张白底卡片 + 第 6 张黑金 CTA 卡" />
         <FieldRow label="板块主标题">
           <TextInput name="matrix.title" defaultValue={zh ? "重装出海全维保障体系" : "PREMIUM HEAVY EQUIPMENT SERVICES"} />
         </FieldRow>
@@ -481,7 +570,7 @@ function ServicesFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块三：全球信任背书（3大支柱）" />
+        <SectionHeader title="模块三：全球信任背书（3大支柱）" note="三列图文信任说明" />
         <FieldRow label="板块主标题">
           <TextInput name="trust.title" defaultValue={zh ? "赢得全球矿企与基建商的绝对信赖" : "Earning Absolute Trust from Global Mining & Infrastructure Operators"} />
         </FieldRow>
@@ -498,7 +587,7 @@ function ServicesFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块四：验交发运标准（Z字流程 01–04）" />
+        <SectionHeader title="模块四：验交发运标准（Z字流程 01–04）" note="四步流程图与文案" />
         <FieldRow label="板块主标题">
           <TextInput name="process.title" defaultValue={zh ? "二手重型设备验交与发运标准" : "Used Heavy Equipment Inspection, Acceptance & Dispatch Standards"} />
         </FieldRow>
@@ -518,7 +607,7 @@ function ServicesFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块五：底部询单 CTA" />
+        <SectionHeader title="模块五：底部询单 CTA" note="页面底部深色表单区" />
         <FieldRow label="主标题 — 普通色部分">
           <TextInput name="cta.title1" defaultValue={zh ? "期待未来与您" : "READY TO WORK WITH YOU"} />
         </FieldRow>
@@ -547,7 +636,7 @@ function AboutFields({ zh }: { zh: boolean }) {
     <div className="space-y-12">
 
       <div className="space-y-5">
-        <SectionHeader title="模块一：Hero 头图区" />
+        <SectionHeader title="模块一：Hero 头图区" note="对应关于页顶部的全宽背景与标题区" />
         <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="对应 /images/hero/about.png，建议 16:5" />
         <FieldRow label="顶部小标签">
           <TextInput name="hero.tag" defaultValue={zh ? "全球工程机械发运枢纽" : "GLOBAL MACHINERY HUB"} />
@@ -564,7 +653,7 @@ function AboutFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块二 — Block A：长三角核心源头底库基地（左图右文）" />
+        <SectionHeader title="模块二 — Block A：长三角核心源头底库基地（左图右文）" note="第一组左图右文" />
         <ImageUpload name="blockA.image" label="左侧图片" aspectHint="对应 /images/about/office.jpg，建议 4:3" />
         <FieldRow label="板块标题">
           <TextInput name="blockA.title" defaultValue={zh ? "长三角核心 源头底库基地" : "Core Yangtze Delta Base of Operations"} />
@@ -586,7 +675,7 @@ function AboutFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块二 — Block B：跨越极限工况的重载交付力（右图左文）" />
+        <SectionHeader title="模块二 — Block B：跨越极限工况的重载交付力（右图左文）" note="第二组右图左文 + 两枚 mini 卡" />
         <ImageUpload name="blockB.image" label="右侧图片" aspectHint="对应 /images/about/yard.jpg，建议 4:3" />
         <FieldRow label="板块标题">
           <TextInput name="blockB.title" defaultValue={zh ? "跨越极限工况的 重载交付力" : "Heavy-Duty Delivery Beyond Extreme Conditions"} />
@@ -610,7 +699,7 @@ function AboutFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块三：核心成就数字条（4组）" />
+        <SectionHeader title="模块三：核心成就数字条（4组）" note="四组数字 + 标签" />
         <div className="space-y-2 rounded-xl border border-black/[0.06] p-4 bg-[#FAFAFA]">
           {[
             { num: "20",   zh_l: "年出海行业深耕",  en_l: "Years in the Industry" },
@@ -627,7 +716,7 @@ function AboutFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块四：全球准入资质墙（4张证书卡）" />
+        <SectionHeader title="模块四：全球准入资质墙（4张证书卡）" note="证书图 + 中英文名称" />
         <FieldRow label="板块主标题">
           <TextInput name="certs.title" defaultValue={zh ? "全球通行的重金属底气" : "Our Industry Certifications"} />
         </FieldRow>
@@ -652,7 +741,7 @@ function AboutFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块五：底部询单 CTA" />
+        <SectionHeader title="模块五：底部询单 CTA" note="页面底部询盘表单" />
         <FieldRow label="主标题 — 普通色部分">
           <TextInput name="cta.title1" defaultValue={zh ? "期待未来与您" : "Looking Forward to"} />
         </FieldRow>
@@ -680,28 +769,34 @@ function InsightsFields({ zh }: { zh: boolean }) {
   return (
     <div className="space-y-12">
       <div className="space-y-5">
-        <SectionHeader title="模块一：Hero 头图区" />
+        <SectionHeader title="模块一：Hero 头图区" note="对应智库页顶部的全宽背景与标题区" />
         <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="建议比例 16:5，JPG / PNG，最大 5MB" />
         <FieldRow label="顶部小标签">
-          <TextInput name="hero.tag" defaultValue={zh ? "全球工程机械前沿资讯" : "GLOBAL HEAVY EQUIPMENT INSIGHTS"} />
+          <TextInput name="hero.tag" defaultValue={zh ? "重装出海行业内参" : "HEAVY EQUIPMENT EXPORT INSIGHTS"} />
         </FieldRow>
         <FieldRow label="主标题 — 普通色部分">
-          <TextInput name="hero.title1" defaultValue={zh ? "洞察行业前沿，" : "INDUSTRY INSIGHTS,"} />
+          <TextInput name="hero.title1" defaultValue={zh ? "穿透迷雾，" : "Cut the Fog, "} />
         </FieldRow>
         <FieldRow label="主标题 — 金色高亮部分">
-          <TextInput name="hero.titleGold" defaultValue={zh ? "挖掘未来价值。" : "FUTURE VALUE."} />
+          <TextInput name="hero.titleGold" defaultValue={zh ? "掌握底牌。" : "Own the Deal."} />
         </FieldRow>
         <FieldRow label="副标题描述">
-          <TextArea name="hero.desc" defaultValue={zh ? "汇聚全球建设者智慧，分享最新的工程机械保养秘诀、市场洞察与发运纪实案例。" : "Gathering global builders' wisdom — maintenance tips, market insights, and real shipment stories."} />
+          <TextArea name="hero.desc" defaultValue={zh ? "跳出信息不对称的陷阱。出海工程师每周为您深度拆解二手重装采购防坑逻辑、维护要略与真实市场走势。" : "Escape the trap of information asymmetry. Our senior engineers deliver weekly teardowns on used machinery export strategies, maintenance essentials, and real market trends."} />
         </FieldRow>
       </div>
       <div className="space-y-5">
         <SectionHeader title="模块二：列表区文案" note="文章卡片动态拉取" />
-        <FieldRow label="空状态提示文字">
-          <TextInput name="list.emptyText" defaultValue={zh ? "暂无文章，敬请期待" : "No articles yet. Stay tuned."} />
+        <FieldRow label="空状态主文案">
+          <TextInput name="list.emptyText" defaultValue={zh ? "暂无文章" : "No articles yet"} />
+        </FieldRow>
+        <FieldRow label="空状态副文案">
+          <TextInput name="list.emptySubtext" defaultValue={zh ? "敲定期待，数据将由后台发布" : "Stay tuned, articles will be published from admin panel"} />
+        </FieldRow>
+        <FieldRow label="卡片底部「阅读全文」类文案">
+          <TextInput name="list.readMoreBtn" defaultValue={zh ? "阅读专业内参" : "Read Full Report"} />
         </FieldRow>
         <FieldRow label="「查看更多」按钮文字">
-          <TextInput name="list.viewMoreBtn" defaultValue={zh ? "查看更多资讯" : "View More Insights"} />
+          <TextInput name="list.viewMoreBtn" defaultValue={zh ? "获取更多行业背书记录" : "Load More Insights"} />
         </FieldRow>
       </div>
     </div>
@@ -714,8 +809,11 @@ function ContactFields({ zh }: { zh: boolean }) {
   return (
     <div className="space-y-12">
       <div className="space-y-5">
-        <SectionHeader title="模块一：Hero 头图区" />
+        <SectionHeader title="模块一：Hero 头图区" note="对应联系页顶部的全宽背景与标题区" />
         <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="建议比例 16:5，JPG / PNG，最大 5MB" />
+        <FieldRow label="顶部小标签">
+          <TextInput name="hero.tag" defaultValue={zh ? "全球二手重装直发中心" : "GLOBAL SALES & DISPATCH CENTER"} />
+        </FieldRow>
         <FieldRow label="主标题 — 普通色部分">
           <TextInput name="hero.title1" defaultValue={zh ? "全球联络，" : "GLOBAL CONTACT,"} />
         </FieldRow>
@@ -727,7 +825,7 @@ function ContactFields({ zh }: { zh: boolean }) {
         </FieldRow>
       </div>
       <div className="space-y-5">
-        <SectionHeader title="模块二：核心联络信息" />
+        <SectionHeader title="模块二：核心联络信息" note="左侧深色信息栏（地址、邮箱、电话、营业时间）" />
         <FieldRow label="总部标题">
           <TextInput name="info.hqTitle" defaultValue={zh ? "全域出海调度中心" : "Global Export Dispatch Center"} />
         </FieldRow>
@@ -753,22 +851,19 @@ function ContactFields({ zh }: { zh: boolean }) {
         </FieldRow>
       </div>
       <div className="space-y-5">
-        <SectionHeader title="模块三：团队成员展示（4位）" />
+        <SectionHeader title="模块三：大区联系人（4 位）" note="与前台「直连大洲业务总控」四张卡片顺序一致：1 尹世兵 2 尹洪峰 3 安娜·李 4 安妮" />
         {[
-          { name: "Annie Liu",  zh_title: "国际贸易总监",     en_title: "International Trade Director" },
-          { name: "Hong Wei",   zh_title: "首席技术工程师",   en_title: "Chief Technical Engineer" },
-          { name: "Anna Zhang", zh_title: "非洲区域销售专员", en_title: "Africa Regional Sales" },
-          { name: "Yin Chen",   zh_title: "中东区域销售专员", en_title: "Middle East Sales" },
+          { nameZh: "尹世兵", nameEn: "Steven Yin", zh_title: "亚太区执行董事", en_title: "APAC Executive Director", defaultPhoto: "/images/avatars/yin.png" },
+          { nameZh: "尹洪峰", nameEn: "Frank Yin", zh_title: "拉非高级代办", en_title: "LATAM & Africa Lead", defaultPhoto: "/images/avatars/hong.png" },
+          { nameZh: "安娜·李", nameEn: "Anna Li", zh_title: "欧亚中东总监", en_title: "EU & MENA Director", defaultPhoto: "/images/avatars/anna.png" },
+          { nameZh: "安妮", nameEn: "Annie", zh_title: "泛西非大区专员", en_title: "West Africa Specialist", defaultPhoto: "/images/avatars/annie.png" },
         ].map((m, i) => (
           <div key={i} className="rounded-xl border border-black/[0.06] p-4 space-y-3 bg-[#FAFAFA]">
             <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">成员 {i+1}</span>
-            <div className="grid grid-cols-[96px_1fr] gap-4 items-start">
-              <div className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-black/[0.1] bg-white hover:border-black/20 transition-colors">
-                <ImageIcon size={16} className="text-[#111111]/25" />
-                <span className="text-[9px] text-[#111111]/30">头像</span>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-4 items-start">
+              <ImageUpload name={`team.${i}.photo`} label="头像" aspectHint="建议方形，露脸清晰" defaultValue={m.defaultPhoto} />
               <div className="space-y-3">
-                <FieldRow label="姓名"><TextInput name={`team.${i}.name`} defaultValue={m.name} /></FieldRow>
+                <FieldRow label="姓名"><TextInput name={`team.${i}.name`} defaultValue={zh ? m.nameZh : m.nameEn} /></FieldRow>
                 <FieldRow label="职称"><TextInput name={`team.${i}.title`} defaultValue={zh ? m.zh_title : m.en_title} /></FieldRow>
               </div>
             </div>
@@ -790,8 +885,9 @@ export default function PagesManagementPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
-  // 切换页面或语言时，从 API 加载已保存内容
+  // 切换页面或语言时，从 API 加载已保存内容（重置字段是必要的副作用）
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(true);
     setFields({});
     fetch(`/api/page-content?pageId=${activePageId}&locale=${activeLang}`)

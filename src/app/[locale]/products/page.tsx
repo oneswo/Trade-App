@@ -5,6 +5,7 @@ import { Link } from '@/i18n/routing';
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useCatalogProducts } from '@/hooks/useProductCatalog';
+import { useCategories } from '@/hooks/useCategories';
 
 import { useLocale } from 'next-intl';
 import { usePageContent } from '@/hooks/usePageContent';
@@ -89,6 +90,7 @@ function ProductsContent() {
   const FILTERS = isZh ? FILTERS_ZH : FILTERS_EN;
 
   const { products, loading } = useCatalogProducts();
+  const { categories: catList } = useCategories();
   const searchParams = useSearchParams();
   const initCategory = searchParams.get('category');
   
@@ -100,12 +102,12 @@ function ProductsContent() {
   /* ── 核心数据流水线：筛选 → 排序 ── */
   const filteredProducts = useMemo(() => {
     const allBrands  = [...FILTERS_ZH.brands,     ...FILTERS_EN.brands];
-    const allCats    = [...FILTERS_ZH.categories,  ...FILTERS_EN.categories];
+    const allCatSlugs = catList.map(c => c.slug);
     const allYears   = [...FILTERS_ZH.years,       ...FILTERS_EN.years];
     const allWeights = [...FILTERS_ZH.weight,       ...FILTERS_EN.weight];
 
     const selBrands  = activeFilters.filter(f => allBrands.includes(f));
-    const selCats    = activeFilters.filter(f => allCats.includes(f));
+    const selCats    = activeFilters.filter(f => allCatSlugs.includes(f));
     const selYears   = activeFilters.filter(f => allYears.includes(f));
     const selWeights = activeFilters.filter(f => allWeights.includes(f));
 
@@ -161,7 +163,7 @@ function ProductsContent() {
         break;
     }
     return sorted;
-  }, [products, activeFilters, searchQuery, sortOption]);
+  }, [products, activeFilters, searchQuery, sortOption, catList]);
 
   // 分页
   const [currentPage, setCurrentPage] = useState(1);
@@ -169,19 +171,22 @@ function ProductsContent() {
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
   const currentProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // URL 参数初始化分类
+  // URL 参数初始化分类（catList 异步加载，此处 setState 是必要的副作用）
   useEffect(() => {
-    if (initCategory) {
-       const matchedFilter = FILTERS.categories.find(c => c.toLowerCase().includes(initCategory.toLowerCase()));
-       if (matchedFilter) {
-          setActiveFilters([matchedFilter]);
-       }
+    if (initCategory && catList.length > 0) {
+      const matched = catList.find(c =>
+        c.slug.toLowerCase() === initCategory.toLowerCase() ||
+        c.nameEn.toLowerCase().includes(initCategory.toLowerCase()) ||
+        c.nameZh.includes(initCategory)
+      );
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (matched) setActiveFilters([matched.slug]);
     }
-    // 不设默认筛选，初始展示全部产品
-  }, [initCategory, FILTERS]);
+  }, [initCategory, catList]);
 
-  // 筛选/搜索/排序变化时自动回到第 1 页
+  // 筛选/搜索/排序变化时回到第 1 页（派生 UI 状态，此处 setState 是必要的）
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
   }, [activeFilters, searchQuery, sortOption]);
 
@@ -210,14 +215,18 @@ function ProductsContent() {
          <div className="relative z-10 flex flex-col items-center px-4 w-full max-w-[1100px] mx-auto text-center mt-4">
             
             {/* 顶部分类小提示，为了三页格式统一而保留相似体积的元素 */}
-            <div className="flex items-center justify-center gap-3 text-[#D4AF37] text-xs font-bold tracking-[0.2em] uppercase mb-8 border border-[#D4AF37]/20 rounded-full px-5 py-2 bg-[#D4AF37]/5 backdrop-blur-md shadow-lg">
+            <div className="flex items-center justify-center gap-3 text-[#D4AF37] text-xs font-bold tracking-[0.2em] uppercase mb-6 border border-[#D4AF37]/20 rounded-full px-5 py-2 bg-[#D4AF37]/5 backdrop-blur-md shadow-lg">
               <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse"></span> 
-              {isZh ? '982 台实况现车整装待发' : '982 MACHINES READY FOR SHIPMENT'}
+              {c('hero.tag', isZh ? '全球二手重工机械直采平台' : 'GLOBAL USED HEAVY EQUIPMENT DIRECT SOURCING')}
             </div>
 
             <h1 className="hero-title">
-              {isZh ? '全系现车，' : 'All in Stock, '}<span className="text-[#D4AF37]">{isZh ? '实盘底库。' : 'Real Inventory.'}</span>
+              {c('hero.title1', isZh ? '精品重装，' : 'PREMIUM IRON, ')}<span className="text-[#D4AF37]">{c('hero.titleGold', isZh ? '全球直发。' : 'GLOBAL DIRECT.')}</span>
             </h1>
+
+            <p className="text-gray-400 text-sm md:text-[15px] font-medium text-center max-w-2xl mx-auto mb-6 leading-relaxed opacity-90">
+              {c('hero.desc', isZh ? '集结全球顶级品牌二手工程机械，经 KXTJ 严苛百项质检，确保每台机械以最佳状态抵达目的地。' : 'Top-tier used construction machinery from global brands, each passing KXTJ\'s 100-point inspection.')}
+            </p>
 
             {/* 搜框替换原副标题 (Height Locked) */}
             <div className="w-full flex items-center justify-center min-h-[60px] md:min-h-[80px]">
@@ -227,7 +236,7 @@ function ProductsContent() {
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder={c('filter.searchPlaceholder', isZh ? "搜索型号，例如输入：CAT 320D" : "Search model, e.g. CAT 320D")}
+                  placeholder={c('filter.searchPlaceholder', isZh ? '搜索品牌、型号、工况...' : 'Search brand, model, condition...')}
                   className="flex-1 bg-transparent text-white font-medium placeholder:text-gray-500 tracking-wider focus:outline-none text-base py-3"
                 />
                 <button className="bg-[#D4AF37] text-black font-black uppercase text-xs tracking-widest px-8 md:px-10 py-3.5 hover:bg-white hover:text-black hover:shadow-[0_10px_20px_rgba(212,175,55,0.3)] transition-all">
@@ -290,25 +299,28 @@ function ProductsContent() {
               </ul>
             </div>
 
-            {/* Filter Group: 品类 */}
-            <div className="border-t border-gray-200 pt-8">
-              <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{isZh ? '器械类目' : 'CATEGORIES'}</h4>
-              <ul className="space-y-3">
-                {FILTERS.categories.map(cat => (
-                  <li key={cat}>
-                    <label
-                      onClick={() => toggleFilter(cat)}
-                      className="flex items-center gap-3 cursor-pointer group"
-                    >
-                      <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${activeFilters.includes(cat) ? 'bg-[#111111] border-[#111111]' : 'border-gray-300 bg-white group-hover:border-[#111111]'}`}>
-                        {activeFilters.includes(cat) && <Check size={12} className="text-[#D4AF37]" strokeWidth={4} />}
-                      </div>
-                      <span className={`text-[13px] font-medium transition-colors ${activeFilters.includes(cat) ? 'text-[#111111] font-bold' : 'text-gray-600 group-hover:text-[#111111]'}`}>{cat}</span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Filter Group: 品类（动态读取 categories 表）*/}
+            {catList.length > 0 && (
+              <div className="border-t border-gray-200 pt-8">
+                <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{isZh ? '器械类目' : 'CATEGORIES'}</h4>
+                <ul className="space-y-3">
+                  {catList.map(cat => {
+                    const label = isZh ? cat.nameZh : cat.nameEn;
+                    const active = activeFilters.includes(cat.slug);
+                    return (
+                      <li key={cat.slug}>
+                        <label onClick={() => toggleFilter(cat.slug)} className="flex items-center gap-3 cursor-pointer group">
+                          <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${active ? 'bg-[#111111] border-[#111111]' : 'border-gray-300 bg-white group-hover:border-[#111111]'}`}>
+                            {active && <Check size={12} className="text-[#D4AF37]" strokeWidth={4} />}
+                          </div>
+                          <span className={`text-[13px] font-medium transition-colors ${active ? 'text-[#111111] font-bold' : 'text-gray-600 group-hover:text-[#111111]'}`}>{label}</span>
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
 
             {/* Filter Group: 年份 */}
             <div className="border-t border-gray-200 pt-8 flex-1">
@@ -366,6 +378,10 @@ function ProductsContent() {
               {loading ? (
                 <div className="col-span-full rounded border border-gray-200 bg-white px-6 py-10 text-sm text-gray-500">
                   {isZh ? '正在加载产品数据...' : 'Loading products...'}
+                </div>
+              ) : currentProducts.length === 0 ? (
+                <div className="col-span-full rounded border border-gray-200 bg-white px-6 py-16 text-center text-[#111111] font-bold text-[15px]">
+                  {c('filter.emptyText', isZh ? '暂无符合条件的产品，请尝试其他筛选项' : 'No products found. Try different filters.')}
                 </div>
               ) : currentProducts.map(product => (
                 <div key={product.id} className="bg-white border border-gray-200 hover:border-[#111111] transition-all duration-300 group flex flex-col relative rounded-sm group overflow-hidden">

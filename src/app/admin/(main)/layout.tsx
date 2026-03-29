@@ -12,7 +12,7 @@ export default function AdminMainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-full">
+    <div className="flex min-h-screen">
       {/* 左侧固定侧边栏 */}
       <AdminSidebar />
 

@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { getSiteSettingsRepo } from "@/lib/data/repository";
 import { ADMIN_SESSION_COOKIE } from "@/lib/auth/constants";
 
@@ -35,6 +36,8 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const repo = getSiteSettingsRepo();
     const settings = await repo.update(body);
+    revalidatePath('/api/site-settings');
+    revalidatePath('/', 'layout');
     return Response.json({ ok: true, data: settings });
   } catch (error) {
     console.error("Failed to update site settings:", error);

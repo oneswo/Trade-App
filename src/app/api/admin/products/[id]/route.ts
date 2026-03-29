@@ -27,13 +27,29 @@ const mediaUrlSchema = z
     "invalid_media_url"
   );
 
+const coreMetricsSchema = z.object({
+  year: z.string().optional(),
+  hours: z.string().optional(),
+  tonnage: z.string().optional(),
+  location: z.string().optional(),
+  model: z.string().optional(),
+  brand: z.string().optional(),
+});
+
 const updateProductSchema = z.object({
   name: z.string().trim().min(2).max(140).optional(),
+  nameZh: z.string().trim().max(140).optional(),
+  nameEn: z.string().trim().max(140).optional(),
   slug: z.string().trim().min(1).max(140).optional(),
   category: z.string().trim().min(1).max(80).optional(),
   summary: z.string().trim().max(300).optional(),
+  summaryZh: z.string().trim().max(300).optional(),
+  summaryEn: z.string().trim().max(300).optional(),
   description: z.string().trim().max(10000).optional(),
-  specs: z.array(specSchema).max(20).optional(),
+  specs: z.array(specSchema).max(50).optional(),
+  coreMetrics: coreMetricsSchema.optional(),
+  stockAmount: z.number().nonnegative().optional(),
+  enableTrustCards: z.boolean().optional(),
   coverImageUrl: mediaUrlSchema.nullable().optional(),
   galleryImageUrls: z.array(mediaUrlSchema).max(20).optional(),
   videoUrl: mediaUrlSchema.nullable().optional(),

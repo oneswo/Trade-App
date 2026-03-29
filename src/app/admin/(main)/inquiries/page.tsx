@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, Clock } from "lucide-react";
+import { Search, Filter, Clock, Trash2 } from "lucide-react";
+import AdminModal from "@/components/admin/AdminModal";
 import InquiryDrawer, { InquiryData } from "@/components/admin/InquiryDrawer";
 import type { InquiryRecord } from "@/lib/data/repository";
 
@@ -23,6 +24,26 @@ function formatTime(iso: string) {
   });
 }
 
+const SOURCE_LABELS: Record<string, string> = {
+  "home-page-cta": "首页询盘",
+  "product-detail-cta": "产品详情页",
+  "about-page-cta": "关于我们页",
+  "services-page-cta": "服务页面",
+  "contact-page-cta": "联系页面",
+  "global-fab": "悬浮窗询盘",
+};
+
+function formatSource(record: InquiryRecord): string {
+  if (record.source) {
+    const label = SOURCE_LABELS[record.source];
+    if (label) return label;
+    if (record.pagePath) return record.pagePath;
+    return record.source;
+  }
+  if (record.pagePath) return record.pagePath;
+  return "通用询盘";
+}
+
 function toInquiryData(record: InquiryRecord): InquiryData {
   const localeRegion = record.locale ? record.locale.toUpperCase() : "GLOBAL";
   return {
@@ -30,7 +51,7 @@ function toInquiryData(record: InquiryRecord): InquiryData {
     name: record.name,
     email: record.email ?? "未提供邮箱",
     phone: record.phone ?? undefined,
-    product: "通用询盘",
+    product: formatSource(record),
     productId: null,
     country: "🌐",
     region: localeRegion,
@@ -49,6 +70,8 @@ export default function InquiriesPage() {
   const [activeInquiryId, setActiveInquiryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [markingRead, setMarkingRead] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchInquiries = async () => {
     setLoading(true);
@@ -128,6 +151,19 @@ export default function InquiriesPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
+    try {
+      await fetch(`/api/admin/inquiries/${deleteId}`, { method: "DELETE" });
+      await fetchInquiries();
+      if (activeInquiryId === deleteId) setActiveInquiryId(null);
+    } finally {
+      setDeleting(false);
+      setDeleteId(null);
+    }
+  };
+
   return (
     <div className="relative h-[calc(100vh-100px)] flex flex-col pt-0">
       <div className="flex shrink-0 items-center justify-between gap-4 rounded-xl border border-black/[0.06] bg-white p-2 shadow-sm mb-6">
@@ -175,12 +211,13 @@ export default function InquiriesPage() {
       </div>
 
       <div className="flex-1 overflow-hidden rounded-xl border border-black/[0.06] bg-white shadow-sm flex flex-col relative">
-        <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr] items-center gap-4 border-b border-black/[0.05] bg-black/[0.02] px-6 py-3 text-[10px] font-semibold tracking-[0.1em] text-[#111111]/40 uppercase shrink-0">
+        <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr_36px] items-center gap-4 border-b border-black/[0.05] bg-black/[0.02] px-6 py-3 text-[10px] font-semibold tracking-[0.1em] text-[#111111]/40 uppercase shrink-0">
           <div>客户信息</div>
           <div>来源</div>
           <div>地区</div>
           <div>时间</div>
-          <div className="text-right pr-2">状态</div>
+          <div className="text-right">状态</div>
+          <div></div>
         </div>
 
         <div className="overflow-y-auto flex-1 divide-y divide-black/[0.04]">
@@ -197,7 +234,7 @@ export default function InquiriesPage() {
                   key={inq.id}
                   onClick={() => setActiveInquiryId(inq.id)}
                   className={`
-                    relative grid grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr] items-center gap-4 px-6 py-4
+                    relative grid grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr_36px] items-center gap-4 px-6 py-4
                     cursor-pointer transition-colors
                     ${isActive ? "bg-black/[0.03]" : "hover:bg-black/[0.015]"}
                   `}
@@ -242,6 +279,19 @@ export default function InquiriesPage() {
                       {statusConfig.label}
                     </span>
                   </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteId(inq.id);
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/[0.03] text-[#111111]/50 hover:bg-red-500 hover:text-white transition-colors"
+                      title="删除"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               );
             })
@@ -255,6 +305,18 @@ export default function InquiriesPage() {
         onMarkRead={handleMarkRead}
         markingRead={markingRead}
         onUpdateStatus={handleUpdateStatus}
+      />
+
+      {/* 删除确认弹窗 */}
+      <AdminModal
+        isOpen={!!deleteId}
+        title="删除询盘"
+        description="此操作不可撤销，确认删除该询盘记录吗？"
+        confirmLabel={deleting ? "删除中..." : "确认删除"}
+        isDestructive
+        loading={deleting}
+        onConfirm={() => void handleDelete()}
+        onClose={() => setDeleteId(null)}
       />
     </div>
   );

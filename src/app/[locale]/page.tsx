@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { ArrowRight, ArrowLeft, Settings, ShieldCheck, Globe, Wrench, Factory, PhoneCall, Send, ChevronRight, X, Play, Pause } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Settings, ShieldCheck, Globe, Wrench, Factory, PhoneCall, Send, Play, Pause } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import NumberTicker from '@/components/ui/number-ticker';
 import AutoCarousel from '@/components/ui/auto-carousel';
@@ -9,6 +9,9 @@ import { useInquirySubmit } from '@/hooks/useInquirySubmit';
 import { useLocale } from 'next-intl';
 import { usePageContent } from '@/hooks/usePageContent';
 import type { ArticleRecord } from '@/lib/data/repository';
+import { useCategories } from '@/hooks/useCategories';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useCatalogProducts } from '@/hooks/useProductCatalog';
 
 interface NewsItem {
   tag: string;
@@ -30,6 +33,7 @@ export default function Home() {
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('home');
+  const { settings } = useSiteSettings();
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [isFactoryVideoPlaying, setIsFactoryVideoPlaying] = useState(false);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
@@ -38,20 +42,31 @@ export default function Home() {
   const { submitState, submitMessage, handleSubmit } = useInquirySubmit({
     source: "home-page-cta",
   });
+  const { categories: catList } = useCategories();
+  const { products: catalogProducts } = useCatalogProducts();
 
   useEffect(() => {
     fetch('/api/articles')
       .then((r) => r.json())
       .then((res: { ok: boolean; data: ArticleRecord[] }) => {
         if (!res.ok || !res.data.length) return;
-        const mapped: NewsItem[] = res.data.slice(0, 4).map((a) => ({
-          tag: a.category,
-          date: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
-          country: '',
-          title: isZh ? (a.titleZh ?? a.title) : a.title,
-          img: a.coverImageUrl ?? '/hero.png',
-          slug: a.slug,
-        }));
+        const mapped: NewsItem[] = res.data.slice(0, 4).map((a) => {
+          let computedImg = '/hero.png';
+          if (typeof a.coverImageUrl === 'string' && a.coverImageUrl.trim()) {
+            const raw = a.coverImageUrl.trim();
+            if (raw !== 'null' && raw !== 'undefined') {
+              computedImg = raw.startsWith('http') || raw.startsWith('data:') || raw.startsWith('/') ? raw : `/${raw}`;
+            }
+          }
+          return {
+            tag: a.category,
+            date: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
+            country: '',
+            title: isZh ? (a.titleZh ?? a.title) : a.title,
+            img: computedImg,
+            slug: a.slug,
+          };
+        });
         setNewsItems(mapped);
       })
       .catch(() => {});
@@ -106,14 +121,16 @@ export default function Home() {
              <span className="text-white text-xs font-bold uppercase tracking-[0.2em]">{c('hero.tag', isZh ? '面向国际市场的高端二手工程机械' : 'PREMIUM USED HEAVY EQUIPMENT FOR GLOBAL MARKETS')}</span>
           </div>
 
-          <h1 className="hero-title-home">
-            {c('hero.title1', isZh ? '铸塑未来的' : 'Built to Power')} <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#D4AF37] via-[#F3E5AB] to-[#8C7322] drop-shadow-2xl px-2">{c('hero.titleGold', isZh ? '重工力量' : "the World's Work")}</span>
+          <h1 className={`hero-title-home ${isZh ? '' : 'tracking-tight'}`}>
+            <span className={isZh ? '' : 'block xl:inline leading-tight'}>{c('hero.title1', isZh ? '铸塑未来的' : 'Built to Power')}</span>
+            {isZh ? ' ' : <span className="hidden xl:inline"> </span>}
+            <span className={`text-transparent bg-clip-text bg-gradient-to-b from-[#D4AF37] via-[#F3E5AB] to-[#8C7322] drop-shadow-2xl ${isZh ? 'px-2' : 'block xl:inline px-2 xl:px-0 leading-tight'}`}>{c('hero.titleGold', isZh ? '重工力量' : "the World's Work")}</span>
           </h1>
           <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
-             <Link href="/products" className="w-full sm:w-[230px] h-[56px] rounded-full border border-transparent bg-[#D4AF37] text-white text-[14px] font-bold tracking-widest hover:bg-white hover:text-[#111111] transition-all duration-300 shadow-xl flex items-center justify-center gap-3 group">
+             <a href="#categories" className="w-full sm:w-[230px] h-[56px] rounded-full border border-transparent bg-[#D4AF37] text-white text-[14px] font-bold tracking-widest hover:bg-white hover:text-[#111111] transition-all duration-300 shadow-xl flex items-center justify-center gap-3 group">
                {c('hero.btn1', isZh ? '探索核心机械' : 'Browse Equipment')}
                <ArrowRight size={18} className="rotate-90 sm:rotate-0 group-hover:translate-x-1 transition-transform" />
-             </Link>
+             </a>
              <button 
                 onClick={toggleHeroVideo} 
                 className={`w-full sm:w-[230px] h-[56px] rounded-full border border-white/30 text-[14px] font-bold tracking-widest transition-all duration-500 backdrop-blur-md flex items-center justify-center gap-3 group shadow-xl ${isPlayingVideo ? 'bg-white text-[#111111]' : 'bg-black/40 text-white hover:bg-white hover:text-[#111111]'}`}
@@ -139,24 +156,32 @@ export default function Home() {
       ============================================= */}
       <section id="categories" className="w-full pt-28 pb-0 bg-white overflow-hidden relative">
         <div className="max-w-[1440px] mx-auto px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] lg:items-end mb-12 gap-8">
-            <div>
-              <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#111111]">{c('categories.title', isZh ? '全矩阵设备覆盖' : 'Full-Spectrum Equipment Coverage')}</h2>
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-12 gap-6 lg:gap-12">
+            <div className={`lg:flex-1 ${isZh ? 'max-w-4xl' : 'max-w-md xl:max-w-lg'}`}>
+              <h2 className={`font-black tracking-tighter text-[#111111] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('categories.title', isZh ? '全矩阵设备覆盖' : 'Full-Spectrum Equipment Coverage')}</h2>
             </div>
-            <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block">
+            <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
               <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('categories.desc', isZh ? '无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。' : 'Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum.')}</p>
             </div>
           </div>
         </div>
         
-        {/* 注入刚才写好的轮播组件 */}
-        <AutoCarousel categories={[
-            {name: isZh ? '大型挖掘机' : 'Excavators', type: 'Excavators', img: '/hero.png'}, 
-            {name: isZh ? '轮式装载机' : 'Wheel Loaders', type: 'Wheel Loaders', img: '/loader.png'}, 
-            {name: isZh ? '重型推土机' : 'Bulldozers', type: 'Bulldozers', img: '/hero.png'}, 
-            {name: isZh ? '平地机与压路机' : 'Graders & Rollers', type: 'Graders & Rollers', img: '/loader.png'},
-            {name: isZh ? '工业叉车' : 'Forklifts', type: 'Forklifts', img: '/hero.png'}
-        ]} />
+        {/* 品类画廊：动态读取 categories API，降级到静态 fallback */}
+        <AutoCarousel categories={
+          catList.length > 0
+            ? catList.map((cat) => ({
+                name: isZh ? cat.nameZh : cat.nameEn,
+                type: cat.slug,
+                img:  cat.imageUrl || '/hero.png',
+              }))
+            : [
+                { name: isZh ? '大型挖掘机'     : 'Excavators',       type: 'Excavators', img: '/hero.png'   },
+                { name: isZh ? '轮式装载机'     : 'Wheel Loaders',     type: 'Loaders',    img: '/loader.png' },
+                { name: isZh ? '重型推土机'     : 'Bulldozers',        type: 'Dozers',     img: '/hero.png'   },
+                { name: isZh ? '平地机与压路机' : 'Graders & Rollers', type: 'Rollers',    img: '/loader.png' },
+                { name: isZh ? '工业叉车'       : 'Forklifts',         type: 'Cranes',     img: '/hero.png'   },
+              ]
+        } />
       </section>
 
       {/* =========================================
@@ -164,48 +189,36 @@ export default function Home() {
       ============================================= */}
       <section className="w-full py-32 bg-[#FAFAFA] border-t border-gray-100">
         <div className="max-w-[1440px] mx-auto px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] lg:items-end mb-16 gap-8">
-            <div>
-              <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#111111]">{c('hot.title', isZh ? '严选热销机皇' : 'Top-Rated Machines, Handpicked')}</h2>
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-16 gap-6 lg:gap-12">
+            <div className={`lg:flex-1 ${isZh ? 'max-w-4xl' : 'max-w-md xl:max-w-lg'}`}>
+              <h2 className={`font-black tracking-tighter text-[#111111] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('hot.title', isZh ? '严选热销机皇' : 'Top-Rated Machines, Handpicked')}</h2>
             </div>
-            <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block">
-              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('hot.desc', isZh ? '这些顶级现货机型经过 100 项全案严苛过滤，代表着本月极低的故障率和极高的投资回报比，是全球大型基建的首选制胜装备。' : 'Every unit in this selection has passed a rigorous 100-point inspection. These machines represent the lowest failure rates and highest return on investment of the month — the preferred choice for major infrastructure projects worldwide.')}</p>
+            <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
+              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('hot.desc', isZh ? '全系通过100项核心排查。以更低故障率与极速回本周期，成为跨国基建抢单的绝对主力。' : 'Rigorously 100-point inspected. These high-ROI units offer peak performance and serve as the trusted backbone for infrastructure worldwide.')}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* 扩容为 6 图高密度阵列展示 */}
-            {[
-              {brand: "VOLVO", title: isZh ? "L350H 巨型装载机" : "L350H Wheel Loader", tag: isZh ? "现货就绪" : "Ready to Ship", tagBg:"#D4AF37", bgImg:"/loader.png"},
-              {brand: "CATERPILLAR", title: isZh ? "320D 履带挖掘机" : "320D Excavator", tag: isZh ? "仅剩 2 台" : "Only 2 Left", tagBg:"#ef4444", bgImg:"/hero.png"},
-              {brand: "KOMATSU", title: isZh ? "D155A 履带推土机" : "D155A Bulldozer", tag: isZh ? "现货就绪" : "Ready to Ship", tagBg:"#D4AF37", bgImg:"/hero.png"},
-              {brand: "CATERPILLAR", title: isZh ? "140H 轮式平地机" : "140H Motor Grader", tag: isZh ? "近3日发往拉各斯" : "Shipping Soon", tagBg:"#374151", bgImg:"/loader.png"},
-              {brand: "VOLVO", title: isZh ? "EC380D 重型挖掘机" : "EC380D Excavator", tag: isZh ? "现货就绪" : "Ready to Ship", tagBg:"#D4AF37", bgImg:"/hero.png"},
-              {brand: "XCMG", title: isZh ? "LW500KV 装载机" : "LW500KV Loader", tag: isZh ? "仅剩 1 台" : "Only 1 Left", tagBg:"#ef4444", bgImg:"/loader.png"}
-            ].map((item, index) => (
-              <Link href="/products" key={index} className="group bg-white flex flex-col cursor-pointer hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden pb-8 border border-gray-200">
+            {/* 动态读取真实产品，API 未就绪时降级到静态展示 */}
+            {(catalogProducts.length > 0 ? catalogProducts.slice(0, 6) : [
+              {brand: "VOLVO", title: isZh ? "L350H 巨型装载机" : "L350H Wheel Loader", image:"/loader.png", slug: null},
+              {brand: "CATERPILLAR", title: isZh ? "320D 履带挖掘机" : "320D Excavator", image:"/hero.png", slug: null},
+              {brand: "KOMATSU", title: isZh ? "D155A 履带推土机" : "D155A Bulldozer", image:"/hero.png", slug: null},
+              {brand: "CATERPILLAR", title: isZh ? "140H 轮式平地机" : "140H Motor Grader", image:"/loader.png", slug: null},
+              {brand: "VOLVO", title: isZh ? "EC380D 重型挖掘机" : "EC380D Excavator", image:"/hero.png", slug: null},
+              {brand: "XCMG", title: isZh ? "LW500KV 装载机" : "LW500KV Loader", image:"/loader.png", slug: null}
+            ]).map((item, index) => (
+              <Link href={item.slug ? `/products/${item.slug}` as `/${string}` : '/products'} key={index} className="group bg-white flex flex-col cursor-pointer hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden pb-8 border border-gray-200">
                 <div className="relative w-full aspect-[4/3] bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
-                  <Image src={item.bgImg} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" />
-                  {/* 稀缺营销标签直接取代死板的 HOT SALE */}
-                  <div 
-                    className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-lg z-10"
-                    style={{ backgroundColor: item.tagBg }}
-                  >
-                    {item.tag}
+                  <Image src={item.image || '/hero.png'} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" />
+                  <div className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-lg z-10 bg-[#D4AF37]">
+                    {isZh ? '现货就绪' : 'In Stock'}
                   </div>
                 </div>
                 <div className="px-8 mt-6">
-                  {/* 品牌名称 */}
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
-                    {isZh 
-                      ? (item.brand === 'VOLVO' ? '沃尔沃' 
-                         : item.brand === 'CATERPILLAR' ? '卡特彼勒'
-                         : item.brand === 'KOMATSU' ? '小松'
-                         : item.brand === 'XCMG' ? '徐工' : item.brand)
-                      : item.brand
-                    }
+                    {item.brand}
                   </span>
-                  {/* 大字号名称与右向箭头同行对齐 */}
                   <div className="flex items-center justify-between group-hover:text-[#D4AF37] transition-colors">
                     <h4 className="text-2xl font-black text-[#111111] leading-tight text-inherit">
                       {item.title}
@@ -239,7 +252,7 @@ export default function Home() {
               {c('depth.title1', isZh ? '二十载深耕专注' : 'Two Decades of Expertise.')}<br/>{c('depth.title2', isZh ? '构筑起坚实底盘。' : 'A Foundation You Can Trust.')}
             </h2>
             <p className="text-gray-400 leading-relaxed max-w-sm mb-12 text-sm">
-              {c('depth.desc', isZh ? '中国机械不仅仅是一家贸易商。我们在全球拥有自建的大型存放仓储与检测翻新基地。所有出海设备均由原厂级资深工程师亲手拆解、保养与极端测试，拒绝铁疙瘩，只发真战力。' : 'China Machinery is more than a trading company. We operate our own large-scale warehousing, inspection, and refurbishment facilities. Every machine destined for export is disassembled, serviced, and stress-tested by OEM-certified senior engineers. We ship real capability — not scrap iron.')}
+              {c('depth.desc', isZh ? '绝非单纯倒买。我们经营自有整备库，所有出海重卡均由资深工程师亲测排雷。绝不拼凑废铁，只输送能即刻下矿的巅峰运转力。' : 'More than a broker, we operate deep-inspection and refurbishment hubs. Every export unit is stress-tested by certified engineers. We deliver real heavy-duty power—not scrap iron.')}
             </p>
             
             {/* 合并：紧凑化的高能数据组 */}
@@ -299,12 +312,12 @@ export default function Home() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
             {[
-              { icon: ShieldCheck, title: c('s5.card.0.title', isZh ? "100项隐患全排查" : "100-Point Pre-Export Inspection"), desc: c('s5.card.0.desc', isZh ? "从发动机、液压主泵到外观履带，严格执行原厂级全案检测体系，出具全流程权威视频报告。" : "From the engine and hydraulic main pump to undercarriage and bodywork, every unit undergoes a factory-grade full-system inspection, with a comprehensive video report issued upon completion.") },
-              { icon: Factory, title: c('s5.card.1.title', isZh ? "全自管翻新与喷漆" : "In-House Overhaul & Refinishing"), desc: c('s5.card.1.desc', isZh ? "我们在国内拥有一流的数控机床与原厂喷漆房阵列，支持机器的动力总成大修与原厂化翻新装配。" : "Our facility houses precision CNC machinery and dedicated OEM-standard paint booths, capable of full powertrain overhauls and factory-grade refinishing to original specifications.") },
-              { icon: Wrench, title: c('s5.card.2.title', isZh ? "原厂级易损件直供" : "OEM-Grade Wear Parts Supply"), desc: c('s5.card.2.desc', isZh ? "为海外发盘一次性备齐各类核心易损件打包（如滤芯、皮带、销轴），大幅延长基建区作业生命。" : "We supply a comprehensive set of critical wear parts — including filters, belts, and pin assemblies — packed with every overseas shipment to maximize uptime in remote jobsite environments.") },
-              { icon: Settings, title: c('s5.card.3.title', isZh ? "工况重度改装调校" : "Heavy-Duty Site Adaptation"), desc: c('s5.card.3.desc', isZh ? "针对非洲极端高温和南美高湿度恶劣矿区，针对性地加强液压散热管线和冷媒，保障高温不沸腾。" : "For extreme heat in Africa and high-humidity mining sites in South America, we reinforce hydraulic cooling lines and upgrade coolant systems to prevent overheating under the most demanding conditions.") },
-              { icon: PhoneCall, title: c('s5.card.4.title', isZh ? "7x24 终身技术指导" : "24/7 Lifetime Technical Support"), desc: c('s5.card.4.desc', isZh ? "拥有双语专家护航的紧急技术支援小队，提供无延迟的长途排错、图纸指引与跨国连线辅导。" : "Our bilingual technical response team provides zero-delay remote diagnostics, technical drawings, and live cross-border troubleshooting assistance around the clock.") },
-              { icon: Globe, title: c('s5.card.5.title', isZh ? "跨洋海运零盲区清关" : "Door-to-Port Shipping & Customs Clearance"), desc: c('s5.card.5.desc', isZh ? "凭借深耕非洲、南美的高能航运合作伙伴，打磨出包税清关、滚装直航一体化的极简提货路线。" : "Backed by established shipping partners across Africa and South America, we provide a streamlined, all-inclusive solution covering duties, RO-RO direct sailing, and hassle-free port pickup.") }
+              { icon: ShieldCheck, title: c('s5.card.0.title', isZh ? "无死角动点实测" : "Certified Operational Status"), desc: c('s5.card.0.desc', isZh ? "深测发动机、液压主泵与回转马达等逾百处关键中枢。拒绝只看表面，订船前为您出具最原生的干活重载实录视频。" : "We verify the engine, main pump, and hydraulics under real stress. We provide unedited, full-load operational footage prior to shipment to guarantee zero unpleasant surprises.") },
+              { icon: Factory, title: c('s5.card.1.title', isZh ? "去油漆底薪级整备" : "Core Refurbishment & Paint"), desc: c('s5.card.1.desc', isZh ? "拒绝仅掩盖浮锈的“表面遮瑕喷漆法”。我们主动剔除底盘疲劳件与隐蔽处隐患，全车重喷，让二手机重回原厂巅峰态。" : "No cosmetic cover-ups here. We proactively replace internally fatigued parts and restore the physical body using OEM-standard coating, making a used machine look and run like new.") },
+              { icon: Wrench, title: c('s5.card.2.title', isZh ? "易损备件海运大礼包" : "Critical Spares Included"), desc: c('s5.card.2.desc', isZh ? "二手设备下矿最怕停工等小配件。出海发柜即直接带足全车必须的滤芯、皮带大礼包，从源头切断海外耗材断绝危机。" : "Used machines need vital maintenance. We pack free core wear parts (filters, belts, seals) intimately with your shipment, saving you from disastrous downtime at remote sites.") },
+              { icon: Settings, title: c('s5.card.3.title', isZh ? "恶劣工况特调防护" : "Harsh Environment Preps"), desc: c('s5.card.3.desc', isZh ? "海外极端特种矿区极度挑剔老设备底子。我们会主动为发往非洲高热区、南美高湿区的整机加厚管线、装甲与强制散热。" : "Mining abroad tests used equipment limits. We pre-modify cooling pipelines and reinforce undercarriages specifically combatting Africa's blazing heat or South America's humidity.") },
+              { icon: PhoneCall, title: c('s5.card.4.title', isZh ? "跨洋连线技术问诊" : "Remote Diagnostic Support"), desc: c('s5.card.4.desc', isZh ? "海外工地找不到正规挖掘机修理工？我们的双语大拿随时响应您的 WhatsApp 视频，手把手看图纸带您老外排解疑难杂症。" : "No authorized dealers nearby? Our bilingual engineers provide 24/7 video guidance via WhatsApp, walking your local mechanics directly through any complex repair breakdowns.") },
+              { icon: Globe, title: c('s5.card.5.title', isZh ? "全包免虑门到港运输" : "Streamlined Export Logistics"), desc: c('s5.card.5.desc', isZh ? "全权包办拆机塞框架箱、重金抢锁特种滚装舱位及报关批文。海外买手只需在目的港安全坐等，无须操心半点复杂手续。" : "We completely handle Flat Rack structural loading, RO-RO booking, and all export permits. You just comfortably wait at the destination port bypassing all complex cross-border documentation.") }
             ].map((feature, i) => (
               <div key={i} className="flex flex-col items-center text-center p-8 bg-gray-50 border border-gray-100 rounded-3xl hover:border-black transition-colors duration-500 shadow-sm hover:shadow-xl group">
                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 group-hover:bg-[#111111] transition-all duration-500">
@@ -330,12 +343,12 @@ export default function Home() {
       ============================================= */}
       <section className="w-full py-32 bg-[#FAFAFA] border-t border-gray-100">
         <div className="max-w-[1440px] mx-auto px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] lg:items-end mb-16 gap-8">
-            <div>
-              <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#111111]">{c('news.title', isZh ? '交机实录与动态' : 'Live Delivery Updates')}</h2>
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-16 gap-6 lg:gap-12">
+            <div className={`lg:flex-1 ${isZh ? 'max-w-4xl' : 'max-w-[360px] md:max-w-md xl:max-w-lg'}`}>
+              <h2 className={`font-black tracking-tighter text-[#111111] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('news.title', isZh ? '交机实录与动态' : 'Live Delivery Updates')}</h2>
             </div>
-            <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block">
-              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('news.desc', isZh ? '真实发盘、跨国海运、开箱验收。我们为您展示实时的设备全球周转录像与物流快讯，亲眼见证我们的端到端跨国履约与重装交付能力。' : 'Real shipments. International ocean freight. On-site unboxing verification. We share live footage and logistics updates from active global dispatches so you can see our end-to-end delivery capability firsthand.')}</p>
+            <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
+              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('news.desc', isZh ? '从实景发车到跨洋拆箱。实时共享一线的发运视频与物流动态，让透明高效的硬核实力亲见于天下。' : 'Experience our end-to-end delivery capability. Watch live dispatch footage and international shipping updates directly from port to site.')}</p>
             </div>
           </div>
           
@@ -434,15 +447,21 @@ export default function Home() {
                ) : null}
                <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
                  <div className="flex items-center gap-3 shrink-0 lg:mr-4">
-                    <a href="https://wa.me/8615375319246" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white flex items-center justify-center transition-all duration-300 group" title="WhatsApp">
-                      <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M11.996 0a11.965 11.965 0 00-10.23 18.238L.044 24l6.012-1.632A11.968 11.968 0 1011.996 0zm6.657 17.244c-.266.75-1.523 1.455-2.107 1.517-.5.061-1.144.15-3.333-.762-2.646-1.096-4.35-3.805-4.48-4.004-.13-.198-1.071-1.423-1.071-2.716 0-1.291.674-1.924.912-2.19.239-.265.518-.33.69-.33.17 0 .343 0 .493.007.158.007.368-.06.574.4.215.474.721 1.777.786 1.909.066.133.111.288.026.467-.085.18-.129.294-.258.438-.13.14-.268.309-.387.433-.13.13-.264.276-.115.539.148.261.662 1.11 1.402 1.874.953.985 1.79 1.285 2.052 1.405.263.12.417.098.572-.078.155-.175.67-1.02.85-1.371.18-.35.358-.291.597-.197.24.093 1.517.714 1.776.843.256.13.43.193.493.302.062.108.062.631-.205 1.38z"/></svg>
-                    </a>
-                    <a href="#" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white flex items-center justify-center transition-all duration-300 group" title="LinkedIn">
-                      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" className="group-hover:scale-110 transition-transform"><path d="M22.23 0H1.77C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.008zM7.12 20.452H3.558V9h3.562v11.452zm-1.78-13.02c-1.144 0-2.065-.925-2.065-2.064 0-1.139.92-2.064 2.065-2.064 1.14 0 2.064.925 2.064 2.064 0 1.139-.924 2.064-2.064 2.064zm15.11 13.02h-3.553v-5.569c0-1.328-.027-3.037-1.852-3.037-1.854 0-2.136 1.445-2.136 2.939v5.667H9.354V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286z"/></svg>
-                    </a>
-                    <a href="#" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all duration-300 group" title="Facebook">
-                      <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    </a>
+                     {settings?.contactWhatsApp && (
+                        <a href={`https://wa.me/${settings.contactWhatsApp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white flex items-center justify-center transition-all duration-300 group" title="WhatsApp">
+                          <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M11.996 0a11.965 11.965 0 00-10.23 18.238L.044 24l6.012-1.632A11.968 11.968 0 1011.996 0zm6.657 17.244c-.266.75-1.523 1.455-2.107 1.517-.5.061-1.144.15-3.333-.762-2.646-1.096-4.35-3.805-4.48-4.004-.13-.198-1.071-1.423-1.071-2.716 0-1.291.674-1.924.912-2.19.239-.265.518-.33.69-.33.17 0 .343 0 .493.007.158.007.368-.06.574.4.215.474.721 1.777.786 1.909.066.133.111.288.026.467-.085.18-.129.294-.258.438-.13.14-.268.309-.387.433-.13.13-.264.276-.115.539.148.261.662 1.11 1.402 1.874.953.985 1.79 1.285 2.052 1.405.263.12.417.098.572-.078.155-.175.67-1.02.85-1.371.18-.35.358-.291.597-.197.24.093 1.517.714 1.776.843.256.13.43.193.493.302.062.108.062.631-.205 1.38z"/></svg>
+                        </a>
+                     )}
+                     {settings?.socialLinkedin && (
+                        <a href={settings.socialLinkedin} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white flex items-center justify-center transition-all duration-300 group" title="LinkedIn">
+                          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" className="group-hover:scale-110 transition-transform"><path d="M22.23 0H1.77C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.008zM7.12 20.452H3.558V9h3.562v11.452zm-1.78-13.02c-1.144 0-2.065-.925-2.065-2.064 0-1.139.92-2.064 2.065-2.064 1.14 0 2.064.925 2.064 2.064 0 1.139-.924 2.064-2.064 2.064zm15.11 13.02h-3.553v-5.569c0-1.328-.027-3.037-1.852-3.037-1.854 0-2.136 1.445-2.136 2.939v5.667H9.354V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286z"/></svg>
+                        </a>
+                     )}
+                     {settings?.socialFacebook && (
+                        <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all duration-300 group" title="Facebook">
+                          <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </a>
+                     )}
                  </div>
                  
                  <button

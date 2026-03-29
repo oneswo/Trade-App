@@ -196,12 +196,14 @@ const FIRST_DETAIL: CatalogProductDetail = {
     "/images/products/5.jpg",
     "/images/products/6.jpg",
   ],
-  videoUrl: null,
+  videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
   coreSpecs: [
     { label: "Year", value: "2019" },
     { label: "Hours", value: "3,200 hours" },
     { label: "Operating Weight", value: "21.5 t" },
     { label: "Location", value: "Bonded warehouse, Shanghai" },
+    { label: "Engine Model", value: "CAT C6.4 ACERT" },
+    { label: "Bucket Capacity", value: "1.2 m³" },
   ],
   detailedSpecs: [
     { label: "Engine Model", value: "CAT C6.4 ACERT" },
@@ -351,13 +353,21 @@ function buildDefaultDetail(card: CatalogProductCard): CatalogProductDetail {
     ...card,
     summary: `${card.title} is in good condition and can be inspected by video quickly.`,
     description: `${card.title} is currently in stock and ready for export delivery.`,
-    images: [card.image],
-    videoUrl: null,
+    images: [
+      card.image,
+      "/images/products/2.jpg",
+      "/images/products/3.jpg",
+      "/images/products/4.jpg",
+      "/images/products/5.jpg",
+    ],
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     coreSpecs: [
       { label: "Year", value: card.year },
       { label: "Hours", value: card.hours.replace("H", " hours") },
       { label: "Operating Weight", value: card.weight.replace("T", " t") },
       { label: "Location", value: card.location },
+      { label: "Engine Model", value: card.engine },
+      { label: "Brand", value: card.brand },
     ],
     detailedSpecs: [
       { label: "Engine Model", value: card.engine },
@@ -373,9 +383,10 @@ const MOCK_DETAIL_MAP = new Map<string, CatalogProductDetail>(
 );
 MOCK_DETAIL_MAP.set(FIRST_DETAIL.slug, FIRST_DETAIL);
 
+// 默认开启真实 API，仅在显式设为 "false" 或 "0" 时才降级到 mock
 const ENABLE_PRODUCT_API =
-  process.env.NEXT_PUBLIC_ENABLE_PRODUCT_API === "1" ||
-  process.env.NEXT_PUBLIC_ENABLE_PRODUCT_API === "true";
+  process.env.NEXT_PUBLIC_ENABLE_PRODUCT_API !== "false" &&
+  process.env.NEXT_PUBLIC_ENABLE_PRODUCT_API !== "0";
 
 function sanitizeImage(url: string | null | undefined) {
   if (!url) return FALLBACK_IMAGE;
@@ -400,7 +411,7 @@ function toApiCard(item: ApiProductListItem): CatalogProductCard {
 }
 
 function pickTopSpecs(specs: Array<{ key: string; value: string }>): ProductSpecItem[] {
-  return specs.slice(0, 4).map((item) => ({
+  return specs.slice(0, 6).map((item) => ({
     label: item.key,
     value: item.value,
   }));
@@ -533,5 +544,32 @@ export async function getCatalogRelatedProducts(
   locale: SupportedLocale = DEFAULT_LOCALE
 ): Promise<CatalogProductCard[]> {
   const list = await getCatalogProducts(locale);
-  return list.filter((item) => item.slug !== slug).slice(0, limit);
+  const currentProduct = list.find((item) => item.slug === slug);
+  const others = list.filter((item) => item.slug !== slug);
+
+  if (!currentProduct) {
+    return others.slice(0, limit);
+  }
+
+  // 辅助函数：解析吨位数字 (例如 "21.5T" -> 21.5)
+  const parseWeight = (w: string) => parseFloat(w.replace(/[^\d.]/g, '')) || 0;
+  const currentWeight = parseWeight(currentProduct.weight);
+
+  // 1. 优先提取同品类机器 (优先推荐相同的机种，例如：挖机配挖机)
+  const sameCategory = others.filter((item) => item.category === currentProduct.category);
+
+  // 2. 在同品类中，按照“吨位最接近”进行绝对排序 (展现真正的同级竞品)
+  sameCategory.sort((a, b) => {
+    const diffA = Math.abs(parseWeight(a.weight) - currentWeight);
+    const diffB = Math.abs(parseWeight(b.weight) - currentWeight);
+    return diffA - diffB;
+  });
+
+  // 3. 提取非同类机器作为最后的替补
+  const differentCategory = others.filter((item) => item.category !== currentProduct.category);
+
+  // 4. 强强合并，确保页面永远有数据呈现
+  const results = [...sameCategory, ...differentCategory];
+
+  return results.slice(0, limit);
 }

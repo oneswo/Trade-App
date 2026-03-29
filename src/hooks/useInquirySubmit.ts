@@ -91,6 +91,10 @@ export function useInquirySubmit({ source }: UseInquirySubmitOptions) {
           setSubmitMessage(messages.rateLimit);
           return;
         }
+        if (result.error === "validation_failed") {
+          setSubmitMessage(messages.failed + " (测试时请多输几个字)");
+          return;
+        }
         setSubmitMessage(messages.failed);
         return;
       }
