@@ -16,6 +16,7 @@ export interface CatalogProductCard {
   engine: string;
   location: string;
   category: string;
+  categorySlug: string;
   image: string;
 }
 
@@ -26,42 +27,40 @@ export interface CatalogProductDetail extends CatalogProductCard {
   videoUrl: string | null;
   coreSpecs: ProductSpecItem[];
   detailedSpecs: ProductSpecItem[];
+  stockAmount?: number;
 }
 
 interface ApiProductListItem {
   id: string;
   name: string;
+  nameZh?: string;
+  nameEn?: string;
   slug: string;
   category: string;
   summary: string;
+  summaryZh?: string;
+  summaryEn?: string;
+  coreMetrics?: {
+    year?: string;
+    hours?: string;
+    tonnage?: string;
+    location?: string;
+    model?: string;
+    brand?: string;
+  };
+  stockAmount?: number;
   coverImageUrl: string | null;
   createdAt: string;
 }
 
-interface ApiProductDetailItem {
-  id: string;
-  name: string;
-  slug: string;
-  category: string;
-  summary: string;
+interface ApiProductDetailItem extends ApiProductListItem {
   description: string;
   specs: Array<{ key: string; value: string }>;
-  coverImageUrl: string | null;
   galleryImageUrls: string[];
   videoUrl: string | null;
-  createdAt: string;
 }
 
 const FALLBACK_IMAGE = "/images/products/1.jpg";
-
-const MOCK_TITLE_ZH: Record<string, string> = {
-  "cat-320d-l": "卡特 320D L 履带挖掘机",
-  "komatsu-pc200-8": "小松 PC200-8 液压挖掘机",
-  "sany-sy365h": "三一 SY365H 大型挖掘机",
-  "hitachi-zx210lc-5n": "日立 ZX210LC-5N 履带挖掘机",
-  "cat-950h-loader": "卡特 950H 轮式装载机",
-  "komatsu-d155a-6": "小松 D155A-6 履带推土机",
-};
 
 const BRAND_ZH: Record<string, string> = {
   CAT: "卡特",
@@ -102,121 +101,6 @@ const SPEC_LABELS = {
   status: { zh: "库存状态", en: "Stock Status" },
 } as const;
 
-const MOCK_CARDS: CatalogProductCard[] = [
-  {
-    id: "mock-1",
-    slug: "cat-320d-l",
-    title: "Caterpillar 320D L Crawler Excavator",
-    brand: "CAT",
-    year: "2019",
-    weight: "21.5T",
-    hours: "3,200H",
-    engine: "CAT C6.4",
-    location: "Shanghai",
-    category: "Excavator",
-    image: "/images/products/1.jpg",
-  },
-  {
-    id: "mock-2",
-    slug: "komatsu-pc200-8",
-    title: "Komatsu PC200-8 Hydraulic Excavator",
-    brand: "Komatsu",
-    year: "2018",
-    weight: "20.8T",
-    hours: "4,100H",
-    engine: "SAA6D107E",
-    location: "Shanghai",
-    category: "Excavator",
-    image: "/images/products/2.jpg",
-  },
-  {
-    id: "mock-3",
-    slug: "sany-sy365h",
-    title: "SANY SY365H Heavy Large Excavator",
-    brand: "SANY",
-    year: "2021",
-    weight: "36.0T",
-    hours: "1,800H",
-    engine: "Isuzu",
-    location: "Guangzhou",
-    category: "Excavator",
-    image: "/images/products/3.jpg",
-  },
-  {
-    id: "mock-4",
-    slug: "hitachi-zx210lc-5n",
-    title: "Hitachi ZX210LC-5N Track Excavator",
-    brand: "Hitachi",
-    year: "2017",
-    weight: "21.2T",
-    hours: "4,850H",
-    engine: "Isuzu",
-    location: "Shanghai",
-    category: "Excavator",
-    image: "/images/products/4.jpg",
-  },
-  {
-    id: "mock-5",
-    slug: "cat-950h-loader",
-    title: "Caterpillar 950H Wheel Loader",
-    brand: "CAT",
-    year: "2019",
-    weight: "18.5T",
-    hours: "2,900H",
-    engine: "CAT C7.1",
-    location: "Shanghai",
-    category: "Loader",
-    image: "/images/products/5.jpg",
-  },
-  {
-    id: "mock-6",
-    slug: "komatsu-d155a-6",
-    title: "Komatsu D155A-6 Crawler Dozer",
-    brand: "Komatsu",
-    year: "2016",
-    weight: "39.5T",
-    hours: "5,500H",
-    engine: "SAA6D140E",
-    location: "Shanghai",
-    category: "Dozer",
-    image: "/images/products/6.jpg",
-  },
-];
-
-const FIRST_DETAIL: CatalogProductDetail = {
-  ...MOCK_CARDS[0],
-  summary: "Best-selling classic model with stable condition and mature export workflow.",
-  description:
-    "This machine has passed a full inspection process and is suitable for diverse overseas working conditions.",
-  images: [
-    "/images/products/1.jpg",
-    "/images/products/2.jpg",
-    "/images/products/3.jpg",
-    "/images/products/4.jpg",
-    "/images/products/5.jpg",
-    "/images/products/6.jpg",
-  ],
-  videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-  coreSpecs: [
-    { label: "Year", value: "2019" },
-    { label: "Hours", value: "3,200 hours" },
-    { label: "Operating Weight", value: "21.5 t" },
-    { label: "Location", value: "Bonded warehouse, Shanghai" },
-    { label: "Engine Model", value: "CAT C6.4 ACERT" },
-    { label: "Bucket Capacity", value: "1.2 m³" },
-  ],
-  detailedSpecs: [
-    { label: "Engine Model", value: "CAT C6.4 ACERT" },
-    { label: "Net Power", value: "103 kW (138 hp)" },
-    { label: "Bucket Capacity", value: "1.2 m³" },
-    { label: "Swing Speed", value: "11.5 rpm" },
-    { label: "Max Digging Depth", value: "6,650 mm" },
-    { label: "Track Gauge", value: "2,380 mm" },
-    { label: "Fuel Tank Capacity", value: "410 L" },
-    { label: "Country of Origin", value: "Made in Japan" },
-  ],
-};
-
 function normalizeCategoryKey(category: string) {
   const raw = category.trim().toLowerCase();
   if (raw.includes("挖") || raw.includes("excavator")) return "excavator";
@@ -253,22 +137,7 @@ function localizeHours(hours: string, locale: SupportedLocale) {
   return hours.replace("小时", "hours");
 }
 
-function localizeTitle(slug: string, title: string, locale: SupportedLocale) {
-  if (locale === "en") return title;
-  return MOCK_TITLE_ZH[slug] ?? title;
-}
-
-function toZHSummary(detail: CatalogProductDetail) {
-  const title = localizeTitle(detail.slug, detail.title, "zh");
-  return `${title}，整机状态良好，可快速安排视频验机。`;
-}
-
-function toZHDescription(detail: CatalogProductDetail) {
-  const title = localizeTitle(detail.slug, detail.title, "zh");
-  return `${title} 当前在库，可按出口流程完成整机检查与发运。`;
-}
-
-function normalizeSpecKey(label: string) {
+function normalizeSpecKey(label: string): keyof typeof SPEC_LABELS | "" {
   const lower = label.trim().toLowerCase();
   if (lower.includes("year") || label.includes("出厂年份")) return "year";
   if (lower.includes("hour") || label.includes("工时")) return "hours";
@@ -318,168 +187,75 @@ function localizeSpecValue(value: string, locale: SupportedLocale) {
     .replace("广州", "Guangzhou");
 }
 
-function localizeCard(card: CatalogProductCard, locale: SupportedLocale): CatalogProductCard {
-  return {
-    ...card,
-    title: localizeTitle(card.slug, card.title, locale),
-    brand: localizeBrand(card.brand, locale),
-    category: localizeCategory(card.category, locale),
-    location: localizeLocation(card.location, locale),
-    weight: localizeWeight(card.weight, locale),
-    hours: localizeHours(card.hours, locale),
-  };
-}
-
-function localizeDetail(detail: CatalogProductDetail, locale: SupportedLocale): CatalogProductDetail {
-  const localizedCard = localizeCard(detail, locale);
-  return {
-    ...detail,
-    ...localizedCard,
-    summary: locale === "zh" ? toZHSummary(detail) : detail.summary,
-    description: locale === "zh" ? toZHDescription(detail) : detail.description,
-    coreSpecs: detail.coreSpecs.map((spec) => ({
-      label: localizeSpecLabel(spec.label, locale),
-      value: localizeSpecValue(spec.value, locale),
-    })),
-    detailedSpecs: detail.detailedSpecs.map((spec) => ({
-      label: localizeSpecLabel(spec.label, locale),
-      value: localizeSpecValue(spec.value, locale),
-    })),
-  };
-}
-
-function buildDefaultDetail(card: CatalogProductCard): CatalogProductDetail {
-  return {
-    ...card,
-    summary: `${card.title} is in good condition and can be inspected by video quickly.`,
-    description: `${card.title} is currently in stock and ready for export delivery.`,
-    images: [
-      card.image,
-      "/images/products/2.jpg",
-      "/images/products/3.jpg",
-      "/images/products/4.jpg",
-      "/images/products/5.jpg",
-    ],
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    coreSpecs: [
-      { label: "Year", value: card.year },
-      { label: "Hours", value: card.hours.replace("H", " hours") },
-      { label: "Operating Weight", value: card.weight.replace("T", " t") },
-      { label: "Location", value: card.location },
-      { label: "Engine Model", value: card.engine },
-      { label: "Brand", value: card.brand },
-    ],
-    detailedSpecs: [
-      { label: "Engine Model", value: card.engine },
-      { label: "Brand", value: card.brand },
-      { label: "Category", value: card.category },
-      { label: "Stock Status", value: "In Stock" },
-    ],
-  };
-}
-
-const MOCK_DETAIL_MAP = new Map<string, CatalogProductDetail>(
-  MOCK_CARDS.map((card) => [card.slug, buildDefaultDetail(card)])
-);
-MOCK_DETAIL_MAP.set(FIRST_DETAIL.slug, FIRST_DETAIL);
-
-// 默认开启真实 API，仅在显式设为 "false" 或 "0" 时才降级到 mock
-const ENABLE_PRODUCT_API =
-  process.env.NEXT_PUBLIC_ENABLE_PRODUCT_API !== "false" &&
-  process.env.NEXT_PUBLIC_ENABLE_PRODUCT_API !== "0";
-
 function sanitizeImage(url: string | null | undefined) {
   if (!url) return FALLBACK_IMAGE;
   return url;
 }
 
-function toApiCard(item: ApiProductListItem): CatalogProductCard {
-  const year = String(new Date(item.createdAt).getFullYear() || "--");
+function toApiCard(item: ApiProductListItem, locale: SupportedLocale): CatalogProductCard {
+  const year = item.coreMetrics?.year || String(new Date(item.createdAt).getFullYear() || "--");
+  const title = locale === "zh" ? (item.nameZh || item.name) : (item.nameEn || item.name);
+  
   return {
     id: item.id,
     slug: item.slug,
-    title: item.name,
-    brand: "KXTJ",
+    title,
+    brand: localizeBrand(item.coreMetrics?.brand || "KXTJ", locale),
     year,
-    weight: "--",
-    hours: "--",
-    engine: "--",
-    location: "Shanghai",
-    category: item.category || "Excavator",
+    weight: localizeWeight(item.coreMetrics?.tonnage || "--", locale),
+    hours: localizeHours(item.coreMetrics?.hours || "--", locale),
+    engine: item.coreMetrics?.model || "--",
+    location: localizeLocation(item.coreMetrics?.location || "Shanghai", locale),
+    category: localizeCategory(item.category || "Excavator", locale),
+    categorySlug: (item.category || "").trim().toLowerCase(),
     image: sanitizeImage(item.coverImageUrl),
   };
 }
 
-function pickTopSpecs(specs: Array<{ key: string; value: string }>): ProductSpecItem[] {
-  return specs.slice(0, 6).map((item) => ({
-    label: item.key,
-    value: item.value,
-  }));
-}
-
-function toApiDetail(item: ApiProductDetailItem): CatalogProductDetail {
+function toApiDetail(item: ApiProductDetailItem, locale: SupportedLocale): CatalogProductDetail {
+  const card = toApiCard(item, locale);
   const specs = Array.isArray(item.specs) ? item.specs : [];
   const images = [item.coverImageUrl, ...(item.galleryImageUrls || [])].filter(
     (value): value is string => Boolean(value)
   );
 
-  const coreSpecs = pickTopSpecs(specs);
+  const summary = locale === "zh" ? (item.summaryZh || item.summary) : (item.summaryEn || item.summary);
+  // Optional: add descriptionZh to DB if needed, fallback to description for now
+  const description = item.description || "";
+
+  const coreSpecs: ProductSpecItem[] = [];
+  if (item.coreMetrics) {
+    if (item.coreMetrics.year) coreSpecs.push({ label: localizeSpecLabel("Year", locale), value: item.coreMetrics.year });
+    if (item.coreMetrics.hours) coreSpecs.push({ label: localizeSpecLabel("Hours", locale), value: localizeSpecValue(item.coreMetrics.hours, locale) });
+    if (item.coreMetrics.tonnage) coreSpecs.push({ label: localizeSpecLabel("Operating Weight", locale), value: localizeSpecValue(item.coreMetrics.tonnage, locale) });
+    if (item.coreMetrics.location) coreSpecs.push({ label: localizeSpecLabel("Location", locale), value: localizeLocation(item.coreMetrics.location, locale) });
+    if (item.coreMetrics.model) coreSpecs.push({ label: localizeSpecLabel("Engine Model", locale), value: item.coreMetrics.model });
+    if (item.coreMetrics.brand) coreSpecs.push({ label: localizeSpecLabel("Brand", locale), value: localizeBrand(item.coreMetrics.brand, locale) });
+  }
 
   return {
-    id: item.id,
-    slug: item.slug,
-    title: item.name,
-    brand: "KXTJ",
-    year: String(new Date(item.createdAt).getFullYear() || "--"),
-    weight: specs.find((s) => /weight/i.test(s.key))?.value || "--",
-    hours: specs.find((s) => /hour/i.test(s.key))?.value || "--",
-    engine: specs.find((s) => /engine/i.test(s.key))?.value || "--",
-    location: "Shanghai",
-    category: item.category || "Excavator",
-    image: sanitizeImage(item.coverImageUrl),
-    summary: item.summary || "",
-    description: item.description || "",
+    ...card,
+    summary: summary || "",
+    description,
     images: images.length > 0 ? images : [FALLBACK_IMAGE],
     videoUrl: item.videoUrl || null,
-    coreSpecs:
-      coreSpecs.length > 0
-        ? coreSpecs
-        : [
-            { label: "Category", value: item.category || "Excavator" },
-            { label: "Brand", value: "KXTJ" },
-            { label: "Location", value: "Shanghai" },
-            { label: "Stock Status", value: "In Stock" },
-          ],
-    detailedSpecs:
-      specs.length > 0
-        ? specs.map((spec) => ({ label: spec.key, value: spec.value }))
-        : [
-            { label: "Brand", value: "KXTJ" },
-            { label: "Category", value: item.category || "Excavator" },
-          ],
+    stockAmount: item.stockAmount,
+    coreSpecs: coreSpecs.length > 0 ? coreSpecs : [
+      { label: localizeSpecLabel("Category", locale), value: card.category },
+      { label: localizeSpecLabel("Brand", locale), value: card.brand },
+      { label: localizeSpecLabel("Location", locale), value: card.location },
+      { label: localizeSpecLabel("Stock Status", locale), value: localizeSpecValue("In Stock", locale) },
+    ],
+    detailedSpecs: specs.length > 0
+      ? specs.map((spec) => ({
+          label: localizeSpecLabel(spec.key, locale),
+          value: localizeSpecValue(spec.value, locale),
+        }))
+      : [
+          { label: localizeSpecLabel("Brand", locale), value: card.brand },
+          { label: localizeSpecLabel("Category", locale), value: card.category },
+        ],
   };
-}
-
-function mockList(locale: SupportedLocale) {
-  const extendedCards = [
-    ...MOCK_CARDS,
-    ...MOCK_CARDS.map(c => ({...c, id: c.id + '-v2', slug: c.slug + '-v2'})),
-    ...MOCK_CARDS.map(c => ({...c, id: c.id + '-v3', slug: c.slug + '-v3'}))
-  ];
-  return extendedCards.map((item) => localizeCard(item, locale));
-}
-
-function mockDetail(slug: string, locale: SupportedLocale) {
-  // To handle duplicated slugs from extendedCards
-  let baseSlug = slug;
-  if (slug.endsWith('-v2')) baseSlug = slug.replace('-v2', '');
-  if (slug.endsWith('-v3')) baseSlug = slug.replace('-v3', '');
-  
-  const item = MOCK_DETAIL_MAP.get(baseSlug);
-  if (!item) return null;
-  // clone item with current slug
-  const matchedItem = { ...item, slug, id: slug };
-  return localizeDetail(matchedItem, locale);
 }
 
 async function fetchJson<T>(url: string): Promise<T | null> {
@@ -498,18 +274,12 @@ async function fetchJson<T>(url: string): Promise<T | null> {
 export async function getCatalogProducts(
   locale: SupportedLocale = DEFAULT_LOCALE
 ): Promise<CatalogProductCard[]> {
-  if (!ENABLE_PRODUCT_API) {
-    return mockList(locale);
-  }
-
   try {
     const data = await fetchJson<ApiProductListItem[]>("/api/products");
-    if (!data || data.length === 0) {
-      return mockList(locale);
-    }
-    return data.map(toApiCard).map((item) => localizeCard(item, locale));
+    if (!data) return [];
+    return data.map((item) => toApiCard(item, locale));
   } catch {
-    return mockList(locale);
+    return [];
   }
 }
 
@@ -519,22 +289,17 @@ export async function getCatalogProductDetail(
 ): Promise<CatalogProductDetail | null> {
   if (!slug) return null;
 
-  if (!ENABLE_PRODUCT_API) {
-    return mockDetail(slug, locale);
-  }
-
   try {
     const data = await fetchJson<ApiProductDetailItem>(
       `/api/products/${encodeURIComponent(slug)}`
     );
 
     if (data) {
-      return localizeDetail(toApiDetail(data), locale);
+      return toApiDetail(data, locale);
     }
-
-    return mockDetail(slug, locale);
+    return null;
   } catch {
-    return mockDetail(slug, locale);
+    return null;
   }
 }
 
@@ -551,24 +316,19 @@ export async function getCatalogRelatedProducts(
     return others.slice(0, limit);
   }
 
-  // 辅助函数：解析吨位数字 (例如 "21.5T" -> 21.5)
   const parseWeight = (w: string) => parseFloat(w.replace(/[^\d.]/g, '')) || 0;
   const currentWeight = parseWeight(currentProduct.weight);
 
-  // 1. 优先提取同品类机器 (优先推荐相同的机种，例如：挖机配挖机)
   const sameCategory = others.filter((item) => item.category === currentProduct.category);
 
-  // 2. 在同品类中，按照“吨位最接近”进行绝对排序 (展现真正的同级竞品)
   sameCategory.sort((a, b) => {
     const diffA = Math.abs(parseWeight(a.weight) - currentWeight);
     const diffB = Math.abs(parseWeight(b.weight) - currentWeight);
     return diffA - diffB;
   });
 
-  // 3. 提取非同类机器作为最后的替补
   const differentCategory = others.filter((item) => item.category !== currentProduct.category);
 
-  // 4. 强强合并，确保页面永远有数据呈现
   const results = [...sameCategory, ...differentCategory];
 
   return results.slice(0, limit);

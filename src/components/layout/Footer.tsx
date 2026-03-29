@@ -2,11 +2,18 @@
 import { Link } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useCategories } from '@/hooks/useCategories';
+import { useBrands } from '@/hooks/useBrands';
 
 export default function Footer() {
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { settings } = useSiteSettings();
+  const { categories } = useCategories();
+  const { brands } = useBrands();
+
+  const footerCategories = categories.filter(c => c.enabled).slice(0, 6);
+  const footerBrands = brands.slice(0, 6);
 
   // 获取 Logo 文字
   const logoText = isZh ? settings.logoText : settings.logoTextEn;
@@ -57,7 +64,7 @@ export default function Footer() {
 
   return (
     <footer className="w-full bg-[#111111] text-white pt-16 pb-8 border-t border-[#222]">
-      <div className="max-w-[1440px] mx-auto px-8">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-10">
           
           {/* Col 1: Brand & Contact Info */}
@@ -120,35 +127,47 @@ export default function Footer() {
           <div className="lg:col-span-2 lg:col-start-7">
             <h4 className="text-sm font-bold text-white mb-8 tracking-widest uppercase">{isZh ? '快速链接' : 'Quick Links'}</h4>
             <ul className="flex flex-col gap-4 text-sm text-gray-400 font-medium">
-              {(isZh 
-                ? [{label:'主页', path:'/'}, {label:'找设备', path:'/products'}, {label:'联系销售代表', path:'/contact'}] 
-                : [{label:'Home', path:'/'}, {label:'Equipment', path:'/products'}, {label:'Contact Sales', path:'/contact'}]).map(item => (
-                 <li key={item.label}><Link href={item.path as `/${string}`} className="hover:text-[#D4AF37] transition-colors">{item.label}</Link></li>
-              ))}
+              <li><Link href="/" className="hover:text-[#D4AF37] transition-colors">{isZh ? '主页' : 'Home'}</Link></li>
+              <li><Link href="/products" className="hover:text-[#D4AF37] transition-colors">{isZh ? '找设备' : 'Equipment'}</Link></li>
+              <li>
+                <Link href={"/contact#sales-team" as `/${string}`} className="hover:text-[#D4AF37] transition-colors">
+                  {isZh ? '联系销售代表' : 'Contact Sales'}
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Col 3: Brands */}
+          {/* Col 3: Brands（动态从已发布产品提取，最多 6 个） */}
           <div className="lg:col-span-2">
             <h4 className="text-sm font-bold text-white mb-8 tracking-widest uppercase">{isZh ? '品牌矩阵' : 'Brands'}</h4>
             <ul className="flex flex-col gap-4 text-sm text-gray-400 font-medium">
-              {(isZh 
-                 ? ['卡特彼勒', '小松', '日立', '三一重工', '徐工', '沃尔沃']
-                 : ['Caterpillar', 'Komatsu', 'Hitachi', 'SANY', 'XCMG', 'VOLVO']).map(item => (
-                 <li key={item}><Link href="/products" className="hover:text-[#D4AF37] transition-colors">{item}</Link></li>
-              ))}
+              {footerBrands.length > 0
+                ? footerBrands.map(brand => (
+                    <li key={brand}>
+                      <Link href={`/products?brand=${encodeURIComponent(brand)}` as `/${string}`} className="hover:text-[#D4AF37] transition-colors">
+                        {brand}
+                      </Link>
+                    </li>
+                  ))
+                : <li className="text-gray-600 text-xs">{isZh ? '暂无品牌数据' : 'No brands yet'}</li>
+              }
             </ul>
           </div>
 
-          {/* Col 4: Equipment */}
+          {/* Col 4: Categories（动态从分类表读取，最多 6 个） */}
           <div className="lg:col-span-2">
             <h4 className="text-sm font-bold text-white mb-8 tracking-widest uppercase">{isZh ? '核心类目' : 'Categories'}</h4>
             <ul className="flex flex-col gap-4 text-sm text-gray-400 font-medium">
-              {(isZh 
-                 ? ['履带挖掘机', '轮式装载机', '重型推土机', '平地机', '压路机', '叉车']
-                 : ['Excavators', 'Wheel Loaders', 'Bulldozers', 'Graders', 'Rollers', 'Forklifts']).map(item => (
-                 <li key={item}><Link href="/products" className="hover:text-[#D4AF37] transition-colors">{item}</Link></li>
-              ))}
+              {footerCategories.length > 0
+                ? footerCategories.map(cat => (
+                    <li key={cat.slug}>
+                      <Link href={`/products?category=${encodeURIComponent(cat.slug)}` as `/${string}`} className="hover:text-[#D4AF37] transition-colors">
+                        {isZh ? cat.nameZh : cat.nameEn}
+                      </Link>
+                    </li>
+                  ))
+                : <li className="text-gray-600 text-xs">{isZh ? '暂无分类数据' : 'No categories yet'}</li>
+              }
             </ul>
           </div>
 

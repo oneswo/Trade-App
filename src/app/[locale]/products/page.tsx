@@ -10,37 +10,15 @@ import { useCategories } from '@/hooks/useCategories';
 import { useLocale } from 'next-intl';
 import { usePageContent } from '@/hooks/usePageContent';
 
+// 年份区间定义（仅用于匹配逻辑，实际展示的区间从产品数据动态筛选）
 const FILTERS_ZH = {
-  brands: ['卡特彼勒', '小松', '三一', '日立', '沃尔沃', '斗山'],
-  categories: ['挖掘机', '装载机', '推土机', '压路机', '起重机'],
   years: ['2022及以上', '2018-2021', '2014-2017', '2013及以前'],
   weight: ['15吨以下', '15-35吨', '35吨以上']
 };
 
 const FILTERS_EN = {
-  brands: ['Caterpillar', 'Komatsu', 'SANY', 'Hitachi', 'Volvo', 'Doosan'],
-  categories: ['Excavators', 'Loaders', 'Dozers', 'Rollers', 'Cranes'],
   years: ['2022 & Newer', '2018-2021', '2014-2017', '2013 & Older'],
   weight: ['Compact (< 15t)', 'Mid (15-35t)', 'Heavy (> 35t)']
-};
-
-/* ────────────────────────────────────────────────────
- * 筛选标签 → 产品字段值 映射表
- * 解决 "卡特彼勒" (筛选标签) vs "卡特" (product.brand) 的不一致
- * ──────────────────────────────────────────────────── */
-const BRAND_KEYWORDS: Record<string, string[]> = {
-  '卡特彼勒': ['卡特', 'CAT', 'Caterpillar'],
-  '小松': ['小松', 'Komatsu'],
-  '三一': ['三一', 'SANY'],
-  '日立': ['日立', 'Hitachi'],
-  '沃尔沃': ['沃尔沃', 'Volvo'],
-  '斗山': ['斗山', 'Doosan'],
-  'Caterpillar': ['卡特', 'CAT', 'Caterpillar'],
-  'Komatsu': ['小松', 'Komatsu'],
-  'SANY': ['三一', 'SANY'],
-  'Hitachi': ['日立', 'Hitachi'],
-  'Volvo': ['沃尔沃', 'Volvo'],
-  'Doosan': ['斗山', 'Doosan'],
 };
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
@@ -87,8 +65,6 @@ function ProductsContent() {
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('products');
-  const FILTERS = isZh ? FILTERS_ZH : FILTERS_EN;
-
   const { products, loading } = useCatalogProducts();
   const { categories: catList } = useCategories();
   const searchParams = useSearchParams();
@@ -99,14 +75,25 @@ function ProductsContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('newest');
 
+  /* ── 动态筛选项：从已加载产品数据中提取 ── */
+  const dynamicBrands = useMemo(() => {
+    const seen = new Set<string>();
+    products.forEach(p => { if (p.brand && p.brand !== '--') seen.add(p.brand); });
+    return [...seen].sort();
+  }, [products]);
+
+  const dynamicYears = useMemo(() => {
+    const allRanges = isZh ? FILTERS_ZH.years : FILTERS_EN.years;
+    return allRanges.filter(range => products.some(p => matchesYear(p.year, range)));
+  }, [products, isZh]);
+
   /* ── 核心数据流水线：筛选 → 排序 ── */
   const filteredProducts = useMemo(() => {
-    const allBrands  = [...FILTERS_ZH.brands,     ...FILTERS_EN.brands];
     const allCatSlugs = catList.map(c => c.slug);
-    const allYears   = [...FILTERS_ZH.years,       ...FILTERS_EN.years];
-    const allWeights = [...FILTERS_ZH.weight,       ...FILTERS_EN.weight];
+    const allYears   = [...FILTERS_ZH.years, ...FILTERS_EN.years];
+    const allWeights = [...FILTERS_ZH.weight, ...FILTERS_EN.weight];
 
-    const selBrands  = activeFilters.filter(f => allBrands.includes(f));
+    const selBrands  = activeFilters.filter(f => dynamicBrands.includes(f));
     const selCats    = activeFilters.filter(f => allCatSlugs.includes(f));
     const selYears   = activeFilters.filter(f => allYears.includes(f));
     const selWeights = activeFilters.filter(f => allWeights.includes(f));
@@ -115,16 +102,15 @@ function ProductsContent() {
 
     // 组内 OR，组间 AND
     if (selBrands.length > 0) {
-      list = list.filter(p =>
-        selBrands.some(bf => {
-          const kws = BRAND_KEYWORDS[bf] || [bf];
-          return kws.some(kw => p.brand.includes(kw) || kw.includes(p.brand));
-        })
-      );
+      // 品牌已本地化，直接精确比对
+      list = list.filter(p => selBrands.includes(p.brand));
     }
     if (selCats.length > 0) {
       list = list.filter(p =>
         selCats.some(cf => {
+          // 优先用原始 categorySlug 直接比对（精确匹配）
+          if (p.categorySlug && p.categorySlug === cf.trim().toLowerCase()) return true;
+          // 回退：用关键词模糊匹配本地化后的 category 展示文字
           const kws = CATEGORY_KEYWORDS[cf] || [cf];
           return kws.some(kw => p.category.includes(kw) || kw.includes(p.category));
         })
@@ -279,25 +265,27 @@ function ProductsContent() {
                </button>
             </div>
 
-            {/* Filter Group: 品牌 */}
-            <div>
-              <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{isZh ? '核心厂牌' : 'BRANDS'}</h4>
-              <ul className="space-y-3">
-                {FILTERS.brands.map(brand => (
-                  <li key={brand}>
-                    <label
-                      onClick={() => toggleFilter(brand)}
-                      className="flex items-center gap-3 cursor-pointer group"
-                    >
-                      <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${activeFilters.includes(brand) ? 'bg-[#111111] border-[#111111]' : 'border-gray-300 bg-white group-hover:border-[#111111]'}`}>
-                        {activeFilters.includes(brand) && <Check size={12} className="text-[#D4AF37]" strokeWidth={4} />}
-                      </div>
-                      <span className={`text-[13px] font-medium transition-colors ${activeFilters.includes(brand) ? 'text-[#111111] font-bold' : 'text-gray-600 group-hover:text-[#111111]'}`}>{brand}</span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Filter Group: 品牌（动态从产品数据汇总） */}
+            {dynamicBrands.length > 0 && (
+              <div>
+                <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{isZh ? '核心厂牌' : 'BRANDS'}</h4>
+                <ul className="space-y-3">
+                  {dynamicBrands.map(brand => (
+                    <li key={brand}>
+                      <label
+                        onClick={() => toggleFilter(brand)}
+                        className="flex items-center gap-3 cursor-pointer group"
+                      >
+                        <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${activeFilters.includes(brand) ? 'bg-[#111111] border-[#111111]' : 'border-gray-300 bg-white group-hover:border-[#111111]'}`}>
+                          {activeFilters.includes(brand) && <Check size={12} className="text-[#D4AF37]" strokeWidth={4} />}
+                        </div>
+                        <span className={`text-[13px] font-medium transition-colors ${activeFilters.includes(brand) ? 'text-[#111111] font-bold' : 'text-gray-600 group-hover:text-[#111111]'}`}>{brand}</span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Filter Group: 品类（动态读取 categories 表）*/}
             {catList.length > 0 && (
@@ -322,25 +310,27 @@ function ProductsContent() {
               </div>
             )}
 
-            {/* Filter Group: 年份 */}
-            <div className="border-t border-gray-200 pt-8 flex-1">
-              <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{isZh ? '年份区间' : 'YEAR RANGE'}</h4>
-              <ul className="space-y-3">
-                {FILTERS.years.map(yr => (
-                  <li key={yr}>
-                    <label
-                      onClick={() => toggleFilter(yr)}
-                      className="flex items-center gap-3 cursor-pointer group"
-                    >
-                      <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${activeFilters.includes(yr) ? 'bg-[#111111] border-[#111111]' : 'border-gray-300 bg-white group-hover:border-[#111111]'}`}>
-                        {activeFilters.includes(yr) && <Check size={12} className="text-[#D4AF37]" strokeWidth={4} />}
-                      </div>
-                      <span className={`text-[13px] font-medium transition-colors ${activeFilters.includes(yr) ? 'text-[#111111] font-bold' : 'text-gray-600 group-hover:text-[#111111]'}`}>{yr}</span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Filter Group: 年份（只展示实际有产品的区间） */}
+            {dynamicYears.length > 0 && (
+              <div className="border-t border-gray-200 pt-8 flex-1">
+                <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{isZh ? '年份区间' : 'YEAR RANGE'}</h4>
+                <ul className="space-y-3">
+                  {dynamicYears.map(yr => (
+                    <li key={yr}>
+                      <label
+                        onClick={() => toggleFilter(yr)}
+                        className="flex items-center gap-3 cursor-pointer group"
+                      >
+                        <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${activeFilters.includes(yr) ? 'bg-[#111111] border-[#111111]' : 'border-gray-300 bg-white group-hover:border-[#111111]'}`}>
+                          {activeFilters.includes(yr) && <Check size={12} className="text-[#D4AF37]" strokeWidth={4} />}
+                        </div>
+                        <span className={`text-[13px] font-medium transition-colors ${activeFilters.includes(yr) ? 'text-[#111111] font-bold' : 'text-gray-600 group-hover:text-[#111111]'}`}>{yr}</span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Sticky Action on Mobile */}
             <div className="lg:hidden sticky bottom-0 left-0 w-full p-4 bg-white border-t border-gray-200 mt-8">
@@ -354,13 +344,13 @@ function ProductsContent() {
         <section className="flex-1 w-full">
            
            {/* Utility Bar */}
-           <div className="w-full flex items-center justify-between mb-8 pb-3 h-[40px] border-b border-gray-200 box-border">
-              <div className="text-[#111111] font-bold text-[13px] leading-none flex items-center truncate">
+           <div className="w-full flex flex-wrap items-center justify-between gap-y-2 mb-8 pb-3 border-b border-gray-200">
+              <div className="text-[#111111] font-bold text-[13px] leading-none flex items-center">
                 {isZh ? '为您列阵' : 'SHOWING'} <span className="font-black text-lg mx-2 text-[#D4AF37] leading-none transform translate-y-[-1px]">{filteredProducts.length}</span> {isZh ? '辆符合指标的实车' : 'MACHINES FOUND'}
               </div>
               <div className="flex items-center gap-2 leading-none shrink-0">
-                 <span className="text-[13px] font-bold text-gray-500 uppercase">{isZh ? '排序方式:' : 'SORT BY:'}</span>
-                 <select 
+                 <span className="text-[13px] font-bold text-gray-500 uppercase">{isZh ? '排序:' : 'SORT:'}</span>
+                 <select
                    value={sortOption}
                    onChange={e => setSortOption(e.target.value)}
                    className="bg-transparent border-0 font-bold text-[13px] text-[#111111] uppercase focus:outline-none cursor-pointer pr-4 appearance-none leading-none"
@@ -443,7 +433,7 @@ function ProductsContent() {
            
            {/* Pagination (真实分页功能) */}
            {totalPages > 1 && (
-             <div className="mt-16 pt-8 border-t border-gray-200 flex items-center justify-center gap-2">
+             <div className="mt-16 pt-8 border-t border-gray-200 flex items-center justify-center gap-1 flex-wrap overflow-x-auto">
                 <button 
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}

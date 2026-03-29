@@ -16,14 +16,14 @@ import {
 
 // ─── 导航配置 ────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { href: "/admin/dashboard",  label: "数据看板",   icon: LayoutDashboard },
-  { href: "/admin/products",   label: "产品列表",    icon: Package },
-  { href: "/admin/categories", label: "分类管理",  icon: FolderTree },
-  { href: "/admin/inquiries",  label: "询盘管理",   icon: MessageSquare },
-  { href: "/admin/articles",   label: "行业智库",   icon: BookOpen },
-  { href: "/admin/pages",      label: "页面内容",       icon: FileText },
-  { href: "/admin/tickets",    label: "技术支持",       icon: LifeBuoy },
-  { href: "/admin/settings",   label: "全局设置",       icon: Settings },
+  { href: "/admin/dashboard",  label: "数据看板", icon: LayoutDashboard },
+  { href: "/admin/categories", label: "分类管理", icon: FolderTree },
+  { href: "/admin/products",   label: "产品列表", icon: Package },
+  { href: "/admin/inquiries",  label: "询盘管理", icon: MessageSquare },
+  { href: "/admin/pages",      label: "页面内容", icon: FileText },
+  { href: "/admin/articles",   label: "行业智库", icon: BookOpen },
+  { href: "/admin/settings",   label: "全局设置", icon: Settings },
+  { href: "/admin/tickets",    label: "技术支持", icon: LifeBuoy },
 ];
 
 // ─── 组件 ─────────────────────────────────────────────────────

@@ -79,27 +79,43 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("zh");
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const ERROR_MESSAGES: Record<string, string> = {
+    image_too_large: "图片超过 8MB 限制，请压缩后重试",
+    invalid_image_type: "仅支持 JPG / PNG / WEBP / GIF 格式",
+    empty_file: "文件为空，请重新选择",
+    unauthorized: "登录已过期，请刷新页面重新登录",
+    unexpected_error: "服务器异常，请稍后重试",
+  };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingLogo(true);
+    setLogoUploadError(null);
     try {
       const fd = new FormData();
       fd.append("file", file);
       fd.append("kind", "image");
       const res = await fetch("/api/admin/uploads", { method: "POST", body: fd });
-      if (!res.ok) throw new Error("Upload failed");
       const result = await res.json();
-      if (result.ok && result.data?.url) {
+      if (!res.ok || !result.ok) {
+        const msg = ERROR_MESSAGES[result.error] ?? `上传失败 (${result.error ?? res.status})`;
+        setLogoUploadError(msg);
+        return;
+      }
+      if (result.data?.url) {
         updateField("logoImageUrl", result.data.url);
+        setLogoUploadError(null);
       }
     } catch (err) {
       console.error(err);
-      alert("上传失败，请重试");
+      setLogoUploadError("网络异常，请检查网络后重试");
     } finally {
       setUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = "";
@@ -119,6 +135,7 @@ export default function SettingsPage() {
     if (!settings) return;
     setSaving(true);
     setSaved(false);
+    setSaveError(null);
     try {
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
@@ -130,7 +147,11 @@ export default function SettingsPage() {
         clearSettingsCache();
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+      } else {
+        setSaveError(result.error ?? "保存失败，请稍后重试");
       }
+    } catch {
+      setSaveError("保存失败，请检查网络或服务器状态");
     } finally {
       setSaving(false);
     }
@@ -160,38 +181,64 @@ export default function SettingsPage() {
   const langFields = LANG_FIELDS[activeTab];
 
   return (
-    <div className="space-y-6 max-w-5xl pb-12">
-      
-      {/* 顶部语言切换悬浮区 */}
-      <div className="flex items-center justify-between bg-white px-8 py-6 rounded-xl border border-black/[0.06] shadow-sm mb-8 z-10 sticky top-0 backdrop-blur-md bg-white/95">
-        <div className="flex items-center gap-4">
+    <div className="space-y-6 pb-20">
+
+      {/* 标准顶部 header */}
+      <header className="flex h-20 items-center justify-between rounded-xl border border-black/[0.06] bg-white px-8 shadow-sm">
+        <div className="flex items-center gap-4 min-w-0">
           <h1 className="text-base font-bold text-[#111111] flex items-center gap-2 shrink-0">
             <Globe2 size={18} className="text-[#111111]/40" />
-            当前内容编辑语言
+            全局设置
           </h1>
-          <div className="hidden lg:flex items-center gap-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 px-4 py-2.5 rounded-lg shadow-sm">
-            <span className="text-[#D4AF37] text-[14px]">💡</span>
-            <span className="text-[13.5px] font-bold tracking-wide text-[#b48600] whitespace-nowrap">
-              → 带 <span className="text-[#D4AF37] mx-[2px] inline-block -translate-y-[1px]">🌐</span> 的项需切语言分别填写；不带 🌐 的为全局通用项，只需填一次
+          <div className="hidden lg:flex items-center gap-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 px-3.5 py-2 rounded-lg">
+            <span className="text-[#D4AF37] text-[13px]">💡</span>
+            <span className="text-[12px] font-bold tracking-wide text-[#b48600] whitespace-nowrap">
+              带 <span className="text-[#D4AF37] mx-[2px]">🌐</span> 的项需切语言分别填写；不带的为全局通用项，只需填一次
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-1 bg-[#FAFAFA] border border-black/[0.06] p-1.5 rounded-lg shrink-0">
-          {LANG_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-1.5 text-[13px] font-bold tracking-wider rounded-md transition-all ${
-                activeTab === tab.key
-                  ? "bg-[#111111] text-white shadow-sm"
-                  : "text-[#111111]/50 hover:text-[#111111] hover:bg-black/[0.04]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-3 shrink-0">
+          {saveError && (
+            <p className="hidden xl:block max-w-[360px] text-[12px] font-semibold text-red-500 text-right">
+              {saveError}
+            </p>
+          )}
+          <div className="flex items-center gap-1 bg-[#FAFAFA] border border-black/[0.06] p-1.5 rounded-lg">
+            {LANG_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-5 py-1.5 text-[13px] font-bold tracking-wider rounded-md transition-all ${
+                  activeTab === tab.key
+                    ? "bg-[#111111] text-white shadow-sm"
+                    : "text-[#111111]/50 hover:text-[#111111] hover:bg-black/[0.04]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 rounded-xl bg-[#111111] px-6 py-2.5 text-[13px] font-bold text-white shadow-sm hover:bg-black/80 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {saving ? (
+              <><Loader2 size={15} className="animate-spin" />保存中...</>
+            ) : saved ? (
+              <><Check size={15} />已保存</>
+            ) : (
+              <><Save size={15} />保存设置</>
+            )}
+          </button>
         </div>
-      </div>
+      </header>
+
+      {saveError && (
+        <div className="xl:hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-semibold text-red-600">
+          {saveError}
+        </div>
+      )}
 
       <div className="space-y-6">
 
@@ -207,20 +254,28 @@ export default function SettingsPage() {
               </label>
               <FieldHint>→ 导航栏左上角标识，留空变默认</FieldHint>
               <div className="mt-auto pt-2">
-                <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                <input
+                  type="file"
+                  ref={logoInputRef}
+                  className="hidden"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleLogoUpload}
+                />
                 <div
                   onClick={() => !uploadingLogo && logoInputRef.current?.click()}
                   className={`flex h-[48px] w-full cursor-pointer items-center justify-center rounded-lg border border-dashed transition-colors ${
-                    uploadingLogo 
-                      ? "border-black/10 bg-black/5 cursor-wait" 
+                    uploadingLogo
+                      ? "border-black/10 bg-black/5 cursor-wait"
+                      : logoUploadError
+                      ? "border-red-300 bg-red-50"
                       : "border-black/20 bg-[#FAFAFA] hover:border-black/40 hover:bg-white"
                   }`}
                 >
                   {uploadingLogo ? (
-                     <div className="flex items-center gap-1.5">
-                       <Loader2 size={15} className="animate-spin text-[#111111]/40" />
-                       <span className="text-[12px] font-semibold text-[#111111]/40">上传中...</span>
-                     </div>
+                    <div className="flex items-center gap-1.5">
+                      <Loader2 size={15} className="animate-spin text-[#111111]/40" />
+                      <span className="text-[12px] font-semibold text-[#111111]/40">上传中...</span>
+                    </div>
                   ) : settings.logoImageUrl ? (
                     /* eslint-disable-next-line @next/next/no-img-element -- admin preview */
                     <img
@@ -231,11 +286,14 @@ export default function SettingsPage() {
                   ) : (
                     <div className="flex items-center gap-1.5">
                       <ImageIcon size={15} className="text-[#111111]/30" />
-                      <span className="text-[12px] font-semibold text-[#111111]/40">点击上传框</span>
+                      <span className="text-[12px] font-semibold text-[#111111]/40">点击上传（JPG / PNG / WEBP / GIF）</span>
                     </div>
                   )}
                 </div>
-                {settings.logoImageUrl && !uploadingLogo && (
+                {logoUploadError && (
+                  <p className="mt-1.5 text-[11px] font-bold text-red-500">{logoUploadError}</p>
+                )}
+                {settings.logoImageUrl && !uploadingLogo && !logoUploadError && (
                   <button
                     onClick={() => updateField("logoImageUrl", null)}
                     className="mt-1.5 text-[11px] text-red-500 hover:text-red-700 transition-colors w-full text-center block"
@@ -449,32 +507,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-      </div>
-
-      {/* 保存按钮 */}
-      <div className="sticky bottom-6 flex justify-end">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center justify-center gap-2.5 rounded-xl bg-[#111111] px-10 py-4 text-base font-semibold text-white shadow-lg shadow-black/20 transition-all duration-200 hover:bg-black/80 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {saving ? (
-            <>
-              <Loader2 size={18} className="animate-spin" />
-              保存中...
-            </>
-          ) : saved ? (
-            <>
-              <Check size={18} />
-              已保存
-            </>
-          ) : (
-            <>
-              <Save size={18} />
-              保存所有设置
-            </>
-          )}
-        </button>
       </div>
     </div>
   );

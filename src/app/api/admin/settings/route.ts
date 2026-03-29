@@ -2,12 +2,12 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getSiteSettingsRepo } from "@/lib/data/repository";
 import { ADMIN_SESSION_COOKIE } from "@/lib/auth/constants";
+import { verifyToken } from "@/lib/auth/session";
 
-// 验证管理员登录
 async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE);
-  return !!token?.value;
+  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value ?? "";
+  return token !== "" && verifyToken(token);
 }
 
 export async function GET() {

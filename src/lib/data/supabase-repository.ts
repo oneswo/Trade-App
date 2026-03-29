@@ -179,11 +179,18 @@ function rowToProduct(r: Record<string, unknown>): ProductRecord {
   return {
     id: r.id as string,
     name: r.name as string,
+    nameZh: (r.name_zh ?? undefined) as string | undefined,
+    nameEn: (r.name_en ?? undefined) as string | undefined,
     slug: r.slug as string,
     category: r.category as string,
     summary: r.summary as string,
+    summaryZh: (r.summary_zh ?? undefined) as string | undefined,
+    summaryEn: (r.summary_en ?? undefined) as string | undefined,
     description: r.description as string,
     specs: (r.specs ?? []) as { key: string; value: string }[],
+    coreMetrics: (r.core_metrics ?? undefined) as ProductRecord["coreMetrics"],
+    stockAmount: (r.stock_amount ?? undefined) as number | undefined,
+    enableTrustCards: (r.enable_trust_cards ?? true) as boolean,
     coverImageUrl: (r.cover_image_url ?? null) as string | null,
     galleryImageUrls: (r.gallery_image_urls ?? []) as string[],
     videoUrl: (r.video_url ?? null) as string | null,
@@ -235,11 +242,18 @@ export const supabaseProductRepo: ProductRepo = {
       .insert({
         id,
         name: input.name,
+        name_zh: input.nameZh ?? null,
+        name_en: input.nameEn ?? null,
         slug: input.slug,
         category: input.category,
         summary: input.summary,
+        summary_zh: input.summaryZh ?? null,
+        summary_en: input.summaryEn ?? null,
         description: input.description,
         specs: input.specs ?? [],
+        core_metrics: input.coreMetrics ?? null,
+        stock_amount: input.stockAmount ?? null,
+        enable_trust_cards: input.enableTrustCards ?? true,
         cover_image_url: input.coverImageUrl ?? null,
         gallery_image_urls: input.galleryImageUrls ?? [],
         video_url: input.videoUrl ?? null,
@@ -258,11 +272,18 @@ export const supabaseProductRepo: ProductRepo = {
     const now = nowIso();
     const patch: Record<string, unknown> = { updated_at: now };
     if (input.name !== undefined) patch.name = input.name;
+    if (input.nameZh !== undefined) patch.name_zh = input.nameZh;
+    if (input.nameEn !== undefined) patch.name_en = input.nameEn;
     if (input.slug !== undefined) patch.slug = input.slug;
     if (input.category !== undefined) patch.category = input.category;
     if (input.summary !== undefined) patch.summary = input.summary;
+    if (input.summaryZh !== undefined) patch.summary_zh = input.summaryZh;
+    if (input.summaryEn !== undefined) patch.summary_en = input.summaryEn;
     if (input.description !== undefined) patch.description = input.description;
     if (input.specs !== undefined) patch.specs = input.specs;
+    if (input.coreMetrics !== undefined) patch.core_metrics = input.coreMetrics;
+    if (input.stockAmount !== undefined) patch.stock_amount = input.stockAmount;
+    if (input.enableTrustCards !== undefined) patch.enable_trust_cards = input.enableTrustCards;
     if (input.galleryImageUrls !== undefined) patch.gallery_image_urls = input.galleryImageUrls;
     if ("coverImageUrl" in input) patch.cover_image_url = input.coverImageUrl ?? null;
     if ("videoUrl" in input) patch.video_url = input.videoUrl ?? null;
@@ -484,9 +505,13 @@ export const supabaseSiteSettingsRepo: SiteSettingsRepo = {
       .select("*")
       .eq("id", "default")
       .single();
-    
-    if (error || !data) {
-      // 如果不存在，返回默认配置
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      // 如果不存在记录，返回默认配置
       return { ...DEFAULT_SITE_SETTINGS };
     }
     return rowToSiteSettings(data as Record<string, unknown>);
@@ -555,7 +580,10 @@ export const supabaseCategoryRepo: CategoryRepo = {
       .from("categories")
       .select("*")
       .order("sort_order", { ascending: true });
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase category list error:", error);
+      throw error;
+    }
     return (data as Record<string, unknown>[]).map(rowToCategory);
   },
 
@@ -566,7 +594,10 @@ export const supabaseCategoryRepo: CategoryRepo = {
       .select("*")
       .eq("id", id)
       .single();
-    if (error || !data) return null;
+    if (error) {
+      console.error("Supabase category findById error:", error);
+      if (!data) return null;
+    }
     return rowToCategory(data as Record<string, unknown>);
   },
 
@@ -588,7 +619,10 @@ export const supabaseCategoryRepo: CategoryRepo = {
       })
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase category create error:", error);
+      throw error;
+    }
     return rowToCategory(data as Record<string, unknown>);
   },
 
@@ -628,6 +662,7 @@ function rowToTicket(r: Record<string, unknown>): TicketRecord {
     type: r.type as TicketType,
     status: r.status as TicketStatus,
     reply: (r.reply ?? null) as string | null,
+    screenshots: Array.isArray(r.screenshots) ? (r.screenshots as string[]) : [],
     createdAt: r.created_at as string,
     updatedAt: r.updated_at as string,
   };
@@ -657,15 +692,18 @@ export const supabaseTicketRepo: TicketRepo = {
 
   async create(input: CreateTicketInput) {
     const db = getClient();
+    const id = `tkt_${crypto.randomUUID()}`;
     const now = nowIso();
     const { data, error } = await db
       .from("tickets")
       .insert({
+        id,
         title: input.title,
         description: input.description,
         type: input.type,
         status: "PENDING",
         reply: null,
+        screenshots: input.screenshots ?? [],
         created_at: now,
         updated_at: now,
       })
@@ -694,6 +732,7 @@ export const supabaseTicketRepo: TicketRepo = {
   async remove(id: string) {
     const db = getClient();
     const { error } = await db.from("tickets").delete().eq("id", id);
-    return !error;
+    if (error) return false;
+    return true;
   },
 };

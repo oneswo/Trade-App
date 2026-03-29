@@ -172,14 +172,18 @@ export default function CategoriesPage() {
 
   // ── 新建 ──────────────────────────────────────────────────────
   const handleCreate = async () => {
-    if (!newForm.nameZh || !newForm.nameEn) return;
+    if (!newForm.nameEn) return; // 英文名是必填的（用于生成 slug）
     setCreating(true);
     try {
-      const slug = newForm.nameEn.trim().replace(/\s+/g, "-");
+      const slug = newForm.nameEn.trim().replace(/\s+/g, "-").toLowerCase();
       const res = await fetch("/api/admin/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, nameZh: newForm.nameZh, nameEn: newForm.nameEn }),
+        body: JSON.stringify({ 
+          slug, 
+          nameZh: newForm.nameZh || newForm.nameEn, // 如果没填中文，默认用英文兜底
+          nameEn: newForm.nameEn 
+        }),
       });
       const json = await res.json();
       if (json.ok) {
@@ -196,7 +200,7 @@ export default function CategoriesPage() {
   const selected = categories.find((c) => c.id === selectedId);
 
   return (
-    <div className="max-w-7xl mx-auto h-[calc(100vh-100px)] flex flex-col">
+    <div className="h-[calc(100vh-100px)] flex flex-col">
       <div className="flex-1 min-h-0 grid grid-cols-[1fr_1.6fr] gap-6">
 
         {/* ── 左侧：分类列表 ── */}
@@ -345,7 +349,7 @@ export default function CategoriesPage() {
       >
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold tracking-widest text-[#111111]/40 uppercase">中文名称</label>
+            <label className="text-[11px] font-semibold tracking-widest text-[#111111]/40 uppercase">中文名称 (可选)</label>
             <div className="border-b border-black/10 focus-within:border-black/30">
               <input value={newForm.nameZh} onChange={(e) => setNewForm((f) => ({ ...f, nameZh: e.target.value }))}
                 placeholder="例如：挖掘机"
@@ -353,7 +357,7 @@ export default function CategoriesPage() {
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold tracking-widest text-[#111111]/40 uppercase">English Name</label>
+            <label className="text-[11px] font-semibold tracking-widest text-[#111111]/40 uppercase">English Name (必填)</label>
             <div className="border-b border-black/10 focus-within:border-black/30">
               <input value={newForm.nameEn} onChange={(e) => setNewForm((f) => ({ ...f, nameEn: e.target.value }))}
                 placeholder="e.g.: Excavators"

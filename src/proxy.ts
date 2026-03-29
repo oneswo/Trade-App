@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { ADMIN_SESSION_COOKIE } from "@/lib/auth/constants";
+import { verifyToken } from "@/lib/auth/session";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -17,15 +18,16 @@ export default function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (isAdminPath(pathname)) {
-    const session = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+    const rawToken = request.cookies.get(ADMIN_SESSION_COOKIE)?.value ?? "";
+    const authenticated = rawToken !== "" && verifyToken(rawToken);
 
-    if (!session && !isAdminLoginPath(pathname)) {
+    if (!authenticated && !isAdminLoginPath(pathname)) {
       const loginUrl = new URL("/admin/login", request.url);
       loginUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    if (session && isAdminLoginPath(pathname)) {
+    if (authenticated && isAdminLoginPath(pathname)) {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     }
 

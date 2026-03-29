@@ -138,7 +138,7 @@
   @apply font-black tracking-tight text-white leading-tight drop-shadow-2xl w-full;
 }
 .hero-title-home:lang(zh) {
-  font-size: clamp(2.5rem, 10vw, 110px);
+  font-size: clamp(2rem, 8vw, 76px);
   white-space: nowrap;
 }
 .hero-title-home:lang(en) {
@@ -146,10 +146,10 @@
   white-space: normal;
 }
 @media (min-width: 640px) {
-  .hero-title-home:lang(zh) { font-size: clamp(3rem, 8vw, 110px); }
+  .hero-title-home:lang(zh) { font-size: clamp(2.5rem, 7vw, 76px); }
 }
 @media (min-width: 768px) {
-  .hero-title-home:lang(zh) { font-size: clamp(4rem, 7vw, 110px); }
+  .hero-title-home:lang(zh) { font-size: clamp(3rem, 6vw, 76px); }
   .hero-title-home:lang(en) { font-size: 46px; }
 }
 @media (min-width: 1024px) {
@@ -159,27 +159,39 @@
   }
 }
 @media (min-width: 1280px) {
-  .hero-title-home:lang(zh) { font-size: 110px; }
+  .hero-title-home:lang(zh) { font-size: 84px; }
 }
 
 /* 通用内页 Hero 标题 */
 .hero-title {
-  @apply text-5xl font-black text-white tracking-[0.1em] mb-10 leading-none drop-shadow-2xl;
-}
-.hero-title:lang(zh) {
-  white-space: nowrap;
-}
-.hero-title:lang(en) {
-  font-size: 36px;
+  @apply font-black text-white tracking-tight mb-6 leading-tight drop-shadow-2xl;
+  font-size: clamp(2rem, 9vw, 48px);
   white-space: normal;
 }
+.hero-title:lang(en) {
+  font-size: clamp(1.75rem, 7vw, 36px);
+  white-space: normal;
+}
+@media (min-width: 640px) {
+  .hero-title { font-size: clamp(2.5rem, 8vw, 60px); }
+  .hero-title:lang(en) { font-size: clamp(2rem, 6vw, 46px); }
+}
 @media (min-width: 768px) {
-  .hero-title:lang(zh) { font-size: 80px; }
-  .hero-title:lang(en) { font-size: 46px; }
+  .hero-title { font-size: 80px; white-space: nowrap; }
+  .hero-title:lang(en) { font-size: 46px; white-space: nowrap; }
 }
 @media (min-width: 1024px) {
-  .hero-title:lang(en) {
-    font-size: 52px;
-    white-space: nowrap;
-  }
+  .hero-title:lang(en) { font-size: 52px; }
+}
+
+/* ========================================
+   Landing page fade-up animation (from EngVlog)
+   ======================================== */
+@keyframes landing-fade-up {
+  from { opacity: 0; transform: translateY(36px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.landing-animate {
+  animation: landing-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

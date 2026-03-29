@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Plus, Save, ArrowLeft, Image as ImageIcon, Video, 
@@ -9,10 +9,30 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-export default function AdminNewProductPage() {
+export default function AdminNewProductPage({ productId }: { productId?: string }) {
   const router = useRouter();
   const [lang, setLang] = useState<"zh" | "en">("zh");
+  const isEdit = !!productId;
+  const [initialLoading, setInitialLoading] = useState(isEdit);
   
+  // ===================== 分类数据 =====================
+  const [categories, setCategories] = useState<{slug: string, nameZh: string, nameEn: string}[]>([]);
+  
+  useEffect(() => {
+    fetch("/api/admin/categories")
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok && data.data) {
+          setCategories(data.data.filter((c: any) => c.enabled));
+          // 如果有分类，默认选中第一个
+          if (data.data.length > 0 && !category) {
+            setCategory(data.data[0].slug);
+          }
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   // ===================== 表单强状态管理 =====================
   const [savingStatus, setSavingStatus] = useState<"IDLE" | "DRAFT" | "PUBLISHED">("IDLE");
   const [errorMsg, setErrorMsg] = useState<string>("");
@@ -20,7 +40,7 @@ export default function AdminNewProductPage() {
   // 1. 全局配置状态
   const [enableTrustCards, setEnableTrustCards] = useState(true);
   const [stockAmount, setStockAmount] = useState<number>(3);
-  const [category, setCategory] = useState("Caterpillar (卡特彼勒)");
+  const [category, setCategory] = useState("");
 
   // 2. 多语言文本内容状态
   const [content, setContent] = useState({
@@ -48,11 +68,112 @@ export default function AdminNewProductPage() {
     { key: "Max Digging Depth (挖掘深度)", value: "6,650 mm" },
   ]);
 
-  // 5. 图床状态（视觉馆预留）
-  const [videoUrl] = useState<string>("");
-  const [coverImageUrl] = useState<string>("");
-  const [galleryImageUrls] = useState<string[]>([]);
+  // 5. 详情长文（前台产品详情页底部展示）
+  const [description, setDescription] = useState<string>("");
 
+  // 6. 图床状态（视觉馆预留）
+  const [videoUrl, setVideoUrl] = useState<string>("");
+  const [coverImageUrl, setCoverImageUrl] = useState<string>("");
+  const [galleryImageUrls, setGalleryImageUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  // ===================== 图片上传逻辑 =====================
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "cover" | "gallery" | "video") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setErrorMsg("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("kind", type === "video" ? "video" : "image");
+
+      const res = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setErrorMsg(data.error || "上传失败");
+        return;
+      }
+
+      const url = data.data?.url ?? "";
+      if (!url) {
+        setErrorMsg("上传成功但未返回文件地址");
+        return;
+      }
+
+      if (type === "cover") {
+        setCoverImageUrl(url);
+      } else if (type === "gallery") {
+        setGalleryImageUrls([...galleryImageUrls, url]);
+      } else if (type === "video") {
+        setVideoUrl(url);
+      }
+    } catch {
+      setErrorMsg("网络异常，上传失败");
+    } finally {
+      setUploading(false);
+      // 清空 input，允许重复上传同一文件
+      e.target.value = "";
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryImageUrls(galleryImageUrls.filter((_, i) => i !== index));
+  };
+
+
+  // ===================== 数据回显逻辑 (编辑模式) =====================
+  useEffect(() => {
+    if (!isEdit || !productId) return;
+
+    fetch(`/api/admin/products/${productId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok && data.data) {
+          const p = data.data;
+          setCategory(p.category);
+          setEnableTrustCards(p.enableTrustCards ?? true);
+          setStockAmount(p.stockAmount ?? 3);
+          
+          setContent({
+            nameZh: p.nameZh || "",
+            nameEn: p.nameEn || "",
+            summaryZh: p.summaryZh || "",
+            summaryEn: p.summaryEn || "",
+          });
+
+          if (p.coreMetrics) {
+            setCoreMetrics({
+              year: p.coreMetrics.year || "",
+              hours: p.coreMetrics.hours || "",
+              tonnage: p.coreMetrics.tonnage || "",
+              location: p.coreMetrics.location || "",
+              model: p.coreMetrics.model || "",
+              brand: p.coreMetrics.brand || "",
+            });
+          }
+
+          if (p.specs && p.specs.length > 0) {
+            setSpecs(p.specs);
+          }
+
+          setDescription(p.description || "");
+          setCoverImageUrl(p.coverImageUrl || "");
+          setGalleryImageUrls(p.galleryImageUrls || []);
+          setVideoUrl(p.videoUrl || "");
+        } else {
+          setErrorMsg("加载产品数据失败");
+        }
+      })
+      .catch(() => setErrorMsg("网络异常，加载失败"))
+      .finally(() => setInitialLoading(false));
+  }, [isEdit, productId]);
 
   // ===================== 提交处理逻辑 =====================
   const handleSubmit = async (statusToSave: "DRAFT" | "PUBLISHED") => {
@@ -74,6 +195,7 @@ export default function AdminNewProductPage() {
         summary: content.summaryZh || content.summaryEn || "",
         summaryZh: content.summaryZh,
         summaryEn: content.summaryEn,
+        description,
         stockAmount,
         enableTrustCards,
         coreMetrics,
@@ -84,8 +206,8 @@ export default function AdminNewProductPage() {
         status: statusToSave
       };
 
-      const res = await fetch("/api/admin/products", {
-        method: "POST",
+      const res = await fetch(isEdit ? `/api/admin/products/${productId}` : "/api/admin/products", {
+        method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
@@ -116,6 +238,14 @@ export default function AdminNewProductPage() {
     setSpecs(newSpecs);
   };
 
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={32} className="animate-spin text-[#111111]/30" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-20">
       
@@ -133,8 +263,12 @@ export default function AdminNewProductPage() {
             <ArrowLeft size={16} />
           </Link>
           <div>
-            <h1 className="text-[15px] font-bold text-[#111111] leading-tight">新增机械库档案</h1>
-            <p className="text-[11px] font-semibold tracking-wider text-[#111111]/40 uppercase mt-0.5">Create New Asset Document</p>
+            <h1 className="text-[15px] font-bold text-[#111111] leading-tight">
+              {isEdit ? "编辑机械库档案" : "新增机械库档案"}
+            </h1>
+            <p className="text-[11px] font-semibold tracking-wider text-[#111111]/40 uppercase mt-0.5">
+              {isEdit ? "Edit Asset Document" : "Create New Asset Document"}
+            </p>
           </div>
         </div>
 
@@ -211,25 +345,72 @@ export default function AdminNewProductPage() {
               
               <div className="flex flex-col gap-4 flex-1 justify-between">
                 {/* 黄金 16:10 视频上传区 */}
-                <div className="w-full h-full min-h-[240px] rounded-xl bg-[#FAFAFA] border-2 border-dashed border-black/[0.08] flex flex-col items-center justify-center cursor-pointer hover:border-black/[0.2] hover:bg-white transition-all group overflow-hidden relative">
-                  <div className="w-12 h-12 rounded-full border border-black/[0.1] bg-white flex items-center justify-center mb-3 group-hover:scale-110 group-hover:border-black/[0.2] transition-all shadow-sm">
-                    <Video size={20} className="text-[#111111]/40 group-hover:text-[#111111] transition-colors" />
-                  </div>
-                  <span className="text-[13px] font-bold text-[#111111]/60 group-hover:text-[#111111] transition-colors">点击上传主视频</span>
-                  <span className="text-[11px] text-[#111111]/40 mt-1">留白占位预演，接口调试完善后接入组件</span>
-                </div>
+                <label className="w-full h-full min-h-[240px] rounded-xl bg-[#FAFAFA] border-2 border-dashed border-black/[0.08] flex flex-col items-center justify-center cursor-pointer hover:border-black/[0.2] hover:bg-white transition-all group overflow-hidden relative">
+                  <input 
+                    type="file" 
+                    accept="video/*" 
+                    className="hidden" 
+                    onChange={(e) => handleUpload(e, "video")}
+                    disabled={uploading}
+                  />
+                  {videoUrl ? (
+                    <video src={videoUrl} controls className="w-full h-full object-cover" />
+                  ) : (
+                    <>
+                      <div className="w-12 h-12 rounded-full border border-black/[0.1] bg-white flex items-center justify-center mb-3 group-hover:scale-110 group-hover:border-black/[0.2] transition-all shadow-sm">
+                        <Video size={20} className="text-[#111111]/40 group-hover:text-[#111111] transition-colors" />
+                      </div>
+                      <span className="text-[13px] font-bold text-[#111111]/60 group-hover:text-[#111111] transition-colors">点击上传主视频</span>
+                    </>
+                  )}
+                </label>
                 
                 {/* 5 宫格剧场版小图册 */}
                 <div className="grid grid-cols-5 gap-3 shrink-0">
-                  <div className="aspect-[16/10] rounded-lg bg-[#FAFAFA] border border-black/[0.08] border-dashed flex items-center justify-center text-[#111111]/30 hover:text-[#111111] hover:border-black/[0.2] hover:bg-white transition-all cursor-pointer relative overflow-hidden group shadow-sm">
-                     <Plus size={20} className="group-hover:scale-110 transition-transform" />
-                     <div className="absolute top-0 right-0 bg-[#111111] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-bl-[4px]">主图</div>
-                  </div>
-                  {[2,3,4,5].map(i => (
-                    <div key={i} className="aspect-[16/10] rounded-lg bg-[#FAFAFA] border border-black/[0.08] border-dashed flex items-center justify-center text-[#111111]/30 hover:text-[#111111] hover:border-black/[0.2] hover:bg-white transition-all cursor-pointer relative overflow-hidden group shadow-sm">
-                       <Plus size={20} className="group-hover:scale-110 transition-transform" />
-                       <div className="absolute top-0 right-0 bg-black/[0.1] text-black/[0.4] text-[9px] font-bold px-1.5 py-0.5 rounded-bl-[4px]">{i}</div>
-                    </div>
+                  <label className="aspect-[16/10] rounded-lg bg-[#FAFAFA] border border-black/[0.08] border-dashed flex items-center justify-center text-[#111111]/30 hover:text-[#111111] hover:border-black/[0.2] hover:bg-white transition-all cursor-pointer relative overflow-hidden group shadow-sm">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={(e) => handleUpload(e, "cover")}
+                      disabled={uploading}
+                    />
+                    {coverImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={coverImageUrl} alt="cover" className="w-full h-full object-cover" />
+                    ) : (
+                      <Plus size={20} className="group-hover:scale-110 transition-transform" />
+                    )}
+                    <div className="absolute top-0 right-0 bg-[#111111] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-bl-[4px]">主图</div>
+                  </label>
+                  
+                  {/* 附加图库，最多支持 4 张展示（实际可传更多，这里仅展示 UI 槽位） */}
+                  {[0, 1, 2, 3].map(i => (
+                    <label key={i} className="aspect-[16/10] rounded-lg bg-[#FAFAFA] border border-black/[0.08] border-dashed flex items-center justify-center text-[#111111]/30 hover:text-[#111111] hover:border-black/[0.2] hover:bg-white transition-all cursor-pointer relative overflow-hidden group shadow-sm">
+                       <input 
+                         type="file" 
+                         accept="image/*" 
+                         className="hidden" 
+                         onChange={(e) => handleUpload(e, "gallery")}
+                         disabled={uploading}
+                       />
+                       {galleryImageUrls[i] ? (
+                         <>
+                           {/* eslint-disable-next-line @next/next/no-img-element */}
+                           <img src={galleryImageUrls[i]} alt="gallery" className="w-full h-full object-cover" />
+                           <button 
+                             type="button"
+                             onClick={(e) => { e.preventDefault(); removeGalleryImage(i); }}
+                             className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white"
+                           >
+                             <Trash2 size={16} />
+                           </button>
+                         </>
+                       ) : (
+                         <Plus size={20} className="group-hover:scale-110 transition-transform" />
+                       )}
+                       <div className="absolute top-0 right-0 bg-black/[0.1] text-black/[0.4] text-[9px] font-bold px-1.5 py-0.5 rounded-bl-[4px]">{i + 2}</div>
+                    </label>
                   ))}
                 </div>
               </div>
@@ -264,20 +445,34 @@ export default function AdminNewProductPage() {
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full bg-[#FAFAFA] rounded-lg border border-black/[0.06] px-4 py-2.5 text-[13px] font-bold text-[#111111] focus:outline-none focus:border-black/30 focus:bg-white transition-all appearance-none cursor-pointer"
                     >
-                      <option>Caterpillar (卡特彼勒)</option>
-                      <option>Komatsu (小松)</option>
-                      <option>SANY (三一)</option>
+                      {categories.length === 0 && <option value="">加载中...</option>}
+                      {categories.map((c) => (
+                        <option key={c.slug} value={c.slug}>
+                          {c.nameEn} ({c.nameZh})
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
 
-                <div className="space-y-2 flex-1 flex flex-col">
+                <div className="space-y-2">
                    <label className="text-[11px] font-semibold tracking-widest text-[#111111]/40 uppercase">摘要卖点 ({lang.toUpperCase()})</label>
                    <textarea 
+                     rows={2}
                      value={lang === "zh" ? content.summaryZh : content.summaryEn}
                      onChange={(e) => setContent(prev => ({ ...prev, [lang === "zh" ? "summaryZh" : "summaryEn"]: e.target.value }))}
                      placeholder={lang === "zh" ? "精炼一句，将在列表卡片中展示..." : "A concise one-liner for card display..."} 
-                     className="w-full flex-1 min-h-[80px] bg-[#FAFAFA] rounded-lg border border-black/[0.06] px-4 py-3 text-[13px] font-medium text-[#111111] focus:outline-none focus:border-black/30 focus:bg-white transition-all placeholder:text-[#111111]/20 resize-none"
+                     className="w-full bg-[#FAFAFA] rounded-lg border border-black/[0.06] px-4 py-3 text-[13px] font-medium text-[#111111] focus:outline-none focus:border-black/30 focus:bg-white transition-all placeholder:text-[#111111]/20 resize-none"
+                   />
+                </div>
+
+                <div className="space-y-2 flex-1 flex flex-col">
+                   <label className="text-[11px] font-semibold tracking-widest text-[#111111]/40 uppercase">详情描述 (Description)</label>
+                   <textarea 
+                     value={description}
+                     onChange={(e) => setDescription(e.target.value)}
+                     placeholder="产品详细介绍，将在前台详情页底部展示（支持换行）..." 
+                     className="w-full flex-1 min-h-[100px] bg-[#FAFAFA] rounded-lg border border-black/[0.06] px-4 py-3 text-[13px] font-medium text-[#111111] focus:outline-none focus:border-black/30 focus:bg-white transition-all placeholder:text-[#111111]/20 resize-none"
                    />
                 </div>
               </div>

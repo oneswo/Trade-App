@@ -5,6 +5,7 @@ import AdminTopbar from "@/components/admin/AdminTopbar";
  * 后台主界面 Layout
  * 适用于所有 /admin/(dashboard|products|categories|...) 路由
  * 登录页使用独立路由，不套此 layout
+ * 鉴权由 proxy.ts 统一处理
  */
 export default function AdminMainLayout({
   children,

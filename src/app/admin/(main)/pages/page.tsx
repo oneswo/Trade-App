@@ -440,13 +440,60 @@ function HomeFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块六 — 最新交机动态横向滚动" note="文章卡片从「资讯管理」动态拉取，无需在此维护" />
+        <SectionHeader title="模块六 — 交机实录与动态（4张固定卡片）" note="每张卡片可配置视频、封面图、标签、日期、目的地、标题" />
         <FieldRow label="板块主标题">
           <TextInput name="news.title" defaultValue={zh ? "交机实录与动态" : "Live Delivery Updates"} />
         </FieldRow>
         <FieldRow label="右侧描述文字">
           <TextArea name="news.desc" defaultValue={zh ? "真实发盘、跨国海运、开箱验收。我们为您展示实时的设备全球周转录像与物流快讯，亲眼见证我们的端到端跨国履约与重装交付能力。" : "Real shipments. International ocean freight. On-site unboxing. We share live footage and logistics updates from active global dispatches."} />
         </FieldRow>
+
+        {[
+          {
+            tag: "SHIPMENT", date: "Oct 24, 2026", location: "🇳🇬 Lagos, Nigeria",
+            zh_title: "3 台 CAT 336 重型挖掘机翻新完毕，发往西非",
+            en_title: "Three CAT 336 heavy excavators refurbished and shipped to West Africa.",
+          },
+          {
+            tag: "DELIVERY", date: "Oct 15, 2026", location: "🇦🇪 Dubai, UAE",
+            zh_title: "沃尔沃三机组合验收完成，阿布扎比港口交割",
+            en_title: "Volvo three-unit assembly accepted and commissioned in Abu Dhabi port.",
+          },
+          {
+            tag: "DISPATCH", date: "Oct 02, 2026", location: "🇨🇱 Santiago, Chile",
+            zh_title: "首单南美洲！两台小松 D155 推土机完成安第斯清关",
+            en_title: "First South American order! Two Komatsu D155 dozers cleared customs for the Andes.",
+          },
+          {
+            tag: "UNBOXING", date: "Sep 18, 2026", location: "🇧🇷 São Paulo, Brazil",
+            zh_title: "批量沃尔沃装载机抵达圣保罗，南美大区配送启动",
+            en_title: "Batch of Volvo wheel loaders arrived in São Paulo for South American distribution.",
+          },
+        ].map((card, i) => (
+          <CardBlock key={i} index={i + 1} label="交付记录卡片">
+            <div className="grid grid-cols-2 gap-4">
+              <VideoUpload name={`delivery.${i}.videoUrl`} label="卡片视频" hint="MP4，最大 80MB" />
+              <ImageUpload name={`delivery.${i}.posterUrl`} label="视频封面图" hint="视频播放前显示" aspectHint="建议 4:3，JPG / PNG" />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <FieldRow label="发货标签">
+                <TextInput name={`delivery.${i}.tag`} defaultValue={card.tag} />
+              </FieldRow>
+              <FieldRow label="日期">
+                <TextInput name={`delivery.${i}.date`} defaultValue={card.date} />
+              </FieldRow>
+              <FieldRow label="目的地（含国旗）">
+                <TextInput name={`delivery.${i}.location`} defaultValue={card.location} />
+              </FieldRow>
+            </div>
+            <FieldRow label="卡片标题（中文）">
+              <TextInput name={`delivery.${i}.titleZh`} defaultValue={card.zh_title} />
+            </FieldRow>
+            <FieldRow label="卡片标题（英文）">
+              <TextInput name={`delivery.${i}.titleEn`} defaultValue={card.en_title} />
+            </FieldRow>
+          </CardBlock>
+        ))}
       </div>
 
       <div className="space-y-5">
@@ -853,10 +900,10 @@ function ContactFields({ zh }: { zh: boolean }) {
       <div className="space-y-5">
         <SectionHeader title="模块三：大区联系人（4 位）" note="与前台「直连大洲业务总控」四张卡片顺序一致：1 尹世兵 2 尹洪峰 3 安娜·李 4 安妮" />
         {[
-          { nameZh: "尹世兵", nameEn: "Steven Yin", zh_title: "亚太区执行董事", en_title: "APAC Executive Director", defaultPhoto: "/images/avatars/yin.png" },
-          { nameZh: "尹洪峰", nameEn: "Frank Yin", zh_title: "拉非高级代办", en_title: "LATAM & Africa Lead", defaultPhoto: "/images/avatars/hong.png" },
-          { nameZh: "安娜·李", nameEn: "Anna Li", zh_title: "欧亚中东总监", en_title: "EU & MENA Director", defaultPhoto: "/images/avatars/anna.png" },
-          { nameZh: "安妮", nameEn: "Annie", zh_title: "泛西非大区专员", en_title: "West Africa Specialist", defaultPhoto: "/images/avatars/annie.png" },
+          { nameZh: "尹世兵", nameEn: "Steven Yin", zh_title: "亚太区执行董事", en_title: "APAC Executive Director", defaultPhoto: "/images/avatars/yin.png", defaultPhone: "+8615156888267" },
+          { nameZh: "尹洪峰", nameEn: "Frank Yin", zh_title: "拉非高级代办", en_title: "LATAM & Africa Lead", defaultPhoto: "/images/avatars/hong.png", defaultPhone: "+8619159103568" },
+          { nameZh: "安娜·李", nameEn: "Anna Li", zh_title: "欧亚中东总监", en_title: "EU & MENA Director", defaultPhoto: "/images/avatars/anna.png", defaultPhone: "+8617321077956" },
+          { nameZh: "安妮", nameEn: "Annie", zh_title: "泛西非大区专员", en_title: "West Africa Specialist", defaultPhoto: "/images/avatars/annie.png", defaultPhone: "+8617317763969" },
         ].map((m, i) => (
           <div key={i} className="rounded-xl border border-black/[0.06] p-4 space-y-3 bg-[#FAFAFA]">
             <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">成员 {i+1}</span>
@@ -865,6 +912,7 @@ function ContactFields({ zh }: { zh: boolean }) {
               <div className="space-y-3">
                 <FieldRow label="姓名"><TextInput name={`team.${i}.name`} defaultValue={zh ? m.nameZh : m.nameEn} /></FieldRow>
                 <FieldRow label="职称"><TextInput name={`team.${i}.title`} defaultValue={zh ? m.zh_title : m.en_title} /></FieldRow>
+                <FieldRow label="电话 / WhatsApp" hint="含国家区号，如 +8613812345678"><TextInput name={`team.${i}.phone`} defaultValue={m.defaultPhone} /></FieldRow>
               </div>
             </div>
           </div>
@@ -887,12 +935,13 @@ export default function PagesManagementPage() {
 
   // 切换页面或语言时，从 API 加载已保存内容（重置字段是必要的副作用）
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(true);
     setFields({});
     fetch(`/api/page-content?pageId=${activePageId}&locale=${activeLang}`)
       .then(r => r.json())
-      .then(res => { if (res.ok && res.data) setFields(res.data); })
+      .then(res => {
+        if (res.ok && res.data) setFields(res.data);
+      })
       .catch(() => {})
       .finally(() => setIsLoading(false));
   }, [activePageId, activeLang]);

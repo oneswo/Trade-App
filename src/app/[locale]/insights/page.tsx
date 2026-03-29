@@ -70,7 +70,7 @@ export default function InsightsPage() {
 
       {/* 2. 主流资讯分类栏 (Glassmorphism Sticky Bar) */}
       <section className="w-full bg-white/80 backdrop-blur-xl border-b border-gray-100/50 sticky top-[80px] z-40 transition-all shadow-sm">
-        <div className="max-w-[1440px] mx-auto px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
            
            <div className="flex gap-3 overflow-x-auto pb-2 md:pb-0 [&::-webkit-scrollbar]:hidden w-full md:w-auto">
              <button className="whitespace-nowrap px-8 py-2.5 rounded-full bg-[#111111] text-white text-[12px] font-bold tracking-widest uppercase shadow-md transition-all">
@@ -98,7 +98,7 @@ export default function InsightsPage() {
 
       {/* 3. 高端资讯瀑布流 (Masonry/Grid Article Feed & Rounded Edge UI) */}
       <section className="w-full py-24 bg-[#FAFAFA]">
-        <div className="max-w-[1440px] mx-auto px-8">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           
           {loading ? (
             <div className="flex items-center justify-center py-20">

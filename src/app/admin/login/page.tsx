@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Cpu, Eye, EyeOff, ArrowRight, Loader2, Shield, Zap, Globe } from "lucide-react";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Cpu, Loader2, ArrowRight } from "lucide-react";
 
-export default function AdminLoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,208 +20,124 @@ export default function AdminLoginPage() {
     try {
       const response = await fetch("/api/admin/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
-      const result = (await response.json()) as {
-        ok: boolean;
-      };
+      const result = (await response.json()) as { ok: boolean };
 
       if (!response.ok || !result.ok) {
-        setErrorMessage("账号或密码错误，请重试。");
+        setErrorMessage("安全密钥验证失败，请重新核对。");
         return;
       }
 
-      router.push("/admin/dashboard");
+      const next = searchParams.get("next") ?? "/admin/dashboard";
+      router.push(next);
       router.refresh();
     } catch {
-      setErrorMessage("网络异常，请稍后重试。");
+      setErrorMessage("网络异常，无法连接控制服务器。");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0A0A0A]">
-      {/* 左侧品牌区域 */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-[#111] via-[#0A0A0A] to-[#080808] p-12 lg:flex xl:p-16">
-        {/* 背景装饰 */}
-        <div className="pointer-events-none absolute inset-0">
-          {/* 网格背景 */}
-          <div
-            className="absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
-              backgroundSize: "60px 60px",
-            }}
-          />
-          {/* 渐变光晕 */}
-          <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-white/[0.02] blur-3xl" />
-          <div className="absolute -bottom-20 -right-20 h-[400px] w-[400px] rounded-full bg-white/[0.015] blur-3xl" />
-        </div>
-
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-sm">
-            <Cpu size={28} className="text-white" strokeWidth={1.5} />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold tracking-[0.2em] text-white">KXTJ</h2>
-            <p className="text-xs tracking-wider text-white/30">HEAVY MACHINERY</p>
-          </div>
-        </div>
-
-        {/* 中间品牌信息 */}
-        <div className="relative z-10 space-y-8">
-          <h1 className="text-4xl font-light leading-tight tracking-wide text-white xl:text-5xl">
-            企业管理<br />
-            <span className="font-semibold">控制中心</span>
-          </h1>
-          <p className="max-w-md text-base leading-relaxed text-white/40">
-            统一管理产品、文章、询盘等核心业务数据，
-            助力企业高效运营与全球化拓展。
-          </p>
-
-          {/* 功能亮点 */}
-          <div className="flex flex-wrap gap-6 pt-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
-                <Shield size={18} className="text-white/60" strokeWidth={1.5} />
-              </div>
-              <span className="text-sm text-white/50">安全加密</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
-                <Zap size={18} className="text-white/60" strokeWidth={1.5} />
-              </div>
-              <span className="text-sm text-white/50">实时同步</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
-                <Globe size={18} className="text-white/60" strokeWidth={1.5} />
-              </div>
-              <span className="text-sm text-white/50">多语言支持</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 底部版权 */}
-        <p className="relative z-10 text-xs tracking-wider text-white/20">
-          © {new Date().getFullYear()} KXTJ 重工机械 · 保留所有权利
-        </p>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2.5">
+        <label className="text-[11px] font-bold tracking-widest text-[#D4AF37]/80 uppercase">
+          管理员身份 ID
+        </label>
+        <input
+          type="email"
+          required
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="admin@example.com"
+          className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3.5 text-[14px] font-bold text-white placeholder:text-white/20 placeholder:font-medium outline-none transition-all hover:bg-white/[0.04] focus:border-[#D4AF37]/50 focus:bg-[#000000] focus:ring-4 focus:ring-[#D4AF37]/10"
+        />
       </div>
 
-      {/* 右侧登录区域 */}
-      <div className="flex w-full flex-col items-center justify-center px-6 lg:w-1/2 lg:px-12 xl:px-20">
-        {/* 移动端 Logo */}
-        <div className="mb-12 flex flex-col items-center gap-4 lg:hidden">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-sm">
-            <Cpu size={32} className="text-white" strokeWidth={1.5} />
-          </div>
-          <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-[0.15em] text-white">KXTJ</h1>
-            <p className="mt-1 text-sm tracking-wider text-white/30">管理后台</p>
-          </div>
+      <div className="space-y-2.5">
+        <label className="text-[11px] font-bold tracking-widest text-[#D4AF37]/80 uppercase">
+          高阶安全密钥
+        </label>
+        <input
+          type="password"
+          required
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3.5 text-[14px] font-bold text-white placeholder:text-white/20 placeholder:font-medium outline-none transition-all hover:bg-white/[0.04] focus:border-[#D4AF37]/50 focus:bg-[#000000] focus:ring-4 focus:ring-[#D4AF37]/10"
+        />
+      </div>
+
+      {errorMessage && (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 flex items-center gap-3">
+           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+           <p className="text-[12px] font-bold text-red-400">
+             {errorMessage}
+           </p>
         </div>
+      )}
 
-        {/* 登录表单卡片 */}
-        <div className="w-full max-w-[420px]">
-          <div className="mb-10 hidden lg:block">
-            <h2 className="text-3xl font-semibold tracking-tight text-white">
-              欢迎回来
-            </h2>
-            <p className="mt-3 text-base text-white/40">
-              登录以管理您的企业内容与数据
-            </p>
+      <button
+        type="submit"
+        disabled={loading}
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] py-4 text-[14px] font-bold tracking-widest text-[#111111] transition-all hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none group"
+      >
+        {loading ? (
+          <>
+            <Loader2 size={16} className="animate-spin text-[#111111]" />
+            正在解密...
+          </>
+        ) : (
+          <>
+            启动系统
+            <ArrowRight size={16} className="opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+          </>
+        )}
+      </button>
+    </form>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#121316] relative overflow-hidden px-4">
+      {/* 极暗奢华工业金光晕（加暖） */}
+      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-full max-w-5xl h-[800px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#D4AF37]/20 via-[#D4AF37]/[0.03] to-transparent pointer-events-none blur-3xl mix-blend-screen"></div>
+
+      <div className="w-full max-w-[420px] relative z-10">
+        
+        {/* Logo 与欢迎文案 */}
+        <div className="flex flex-col items-center justify-center text-center mb-10">
+          <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-white/[0.03] backdrop-blur-md shadow-[0_0_40px_rgba(212,175,55,0.1)] border border-white/[0.08] mb-6 relative">
+            <Cpu size={28} className="text-[#D4AF37]" strokeWidth={1.5} />
           </div>
-
-          <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-8 backdrop-blur-sm lg:p-10">
-            <form onSubmit={handleSubmit} className="space-y-7">
-              {/* Email 字段 */}
-              <div className="space-y-3">
-                <label className="text-xs font-semibold tracking-[0.08em] text-white/50">
-                  登录邮箱
-                </label>
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] transition-all duration-200 focus-within:border-white/25 focus-within:bg-white/[0.06]">
-                  <input
-                    id="admin-email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@kxtj.com"
-                    className="w-full bg-transparent px-5 py-4 text-base text-white placeholder:text-white/25 outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Password 字段 */}
-              <div className="space-y-3">
-                <label className="text-xs font-semibold tracking-[0.08em] text-white/50">
-                  登录密码
-                </label>
-                <div className="flex items-center rounded-xl border border-white/10 bg-white/[0.04] transition-all duration-200 focus-within:border-white/25 focus-within:bg-white/[0.06]">
-                  <input
-                    id="admin-password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="flex-1 bg-transparent px-5 py-4 text-base text-white placeholder:text-white/25 outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="px-4 text-white/30 transition-colors duration-200 hover:text-white/60"
-                  >
-                    {showPassword ? (
-                      <EyeOff size={20} strokeWidth={1.5} />
-                    ) : (
-                      <Eye size={20} strokeWidth={1.5} />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* 提交按钮 */}
-              <button
-                id="admin-login-btn"
-                type="submit"
-                disabled={loading}
-                className="mt-4 flex w-full items-center justify-center gap-3 rounded-xl bg-white py-4.5 text-base font-semibold text-[#111111] transition-all duration-200 hover:bg-white/90 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" />
-                    正在验证...
-                  </>
-                ) : (
-                  <>
-                    登录后台
-                    <ArrowRight size={20} strokeWidth={2} />
-                  </>
-                )}
-              </button>
-
-              {errorMessage && (
-                <p className="text-center text-sm text-red-400">{errorMessage}</p>
-              )}
-            </form>
-          </div>
-
-          {/* 底部提示 - 仅移动端显示 */}
-          <p className="mt-10 text-center text-xs tracking-wider text-white/20 lg:hidden">
-            © {new Date().getFullYear()} KXTJ 重工机械
+          <h1 className="text-2xl font-black text-white tracking-tight mb-2">
+            进入控制中心
+          </h1>
+          <p className="text-[11px] font-bold text-white/40 tracking-widest uppercase">
+            Secure Admin Portal Phase
           </p>
         </div>
+
+        {/* 玻璃态冷峻黑卡片 */}
+        <div className="rounded-[2rem] border border-white/[0.08] bg-white/[0.03] backdrop-blur-3xl p-8 sm:p-10 shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
+          <Suspense fallback={<div className="flex justify-center p-4"><Loader2 className="animate-spin text-[#D4AF37]" /></div>}>
+            <LoginForm />
+          </Suspense>
+        </div>
+        
+        {/* 底部版权 */}
+        <div className="mt-12 text-center">
+          <p className="text-[10px] font-bold tracking-widest text-white/20 uppercase">
+            RESTRICTED ACCESS • KXTJ CONTROL
+          </p>
+        </div>
+
       </div>
     </div>
   );

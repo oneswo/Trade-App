@@ -258,6 +258,7 @@ export interface TicketRecord {
   type: TicketType;
   status: TicketStatus;
   reply: string | null;
+  screenshots: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -266,6 +267,7 @@ export interface CreateTicketInput {
   title: string;
   description: string;
   type: TicketType;
+  screenshots?: string[];
 }
 
 export interface UpdateTicketInput {
@@ -535,6 +537,7 @@ const mockTicketRepo: TicketRepo = {
       type: input.type,
       status: "PENDING",
       reply: null,
+      screenshots: input.screenshots ?? [],
       createdAt: now,
       updatedAt: now,
     };
@@ -941,6 +944,16 @@ export interface SiteSettingsRepo {
   update(settings: Partial<Omit<SiteSettings, 'updatedAt'>>): Promise<SiteSettings>;
 }
 
+function isMissingSiteSettingsTableError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const maybeError = error as { code?: unknown; message?: unknown };
+  return (
+    maybeError.code === "PGRST205" &&
+    typeof maybeError.message === "string" &&
+    maybeError.message.includes("public.site_settings")
+  );
+}
+
 const DEFAULT_SITE_SETTINGS: SiteSettings = {
   siteName: "KXTJ 重工机械",
   siteNameEn: "KXTJ Heavy Machinery",
@@ -1035,7 +1048,28 @@ const mockSiteSettingsRepo: SiteSettingsRepo = {
 export function getSiteSettingsRepo(): SiteSettingsRepo {
   if (isSupabaseConfigured()) {
     const { supabaseSiteSettingsRepo } = require("./supabase-repository") as typeof import("./supabase-repository");
-    return supabaseSiteSettingsRepo;
+    return {
+      async get() {
+        try {
+          return await supabaseSiteSettingsRepo.get();
+        } catch (error) {
+          if (isMissingSiteSettingsTableError(error)) {
+            return mockSiteSettingsRepo.get();
+          }
+          throw error;
+        }
+      },
+      async update(settings) {
+        try {
+          return await supabaseSiteSettingsRepo.update(settings);
+        } catch (error) {
+          if (isMissingSiteSettingsTableError(error)) {
+            return mockSiteSettingsRepo.update(settings);
+          }
+          throw error;
+        }
+      },
+    };
   }
   return mockSiteSettingsRepo;
 }

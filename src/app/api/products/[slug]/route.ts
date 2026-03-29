@@ -13,5 +13,6 @@ export async function GET(_request: Request, context: RouteContext) {
     return Response.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
+  // 返回完整字段
   return Response.json({ ok: true, data: product });
 }

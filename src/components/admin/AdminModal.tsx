@@ -67,13 +67,13 @@ export default function AdminModal({
             </div>
           )}
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-[#111111]">
+            <div className="text-xl font-bold tracking-tight text-[#111111]">
               {title}
-            </h2>
+            </div>
             {description && (
-              <p className="mt-2 text-[13px] leading-relaxed text-[#111111]/50">
+              <div className="mt-2 text-[13px] leading-relaxed text-[#111111]/50">
                 {description}
-              </p>
+              </div>
             )}
           </div>
         </div>

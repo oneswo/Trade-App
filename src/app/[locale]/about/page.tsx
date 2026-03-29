@@ -38,27 +38,21 @@ export default function AboutPage() {
 
             {/* 副标题 (Height Locked) */}
             <div className="w-full flex items-center justify-center min-h-[60px] md:min-h-[80px]">
-              {isZh ? (
-                 <div className="w-full text-gray-400 text-lg md:text-[21px] font-medium flex justify-between items-center opacity-90 max-w-[900px]">
-                    {c('hero.desc', '重塑二手工程机械出海领域的绝对信任标杆，严苛重金整备与出境质检，确保全球买家拿到顶尖实机。').split('').map((char: string, index: number) => (
-                      <span key={index}>{char}</span>
-                    ))}
-                 </div>
-              ) : (
-                 <p className="text-gray-400 text-lg md:text-xl font-medium leading-relaxed max-w-3xl text-center mx-auto">
-                   {c('hero.desc', 'Reshaping the absolute trust benchmark in the global used heavy equipment supply chain, ensuring every buyer receives top-tier machines.')}
-                 </p>
-              )}
+              <p className="text-gray-400 text-base sm:text-lg md:text-[21px] font-medium opacity-90 max-w-[900px] text-center leading-relaxed">
+                {isZh
+                  ? c('hero.desc', '重塑二手工程机械出海领域的绝对信任标杆，严苛重金整备与出境质检，确保全球买家拿到顶尖实机。')
+                  : c('hero.desc', 'Reshaping the absolute trust benchmark in the global used heavy equipment supply chain, ensuring every buyer receives top-tier machines.')}
+              </p>
             </div>
 
          </div>
       </section>
 
       {/* 2. 实力档案 (The Scale & Story) */}
-      <section className="w-full py-32 bg-[#FAFAFA] relative overflow-hidden">
-        <div className="max-w-[1440px] mx-auto px-8 relative z-10">
+      <section className="w-full py-16 md:py-32 bg-[#FAFAFA] relative overflow-hidden">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8 relative z-10">
           
-          <div className="flex flex-col gap-32">
+          <div className="flex flex-col gap-16 md:gap-32">
             {/* Block A: 左图右文 - 现代化总库 */}
             <div className="relative flex flex-col md:flex-row items-center justify-between group">
               <div className="w-full md:w-1/2 relative aspect-[4/3] rounded-3xl shadow-[-20px_20px_0_#EEEEEE] group-hover:shadow-[-20px_20px_0_#D4AF37] transition-all duration-500 overflow-hidden border border-gray-200">
@@ -158,70 +152,34 @@ export default function AboutPage() {
       </section>
 
       {/* 4. 全球准入资质墙 (Certification Grid) */}
-      <section className="w-full py-32 bg-white">
-        <div className="max-w-[1440px] mx-auto px-8">
+      <section className="w-full py-16 md:py-32 bg-white">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <div className="text-center mb-24">
-            <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">{isZh ? '全球通行的重金属底气' : 'Our Industry Certifications'}</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">{c('certs.title', isZh ? '全球通行的重金属底气' : 'Our Industry Certifications')}</h2>
             <div className="w-12 h-1 bg-[#D4AF37] mx-auto mb-6"></div>
-            <p className="text-gray-500 text-[15px] font-medium max-w-2xl mx-auto">{isZh ? '我们配备了最苛刻的第三方驻场验机标准与源产地报关资质矩阵，以强悍的官方背书秒杀清关屏障。' : 'We continually advance our production capabilities and quality control systems, supported by accredited inspection institutions and a globally recognized sales and service network.'}</p>
+            <p className="text-gray-500 text-[15px] font-medium max-w-2xl mx-auto">{c('certs.desc', isZh ? '我们配备了最苛刻的第三方驻场验机标准与源产地报关资质矩阵，以强悍的官方背书秒杀清关屏障。' : 'We continually advance our production capabilities and quality control systems, supported by accredited inspection institutions and a globally recognized sales and service network.')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Cert 1 */}
-            <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-gray-100 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:border-[#D4AF37]/30 hover:-translate-y-2 transition-all duration-500 overflow-hidden relative group">
-              <div className="w-14 h-14 bg-[#111111] rounded-2xl text-[#D4AF37] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <ShieldCheck size={24} />
+            {([
+              { icon: ShieldCheck, zh_n: "重工溯源认证", en_n: "Verified Supplier", zh_code: "VERIFIED SUPPLIER", en_code: "TRADE ASSURANCE" },
+              { icon: Globe,       zh_n: "欧盟通行准入", en_n: "CE Conformity",     zh_code: "CE CONFORMITY",    en_code: "EU MARKET ACCESS" },
+              { icon: Trophy,      zh_n: "国际质控标准", en_n: "ISO 9001:2015",     zh_code: "ISO 9001:2015",    en_code: "QUALITY MANAGEMENT" },
+              { icon: Award,       zh_n: "第三方驻场终检", en_n: "SGS Inspection", zh_code: "SGS INSPECTION",   en_code: "THIRD-PARTY VERIFIED" },
+            ] as const).map((cert, i) => (
+              <div key={i} className="bg-[#FAFAFA] p-6 rounded-3xl border border-gray-100 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:border-[#D4AF37]/30 hover:-translate-y-2 transition-all duration-500 overflow-hidden relative group">
+                <div className="w-14 h-14 bg-[#111111] rounded-2xl text-[#D4AF37] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <cert.icon size={24} />
+                </div>
+                <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
+                  <Image fill unoptimized src={c(`cert.${i}.image`, '/images/about/cert.jpg')} alt={isZh ? cert.zh_n : cert.en_n} className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                </div>
+                <div>
+                  <h4 className="text-[#111111] font-black text-lg tracking-wide mb-1">{c(`cert.${i}.name`, isZh ? cert.zh_n : cert.en_n)}</h4>
+                  <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">{c(`cert.${i}.code`, isZh ? cert.zh_code : cert.en_code)}</p>
+                </div>
               </div>
-              <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
-                <Image fill unoptimized src="/images/about/cert.jpg" alt="Verified Supplier Certificate" className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
-              </div>
-              <div>
-                <h4 className="text-[#111111] font-black text-lg tracking-wide mb-1">{isZh ? '重工溯源认证' : 'Verified Supplier'}</h4>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">{isZh ? 'VERIFIED SUPPLIER' : 'TRADE ASSURANCE'}</p>
-              </div>
-            </div>
-
-            {/* Cert 2 */}
-            <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-gray-100 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:border-[#D4AF37]/30 hover:-translate-y-2 transition-all duration-500 overflow-hidden relative group">
-               <div className="w-14 h-14 bg-[#111111] rounded-2xl text-[#D4AF37] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Globe size={24} />
-              </div>
-              <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
-                <Image fill unoptimized src="/images/about/cert.jpg" alt="CE Conformity Certificate" className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
-              </div>
-              <div>
-                <h4 className="text-[#111111] font-black text-lg tracking-wide mb-1">{isZh ? '欧盟通行准入' : 'CE Conformity'}</h4>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">{isZh ? 'CE CONFORMITY' : 'EU MARKET ACCESS'}</p>
-              </div>
-            </div>
-
-            {/* Cert 3 */}
-            <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-gray-100 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:border-[#D4AF37]/30 hover:-translate-y-2 transition-all duration-500 overflow-hidden relative group">
-               <div className="w-14 h-14 bg-[#111111] rounded-2xl text-[#D4AF37] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Trophy size={24} />
-              </div>
-              <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
-                <Image fill unoptimized src="/images/about/cert.jpg" alt="ISO 9001 Certificate" className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
-              </div>
-              <div>
-                <h4 className="text-[#111111] font-black text-lg tracking-wide mb-1">{isZh ? '国际质控标准' : 'ISO 9001:2015'}</h4>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">{isZh ? 'ISO 9001:2015' : 'QUALITY MANAGEMENT'}</p>
-              </div>
-            </div>
-
-            {/* Cert 4 */}
-            <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-gray-100 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:border-[#D4AF37]/30 hover:-translate-y-2 transition-all duration-500 overflow-hidden relative group">
-               <div className="w-14 h-14 bg-[#111111] rounded-2xl text-[#D4AF37] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Award size={24} />
-              </div>
-              <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
-                <Image fill unoptimized src="/images/about/cert.jpg" alt="SGS Inspection Report" className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
-              </div>
-              <div>
-                <h4 className="text-[#111111] font-black text-lg tracking-wide mb-1">{isZh ? '第三方驻场终检' : 'SGS Inspection'}</h4>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">{isZh ? 'SGS INSPECTION' : 'THIRD-PARTY VERIFIED'}</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -234,9 +192,9 @@ export default function AboutPage() {
         <div className="max-w-[900px] mx-auto px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white mb-6">
-              {isZh ? '期待未来与您' : 'Looking Forward to'} <span className="text-[#D4AF37]">{isZh ? '极度密切联运' : 'Working With You'}</span>
+              {c('cta.title1', isZh ? '期待未来与您' : 'Looking Forward to')} <span className="text-[#D4AF37]">{c('cta.titleGold', isZh ? '极度密切联运' : 'Working With You')}</span>
             </h2>
-            <p className="text-gray-400 text-sm font-medium">{isZh ? '填写需求型号与目标港口，12小时内获取极致竞争力的 CIF 出海到岸底价。' : 'Share your required model and operating conditions, and receive a highly competitive FOB / CIF ex-works price within 12 hours.'}</p>
+            <p className="text-gray-400 text-sm font-medium">{c('cta.desc', isZh ? '填写需求型号与目标港口，12小时内获取极致竞争力的 CIF 出海到岸底价。' : 'Share your required model and operating conditions, and receive a highly competitive FOB / CIF ex-works price within 12 hours.')}</p>
           </div>
 
           <div className="bg-[#1A1A1A] p-10 md:p-14 shadow-[0_30px_60px_rgba(0,0,0,0.5)] border border-white/10 mx-auto rounded-[32px] relative overflow-hidden">
@@ -258,7 +216,7 @@ export default function AboutPage() {
 
                  <div className="bg-[#111111] rounded-2xl px-6 py-4 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
                    <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mb-2 block">{isZh ? '所需机型的极限工况与型号' : 'REQUIREMENTS'}</label>
-                   <textarea name="message" placeholder={isZh ? '请描述您的意向厂矿机械型号与特殊发运需求...' : 'Message details (e.g., machine model required or company enquiry) *'} rows={4} className="w-full py-2 text-sm focus:outline-none bg-transparent resize-none font-medium text-white placeholder:text-gray-600"></textarea>
+                   <textarea name="message" placeholder={c('cta.formPlaceholder', isZh ? '请描述您的意向厂矿机械型号与特殊发运需求...' : 'Message details (e.g., machine model required or company enquiry) *')} rows={4} className="w-full py-2 text-sm focus:outline-none bg-transparent resize-none font-medium text-white placeholder:text-gray-600"></textarea>
                  </div>
 
                  {submitMessage && (
@@ -281,7 +239,7 @@ export default function AboutPage() {
                    </div>
 
                    <button type="submit" disabled={submitState === "loading"} className="flex-1 w-full h-[60px] bg-[#D4AF37] text-[#111111] text-[13px] font-black tracking-[0.2em] uppercase hover:bg-white hover:text-black hover:shadow-[0_10px_30px_rgba(212,175,55,0.4)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 rounded-2xl disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
-                     {submitState === "loading" ? (isZh ? '发送中...' : 'Sending...') : (isZh ? '立即获取 CIF 底价' : 'Send Enquiry Now')} <Send size={16} />
+                     {submitState === "loading" ? (isZh ? '发送中...' : 'Sending...') : <>{c('cta.submitBtn', isZh ? '立即获取 CIF 底价' : 'Send Enquiry Now')} <Send size={16} /></>}
                    </button>
                  </div>
               </form>

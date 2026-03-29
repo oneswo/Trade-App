@@ -38,17 +38,11 @@ export default function ServicesPage() {
 
             {/* 副标题 (Height Locked) */}
             <div className="w-full flex items-center justify-center min-h-[60px] md:min-h-[80px]">
-              {isZh ? (
-                 <div className="w-full text-gray-400 text-lg md:text-[21px] font-medium flex justify-between items-center opacity-90 max-w-[900px]">
-                    {c('hero.desc', '从源头查勘到重载交付，我们提供全链路保姆式出海护航，确保每台机械以巅峰状态抵达。').split('').map((char: string, index: number) => (
-                      <span key={index}>{char}</span>
-                    ))}
-                 </div>
-              ) : (
-                 <p className="text-gray-400 text-lg md:text-xl font-medium leading-relaxed max-w-3xl text-center mx-auto">
-                   {c('hero.desc', 'From factory inspection to heavy-load delivery, we provide end-to-end export escorts to ensure every machine arrives in peak condition.')}
-                 </p>
-              )}
+              <p className="text-gray-400 text-base sm:text-lg md:text-[21px] font-medium opacity-90 max-w-[900px] text-center leading-relaxed">
+                {isZh
+                  ? c('hero.desc', '从源头查勘到重载交付，我们提供全链路保姆式出海护航，确保每台机械以巅峰状态抵达。')
+                  : c('hero.desc', 'From factory inspection to heavy-load delivery, we provide end-to-end export escorts to ensure every machine arrives in peak condition.')}
+              </p>
             </div>
 
          </div>
@@ -56,7 +50,7 @@ export default function ServicesPage() {
 
       {/* 2. 六大特权服务矩阵 (Premium Service Matrix) */}
       <section className="w-full py-24 md:py-32 bg-[#FAFAFA]">
-        <div className="max-w-[1440px] mx-auto px-8">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">{c('matrix.title', isZh ? '重装出海全维保障体系' : 'Premium Heavy Equipment Services')}</h2>
             <div className="w-12 h-1 bg-[#D4AF37] mx-auto"></div>
@@ -130,7 +124,7 @@ export default function ServicesPage() {
         {/* Subtle geometric lines */}
         <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'linear-gradient(#D4AF37 1px, transparent 1px), linear-gradient(90deg, #D4AF37 1px, transparent 1px)', backgroundSize: '100px 100px' }}></div>
         
-        <div className="max-w-[1440px] mx-auto px-8 relative z-10">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8 relative z-10">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter">{c('trust.title', isZh ? '赢得全球矿企与基建商的绝对信赖' : 'Trusted by Global Mining & Infrastructure Operators')}</h2>
           </div>
@@ -155,8 +149,8 @@ export default function ServicesPage() {
       </section>
 
       {/* 4. 极致流程步骤 (The Zig-Zag Process) */}
-      <section className="w-full py-32 bg-white relative">
-        <div className="max-w-[1440px] mx-auto px-8 relative z-10">
+      <section className="w-full py-16 md:py-32 bg-white relative">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8 relative z-10">
           <div className="text-center mb-32">
             <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">{c('process.title', isZh ? '二手重型设备验交与发运标准' : 'Used Equipment Inspection & Dispatch Standards')}</h2>
             <div className="w-12 h-1 bg-[#D4AF37] mx-auto"></div>

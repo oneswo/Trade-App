@@ -1,7 +1,6 @@
 import { getSiteSettingsRepo } from "@/lib/data/repository";
 
-// 公开 API - 前台获取站点配置（缓存 60 秒）
-export const revalidate = 60;
+// 公开 API - 交给客户端 hook 自己做短 TTL，避免后台保存后前台仍命中旧配置
 
 export async function GET() {
   try {

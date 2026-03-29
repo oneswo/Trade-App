@@ -14,7 +14,7 @@ export function signSession(payload: string): string {
   return `${payload}.${hmacHex(payload)}`;
 }
 
-function verifyToken(token: string): boolean {
+export function verifyToken(token: string): boolean {
   const lastDot = token.lastIndexOf(".");
   if (lastDot < 0) return false;
   const payload = token.slice(0, lastDot);

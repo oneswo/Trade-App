@@ -4,7 +4,7 @@ import { getCategoryRepo } from "@/lib/data/repository";
 
 const createSchema = z.object({
   slug: z.string().min(1),
-  nameZh: z.string().min(1),
+  nameZh: z.string().optional().default(""),
   nameEn: z.string().min(1),
   imageUrl: z.string().nullable().optional(),
   sortOrder: z.number().int().optional(),
@@ -29,7 +29,8 @@ export async function GET(request: Request) {
     const repo = getCategoryRepo();
     const data = await repo.list();
     return Response.json({ ok: true, data });
-  } catch {
+  } catch (err) {
+    console.error("GET /api/admin/categories error:", err);
     return Response.json({ ok: false, error: "unexpected_error" }, { status: 500 });
   }
 }
@@ -46,7 +47,8 @@ export async function POST(request: Request) {
     const repo = getCategoryRepo();
     const data = await repo.create(parsed.data);
     return Response.json({ ok: true, data }, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error("POST /api/admin/categories error:", err);
     return Response.json({ ok: false, error: "unexpected_error" }, { status: 500 });
   }
 }

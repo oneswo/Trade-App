@@ -8,6 +8,7 @@ const createTicketSchema = z.object({
   title: z.string().trim().min(2).max(100),
   description: z.string().trim().min(2).max(1000),
   type: TYPE_ENUM,
+  screenshots: z.array(z.string().url()).max(3).optional(),
 });
 
 export async function GET(request: Request) {

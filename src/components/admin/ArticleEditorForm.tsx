@@ -202,7 +202,7 @@ export default function ArticleEditorForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl pb-16">
+    <form onSubmit={handleSubmit} className="space-y-6 pb-20">
       {/* Top Area: Settings & Media Cover */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 items-stretch">
         {/* Left: General Settings */}

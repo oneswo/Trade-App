@@ -40,24 +40,18 @@ export default function ContactPage() {
 
             {/* 副标题 (Height Locked) */}
             <div className="w-full flex items-center justify-center min-h-[60px] md:min-h-[80px]">
-              {isZh ? (
-                <div className="w-full text-gray-400 text-lg md:text-[21px] font-medium flex justify-between items-center opacity-90 max-w-[900px]">
-                  {c('hero.desc', '无论您身处哪一大洲的矿场机位，我们的特派工程师将提供 24 小时跨洋直连，为您敲定源头底价与专属航运配额。').split('').map((char, index) => (
-                    <span key={index}>{char}</span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-400 text-lg md:text-xl font-medium leading-relaxed max-w-3xl text-center mx-auto">
-                  {c('hero.desc', 'Wherever your mining operation is located, our dedicated engineers provide 24/7 cross-border support to secure factory pricing and exclusive shipping allocations.')}
-                </p>
-              )}
+              <p className="text-gray-400 text-base sm:text-lg md:text-[21px] font-medium opacity-90 max-w-[900px] text-center leading-relaxed">
+                {isZh
+                  ? c('hero.desc', '无论您身处哪一大洲的矿场机位，我们的特派工程师将提供 24 小时跨洋直连，为您敲定源头底价与专属航运配额。')
+                  : c('hero.desc', 'Wherever your mining operation is located, our dedicated engineers provide 24/7 cross-border support to secure factory pricing and exclusive shipping allocations.')}
+              </p>
             </div>
          </div>
       </section>
 
       {/* 1. 总部航点与核心联络网 (Headquarters & Direct Lines) */}
-      <section className="w-full py-32 bg-[#FAFAFA] relative">
-        <div className="max-w-[1440px] mx-auto px-8 relative z-10">
+      <section className="w-full py-16 md:py-32 bg-[#FAFAFA] relative">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8 relative z-10">
           <div className="flex flex-col lg:flex-row min-h-[600px] rounded-3xl overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.1)] border border-gray-200">
             
             {/* Left: Info Center */}
@@ -153,8 +147,8 @@ export default function ContactPage() {
       </section>
 
       {/* 2. 全球大区执行特派员 (Executive Connect Reps) */}
-      <section className="w-full py-32 bg-white">
-        <div className="max-w-[1440px] mx-auto px-8 relative z-10">
+      <section id="sales-team" className="w-full py-16 md:py-32 bg-white">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8 relative z-10">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">{isZh ? '直连大洲业务总控' : 'Direct Regional Contacts'}</h2>
             <div className="w-12 h-1 bg-[#D4AF37] mx-auto mb-6"></div>
@@ -162,88 +156,35 @@ export default function ContactPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            {/* Rep 1 */}
-            <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
-              <div className="absolute inset-0 border-[2px] border-transparent p-2 rounded-3xl pointer-events-none group-hover:border-[url('/images/gradients/amber.jpg')] transition-opacity"></div>
-              <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <Image fill unoptimized src={c('team.0.photo', '/images/avatars/yin.png')} alt={c('team.0.name', isZh ? '尹世兵' : 'Steven Yin')} className="object-cover" />
-              </div>
-              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.0.name', isZh ? '尹世兵' : 'Steven Yin')}</h3>
-              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.0.title', isZh ? '亚太区执行董事' : 'APAC Executive Director')}</p>
-              
-              <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
-                  <a href="tel:+8615156888267" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 15156888267</a>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
-                  <a href="https://wa.me/8615156888267" target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 15156888267</a>
-                </div>
-              </div>
-            </div>
+            {([
+              { photo: '/images/avatars/yin.png',  zh_name: '尹世兵',  en_name: 'Steven Yin', zh_title: '亚太区执行董事',  en_title: 'APAC Executive Director', defaultPhone: '+8615156888267' },
+              { photo: '/images/avatars/hong.png', zh_name: '尹洪峰',  en_name: 'Frank Yin',  zh_title: '拉非高级代办',    en_title: 'LATAM & Africa Lead',      defaultPhone: '+8619159103568' },
+              { photo: '/images/avatars/anna.png', zh_name: '安娜·李', en_name: 'Anna Li',    zh_title: '欧亚中东总监',    en_title: 'EU & MENA Director',       defaultPhone: '+8617321077956' },
+              { photo: '/images/avatars/annie.png',zh_name: '安妮',    en_name: 'Annie',      zh_title: '泛西非大区专员',  en_title: 'West Africa Specialist',   defaultPhone: '+8617317763969' },
+            ] as const).map((m, i) => {
+              const phone = c(`team.${i}.phone`, m.defaultPhone).replace(/\s/g, '');
+              const displayPhone = c(`team.${i}.phone`, m.defaultPhone);
+              return (
+                <div key={i} className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
+                  <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
+                    <Image fill unoptimized src={c(`team.${i}.photo`, m.photo)} alt={c(`team.${i}.name`, isZh ? m.zh_name : m.en_name)} className="object-cover" />
+                  </div>
+                  <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c(`team.${i}.name`, isZh ? m.zh_name : m.en_name)}</h3>
+                  <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c(`team.${i}.title`, isZh ? m.zh_title : m.en_title)}</p>
 
-            {/* Rep 2 */}
-            <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
-              <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <Image fill unoptimized src={c('team.1.photo', '/images/avatars/hong.png')} alt={c('team.1.name', isZh ? '尹洪峰' : 'Frank Yin')} className="object-cover" />
-              </div>
-              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.1.name', isZh ? '尹洪峰' : 'Frank Yin')}</h3>
-              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.1.title', isZh ? '拉非高级代办' : 'LATAM & Africa Lead')}</p>
-              
-              <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
-                  <a href="tel:+8619159103568" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 19159103568</a>
+                  <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
+                      <a href={`tel:${phone}`} className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">{displayPhone}</a>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
+                      <a href={`https://wa.me/${phone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">{displayPhone}</a>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
-                  <a href="https://wa.me/8619159103568" target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 19159103568</a>
-                </div>
-              </div>
-            </div>
-
-            {/* Rep 3 */}
-            <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
-              <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <Image fill unoptimized src={c('team.2.photo', '/images/avatars/anna.png')} alt={c('team.2.name', isZh ? '安娜·李' : 'Anna Li')} className="object-cover" />
-              </div>
-              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.2.name', isZh ? '安娜·李' : 'Anna Li')}</h3>
-              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.2.title', isZh ? '欧亚中东总监' : 'EU & MENA Director')}</p>
-              
-              <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
-                  <a href="tel:+8617321077956" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17321077956</a>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
-                  <a href="https://wa.me/8617321077956" target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17321077956</a>
-                </div>
-              </div>
-            </div>
-
-            {/* Rep 4 */}
-            <div className="bg-[#FAFAFA] p-8 rounded-3xl border border-gray-100 hover:border-[#D4AF37] hover:shadow-[0_20px_40px_rgba(212,175,55,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col items-center text-center relative overflow-hidden">
-              <div className="w-24 h-24 rounded-[32px] bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 relative z-10 overflow-hidden ring-4 ring-white">
-                 <Image fill unoptimized src={c('team.3.photo', '/images/avatars/annie.png')} alt={c('team.3.name', isZh ? '安妮' : 'Annie')} className="object-cover" />
-              </div>
-              <h3 className="text-3xl font-black text-[#111111] mb-3 relative z-10 tracking-tight">{c('team.3.name', isZh ? '安妮' : 'Annie')}</h3>
-              <p className="text-[#D4AF37] text-sm font-bold uppercase tracking-[0.1em] mb-8 relative z-10">{c('team.3.title', isZh ? '泛西非大区专员' : 'West Africa Specialist')}</p>
-              
-              <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
-                  <a href="tel:+8617317763969" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17317763969</a>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
-                  <a href="https://wa.me/8617317763969" target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">+86 17317763969</a>
-                </div>
-              </div>
-            </div>
-
+              );
+            })}
           </div>
         </div>
       </section>

@@ -53,7 +53,6 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const kindValue = formData.get("kind");
     const kindParsed = kindSchema.safeParse(kindValue);
-
     if (!kindParsed.success) {
       return Response.json({ ok: false, error: "invalid_kind" }, { status: 400 });
     }

@@ -116,7 +116,11 @@ export default function ProductDetailPage() {
             <div className="absolute top-4 right-4 pointer-events-none gap-3 items-center flex z-20">
               <span className="bg-white/90 backdrop-blur-sm px-3.5 py-1.5 flex items-center gap-2 border border-gray-200 shadow-sm rounded-xl">
                 <span className="w-1.5 h-1.5 bg-[#25D366] rounded-full animate-pulse"></span>
-                <span className="text-[#111111] font-black text-[11px] tracking-widest leading-none pt-[1px]">{isZh ? '库存现车: 3 台' : 'IN STOCK: 3'}</span>
+                <span className="text-[#111111] font-black text-[11px] tracking-widest leading-none pt-[1px]">
+                  {isZh
+                    ? `库存现车: ${product.stockAmount ?? '--'} 台`
+                    : `IN STOCK: ${product.stockAmount ?? '--'}`}
+                </span>
               </span>
             </div>
           </div>
@@ -128,19 +132,19 @@ export default function ProductDetailPage() {
                 {product.title}
               </h1>
               
-              {/* 满宽三等分对齐标签 */}
-              <div className="grid grid-cols-3 gap-3 w-full mt-2">
-                <div className="flex items-center justify-center gap-2 bg-white px-2 py-2.5 border border-gray-200 shadow-sm rounded-xl">
+              {/* 三等分标签 — 移动端堆叠为2列 */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full mt-2">
+                <div className="flex items-center justify-start sm:justify-center gap-2 bg-white px-3 py-2.5 border border-gray-200 shadow-sm rounded-xl">
                   <CheckCircle2 size={15} className="text-[#25D366] shrink-0" />
-                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-widest text-[#111111] whitespace-nowrap">{isZh ? '第三方 SGS 检测' : 'SGS Certified'}</span>
+                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-wide text-[#111111]">{isZh ? '第三方 SGS 检测' : 'SGS Certified'}</span>
                 </div>
-                <div className="flex items-center justify-center gap-2 bg-white px-2 py-2.5 border border-gray-200 shadow-sm rounded-xl">
+                <div className="flex items-center justify-start sm:justify-center gap-2 bg-white px-3 py-2.5 border border-gray-200 shadow-sm rounded-xl">
                   <ShieldCheck size={15} className="text-[#111111] shrink-0" />
-                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-widest text-[#111111] whitespace-nowrap">{isZh ? '100% 性能满载实测' : '100% Performance Tst'}</span>
+                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-wide text-[#111111]">{isZh ? '100% 性能满载实测' : '100% Performance Tested'}</span>
                 </div>
-                <div className="flex items-center justify-center gap-2 bg-[#111111] px-2 py-2.5 text-white shadow-md rounded-xl">
+                <div className="flex items-center justify-start sm:justify-center gap-2 bg-[#111111] px-3 py-2.5 text-white shadow-md rounded-xl">
                   <Ship size={15} className="text-[#D4AF37] shrink-0" />
-                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-widest text-[#D4AF37] whitespace-nowrap">{isZh ? '准现车滚装发运' : 'Ro-Ro Ready'}</span>
+                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-wide text-[#D4AF37]">{isZh ? '准现车滚装发运' : 'Ro-Ro Ready'}</span>
                 </div>
               </div>
             </div>
@@ -166,7 +170,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* ----- [3] 左下角 (BOTTOM LEFT) / ROW 2：缩略图矩阵 ----- */}
-          <div className="lg:col-span-7 order-2 lg:order-3 w-full grid grid-cols-5 gap-2 md:gap-3 shrink-0 select-none">
+          <div className="lg:col-span-7 order-2 lg:order-3 w-full grid grid-cols-4 sm:grid-cols-5 gap-2 md:gap-3 shrink-0 select-none">
             {product.videoUrl ? (
               <button 
                 onClick={() => setActiveMedia(-1)}
