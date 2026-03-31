@@ -78,6 +78,20 @@ function normalizeMediaList(urls: string[]) {
   return list;
 }
 
+function collectMediaRefs(input: {
+  coverImageUrl: string | null;
+  videoUrl: string | null;
+  galleryImageUrls: string[];
+}) {
+  const refs = new Set<string>();
+  if (input.coverImageUrl) refs.add(input.coverImageUrl);
+  if (input.videoUrl) refs.add(input.videoUrl);
+  for (const url of input.galleryImageUrls) {
+    if (url) refs.add(url);
+  }
+  return refs;
+}
+
 export async function GET(request: Request, context: RouteContext) {
   if (!hasAdminSession(request)) {
     return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
@@ -152,10 +166,26 @@ export async function PATCH(request: Request, context: RouteContext) {
       updates.galleryImageUrls = normalizeMediaList(updates.galleryImageUrls);
     }
 
+    const oldRefs = collectMediaRefs({
+      coverImageUrl: current.coverImageUrl,
+      videoUrl: current.videoUrl,
+      galleryImageUrls: current.galleryImageUrls,
+    });
+
     const updated = await repo.update(id, updates);
 
     if (!updated) {
       return Response.json({ ok: false, error: "not_found" }, { status: 404 });
+    }
+
+    const nextRefs = collectMediaRefs({
+      coverImageUrl: updated.coverImageUrl,
+      videoUrl: updated.videoUrl,
+      galleryImageUrls: updated.galleryImageUrls,
+    });
+    const staleRefs = [...oldRefs].filter((url) => !nextRefs.has(url));
+    if (staleRefs.length > 0) {
+      await deleteR2Objects(staleRefs);
     }
 
     return Response.json({ ok: true, data: updated });

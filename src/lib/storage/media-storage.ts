@@ -41,6 +41,21 @@ function makeRelativeDir(kind: MediaKind) {
   return path.join("uploads", kind, day);
 }
 
+function getStorageEnvPrefix() {
+  const custom = (process.env.R2_ENV_PREFIX ?? "").trim().replace(/^\/+|\/+$/g, "");
+  if (custom) return custom;
+
+  if (process.env.VERCEL_ENV === "production") return "prod";
+  if (process.env.VERCEL_ENV === "preview") return "preview";
+  if (process.env.NODE_ENV === "production") return "prod";
+  return "dev";
+}
+
+function withEnvPrefix(relativePath: string) {
+  const prefix = getStorageEnvPrefix();
+  return path.join(prefix, relativePath);
+}
+
 class LocalMediaStorage implements MediaStorage {
   async upload(file: File, kind: MediaKind) {
     const arrayBuffer = await file.arrayBuffer();
@@ -48,7 +63,7 @@ class LocalMediaStorage implements MediaStorage {
     const ext = getFileExt(file, kind);
     const generatedName = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
 
-    const relativeDir = makeRelativeDir(kind);
+    const relativeDir = withEnvPrefix(makeRelativeDir(kind));
     const absDir = path.join(process.cwd(), "public", relativeDir);
 
     await mkdir(absDir, { recursive: true });
@@ -101,7 +116,13 @@ class R2MediaStorage implements MediaStorage {
     const { PutObjectCommand } = require("@aws-sdk/client-s3") as typeof import("@aws-sdk/client-s3");
     const ext = getFileExt(file, kind);
     const day = new Date().toISOString().slice(0, 10).replaceAll("-", "");
-    const key = `uploads/${kind}/${day}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+    const key = path.posix.join(
+      getStorageEnvPrefix(),
+      "uploads",
+      kind,
+      day,
+      `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`
+    );
 
     const arrayBuffer = await file.arrayBuffer();
     await this.client.send(
