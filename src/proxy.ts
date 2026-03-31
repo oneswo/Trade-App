@@ -38,5 +38,6 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/(en|zh)/:path*", "/admin/:path*"],
+  // Exclude static assets and special paths from middleware.
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)", "/admin/:path*"],
 };

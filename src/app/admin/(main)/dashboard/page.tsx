@@ -12,6 +12,8 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import InquiryDrawer, { InquiryData } from "@/components/admin/InquiryDrawer";
+import { readClientCache, writeClientCache } from "@/lib/cache/client-cache";
+import { fetchJson } from "@/lib/http/client";
 
 interface DashboardStats {
   totalProducts: number;
@@ -27,16 +29,26 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   CLOSED:    { label: "已关闭",    color: "bg-gray-100 text-gray-500 border-gray-200" },
 };
 
+const DASHBOARD_CACHE_KEY = "admin:dashboard:stats";
+const DASHBOARD_CACHE_TTL_MS = 60 * 1000;
+
 // ─── 页面 ─────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [activeInquiryId, setActiveInquiryId] = useState<string | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/dashboard")
-      .then((r) => r.json())
+    const cached = readClientCache<DashboardStats>(DASHBOARD_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
+    if (cached) {
+      setStats(cached);
+    }
+
+    void fetchJson<{ ok: boolean; data: DashboardStats }>("/api/admin/dashboard")
       .then((res: { ok: boolean; data: DashboardStats }) => {
-        if (res.ok) setStats(res.data);
+        if (res.ok) {
+          setStats(res.data);
+          writeClientCache(DASHBOARD_CACHE_KEY, res.data);
+        }
       })
       .catch(() => {});
   }, []);

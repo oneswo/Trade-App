@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { hasAdminSession } from "@/lib/auth/session";
 import { getCategoryRepo } from "@/lib/data/repository";
+import { deleteR2Objects } from "@/lib/storage/media-storage";
 
 const createSchema = z.object({
   slug: z.string().min(1),
@@ -64,8 +65,13 @@ export async function PUT(request: Request) {
     }
     const { id, ...input } = parsed.data;
     const repo = getCategoryRepo();
+    const current = await repo.findById(id);
+    if (!current) return Response.json({ ok: false, error: "not_found" }, { status: 404 });
     const data = await repo.update(id, input);
     if (!data) return Response.json({ ok: false, error: "not_found" }, { status: 404 });
+    if (current.imageUrl && current.imageUrl !== data.imageUrl) {
+      await deleteR2Objects([current.imageUrl]);
+    }
     return Response.json({ ok: true, data });
   } catch {
     return Response.json({ ok: false, error: "unexpected_error" }, { status: 500 });
@@ -80,8 +86,11 @@ export async function DELETE(request: Request) {
     const id = searchParams.get("id");
     if (!id) return Response.json({ ok: false, error: "id_required" }, { status: 400 });
     const repo = getCategoryRepo();
+    const current = await repo.findById(id);
+    if (!current) return Response.json({ ok: false, error: "not_found" }, { status: 404 });
     const ok = await repo.remove(id);
     if (!ok) return Response.json({ ok: false, error: "not_found" }, { status: 404 });
+    await deleteR2Objects([current.imageUrl]);
     return Response.json({ ok: true });
   } catch {
     return Response.json({ ok: false, error: "unexpected_error" }, { status: 500 });

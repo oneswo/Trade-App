@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, Filter, Clock, Trash2 } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AdminModal from "@/components/admin/AdminModal";
 import InquiryDrawer, { InquiryData } from "@/components/admin/InquiryDrawer";
 import type { InquiryRecord } from "@/lib/data/repository";
+import { readClientCache, writeClientCache } from "@/lib/cache/client-cache";
+import { fetchJson, isAbortLikeError } from "@/lib/http/client";
 
 const STATUS_MAP: Record<string, { label: string; color: string; bgColor: string }> = {
   PENDING: { label: "待处理", color: "text-orange-600", bgColor: "bg-orange-50 border-orange-200" },
@@ -29,9 +32,12 @@ const SOURCE_LABELS: Record<string, string> = {
   "product-detail-cta": "产品详情页",
   "about-page-cta": "关于我们页",
   "services-page-cta": "服务页面",
+  "contact-page-form": "联系页面",
   "contact-page-cta": "联系页面",
   "global-fab": "悬浮窗询盘",
 };
+const INQUIRIES_CACHE_KEY = "admin:inquiries:list";
+const INQUIRIES_CACHE_TTL_MS = 20 * 1000;
 
 function formatSource(record: InquiryRecord): string {
   if (record.source) {
@@ -64,29 +70,45 @@ function toInquiryData(record: InquiryRecord): InquiryData {
 }
 
 export default function InquiriesPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [records, setRecords] = useState<InquiryRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("全部状态");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [activeInquiryId, setActiveInquiryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [markingRead, setMarkingRead] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const fetchControllerRef = useRef<AbortController | null>(null);
+  const didInitFromUrlRef = useRef(false);
 
   const fetchInquiries = async () => {
+    fetchControllerRef.current?.abort();
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
     setLoading(true);
+    const cached = readClientCache<InquiryRecord[]>(INQUIRIES_CACHE_KEY, INQUIRIES_CACHE_TTL_MS);
+    if (cached) {
+      setRecords(cached);
+      setLoading(false);
+    }
     try {
-      const response = await fetch("/api/inquiries", {
-        cache: "no-store",
-      });
-      const result = (await response.json()) as {
+      const result = await fetchJson<{
         ok: boolean;
         data: InquiryRecord[];
-      };
+      }>("/api/inquiries", {
+        signal: controller.signal,
+      });
 
-      if (response.ok && result.ok) {
+      if (result.ok) {
         setRecords(result.data);
+        writeClientCache(INQUIRIES_CACHE_KEY, result.data);
       }
+    } catch (error) {
+      if (isAbortLikeError(error)) return;
     } finally {
       setLoading(false);
     }
@@ -94,12 +116,45 @@ export default function InquiriesPage() {
 
   useEffect(() => {
     void fetchInquiries();
+    return () => fetchControllerRef.current?.abort();
   }, []);
+
+  useEffect(() => {
+    if (didInitFromUrlRef.current) return;
+    const q = searchParams.get("q") ?? "";
+    const status = searchParams.get("status") ?? "全部状态";
+    setSearchQuery(q);
+    setDebouncedSearchQuery(q);
+    setSelectedStatus(status);
+    didInitFromUrlRef.current = true;
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (!didInitFromUrlRef.current) return;
+    const params = new URLSearchParams(searchParams.toString());
+    const q = debouncedSearchQuery.trim();
+    if (q) params.set("q", q);
+    else params.delete("q");
+    if (selectedStatus && selectedStatus !== "全部状态") params.set("status", selectedStatus);
+    else params.delete("status");
+    const next = params.toString();
+    const current = searchParams.toString();
+    if (next !== current) {
+      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+    }
+  }, [debouncedSearchQuery, selectedStatus, pathname, router, searchParams]);
 
   const inquiries = useMemo(() => records.map(toInquiryData), [records]);
 
   const filteredInquiries = useMemo(() => {
-    const keyword = searchQuery.trim().toLowerCase();
+    const keyword = debouncedSearchQuery.trim().toLowerCase();
     return inquiries.filter((inq) => {
       const matchesKeyword =
         !keyword ||
@@ -116,7 +171,7 @@ export default function InquiriesPage() {
 
       return matchesKeyword && matchesStatus;
     });
-  }, [inquiries, searchQuery, selectedStatus]);
+  }, [inquiries, debouncedSearchQuery, selectedStatus]);
 
   const unreadCount = filteredInquiries.filter((inq) => inq.isUnread).length;
 
@@ -131,8 +186,13 @@ export default function InquiriesPage() {
       });
 
       if (!response.ok) return;
-
-      await fetchInquiries();
+      setRecords((prev) =>
+        prev.map((record) =>
+          record.id === id
+            ? { ...record, isRead: true, updatedAt: new Date().toISOString() }
+            : record
+        )
+      );
       setActiveInquiryId(id);
     } finally {
       setMarkingRead(false);
@@ -146,7 +206,13 @@ export default function InquiriesPage() {
       body: JSON.stringify({ status }),
     });
     if (response.ok) {
-      await fetchInquiries();
+      setRecords((prev) =>
+        prev.map((record) =>
+          record.id === id
+            ? { ...record, status: status as InquiryRecord["status"], updatedAt: new Date().toISOString() }
+            : record
+        )
+      );
       setActiveInquiryId(id);
     }
   };
@@ -155,8 +221,9 @@ export default function InquiriesPage() {
     if (!deleteId) return;
     setDeleting(true);
     try {
-      await fetch(`/api/admin/inquiries/${deleteId}`, { method: "DELETE" });
-      await fetchInquiries();
+      const response = await fetch(`/api/admin/inquiries/${deleteId}`, { method: "DELETE" });
+      if (!response.ok) return;
+      setRecords((prev) => prev.filter((record) => record.id !== deleteId));
       if (activeInquiryId === deleteId) setActiveInquiryId(null);
     } finally {
       setDeleting(false);

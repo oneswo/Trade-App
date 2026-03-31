@@ -4,11 +4,13 @@ import { Send, CheckCircle2, ShieldCheck, Globe, Trophy, Award } from "lucide-re
 import { useLocale } from 'next-intl';
 import { useInquirySubmit } from "@/hooks/useInquirySubmit";
 import { usePageContent } from '@/hooks/usePageContent';
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export default function AboutPage() {
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('about');
+  const { settings } = useSiteSettings();
   const { submitState, submitMessage, handleSubmit } = useInquirySubmit({ source: "about-page-cta" });
 
   return (
@@ -205,18 +207,18 @@ export default function AboutPage() {
              <form onSubmit={handleSubmit} className="flex flex-col gap-6 relative z-10">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="bg-[#111111] rounded-2xl px-6 py-2 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
-                     <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{isZh ? '您的称谓' : 'YOUR NAME'}</label>
-                     <input name="name" type="text" placeholder={isZh ? '您的称呼' : 'Your Name'} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
+                    <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{c('cta.form.nameLabel', isZh ? '您的称谓' : 'YOUR NAME')}</label>
+                    <input name="name" required type="text" placeholder={c('cta.form.namePlaceholder', isZh ? '您的称呼' : 'Your Name')} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
                    </div>
                    <div className="bg-[#111111] rounded-2xl px-6 py-2 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
-                     <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{isZh ? '联系方式 (WhatsApp / 邮箱)' : 'CONTACT (WHATSAPP/EMAIL)'}</label>
-                     <input name="contact" type="text" placeholder={isZh ? '联系方式' : 'Contact Details'} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
+                    <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{c('cta.form.contactLabel', isZh ? '联系方式 (WhatsApp / 邮箱)' : 'CONTACT (WHATSAPP/EMAIL)')}</label>
+                    <input name="contact" required type="text" placeholder={c('cta.form.contactPlaceholder', isZh ? '联系方式' : 'Contact Details')} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
                    </div>
                  </div>
 
                  <div className="bg-[#111111] rounded-2xl px-6 py-4 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
-                   <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mb-2 block">{isZh ? '所需机型的极限工况与型号' : 'REQUIREMENTS'}</label>
-                   <textarea name="message" placeholder={c('cta.formPlaceholder', isZh ? '请描述您的意向厂矿机械型号与特殊发运需求...' : 'Message details (e.g., machine model required or company enquiry) *')} rows={4} className="w-full py-2 text-sm focus:outline-none bg-transparent resize-none font-medium text-white placeholder:text-gray-600"></textarea>
+                  <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mb-2 block">{c('cta.form.messageLabel', isZh ? '所需机型的极限工况与型号' : 'REQUIREMENTS')}</label>
+                   <textarea name="message" required placeholder={c('cta.formPlaceholder', isZh ? '请描述您的意向厂矿机械型号与特殊发运需求...' : 'Message details (e.g., machine model required or company enquiry) *')} rows={4} className="w-full py-2 text-sm focus:outline-none bg-transparent resize-none font-medium text-white placeholder:text-gray-600"></textarea>
                  </div>
 
                  {submitMessage && (
@@ -227,15 +229,21 @@ export default function AboutPage() {
 
                  <div className="flex flex-col sm:flex-row items-center gap-6 mt-6">
                    <div className="flex items-center gap-3 shrink-0 lg:mr-4">
-                      <a href="https://wa.me/8615375319246" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title="WhatsApp">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M11.996 0a11.965 11.965 0 00-10.23 18.238L.044 24l6.012-1.632A11.968 11.968 0 1011.996 0zm6.657 17.244c-.266.75-1.523 1.455-2.107 1.517-.5.061-1.144.15-3.333-.762-2.646-1.096-4.35-3.805-4.48-4.004-.13-.198-1.071-1.423-1.071-2.716 0-1.291.674-1.924.912-2.19.239-.265.518-.33.69-.33.17 0 .343 0 .493.007.158.007.368-.06.574.4.215.474.721 1.777.786 1.909.066.133.111.288.026.467-.085.18-.129.294-.258.438-.13.14-.268.309-.387.433-.13.13-.264.276-.115.539.148.261.662 1.11 1.402 1.874.953.985 1.79 1.285 2.052 1.405.263.12.417.098.572-.078.155-.175.67-1.02.85-1.371.18-.35.358-.291.597-.197.24.093 1.517.714 1.776.843.256.13.43.193.493.302.062.108.062.631-.205 1.38z"/></svg>
-                      </a>
-                      <a href="#" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title="LinkedIn">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" className="group-hover:scale-110 transition-transform"><path d="M22.23 0H1.77C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.008zM7.12 20.452H3.558V9h3.562v11.452zm-1.78-13.02c-1.144 0-2.065-.925-2.065-2.064 0-1.139.92-2.064 2.065-2.064 1.14 0 2.064.925 2.064 2.064 0 1.139-.924 2.064-2.064 2.064zm15.11 13.02h-3.553v-5.569c0-1.328-.027-3.037-1.852-3.037-1.854 0-2.136 1.445-2.136 2.939v5.667H9.354V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286z"/></svg>
-                      </a>
-                      <a href="#" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title="Facebook">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                      </a>
+                     {settings?.contactWhatsApp && (
+                       <a href={`https://wa.me/${settings.contactWhatsApp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title={c('cta.social.whatsappTitle', 'WhatsApp')}>
+                         <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M11.996 0a11.965 11.965 0 00-10.23 18.238L.044 24l6.012-1.632A11.968 11.968 0 1011.996 0zm6.657 17.244c-.266.75-1.523 1.455-2.107 1.517-.5.061-1.144.15-3.333-.762-2.646-1.096-4.35-3.805-4.48-4.004-.13-.198-1.071-1.423-1.071-2.716 0-1.291.674-1.924.912-2.19.239-.265.518-.33.69-.33.17 0 .343 0 .493.007.158.007.368-.06.574.4.215.474.721 1.777.786 1.909.066.133.111.288.026.467-.085.18-.129.294-.258.438-.13.14-.268.309-.387.433-.13.13-.264.276-.115.539.148.261.662 1.11 1.402 1.874.953.985 1.79 1.285 2.052 1.405.263.12.417.098.572-.078.155-.175.67-1.02.85-1.371.18-.35.358-.291.597-.197.24.093 1.517.714 1.776.843.256.13.43.193.493.302.062.108.062.631-.205 1.38z"/></svg>
+                       </a>
+                     )}
+                     {settings?.socialLinkedin && (
+                       <a href={settings.socialLinkedin} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title={c('cta.social.linkedinTitle', 'LinkedIn')}>
+                         <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" className="group-hover:scale-110 transition-transform"><path d="M22.23 0H1.77C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.008zM7.12 20.452H3.558V9h3.562v11.452zm-1.78-13.02c-1.144 0-2.065-.925-2.065-2.064 0-1.139.92-2.064 2.065-2.064 1.14 0 2.064.925 2.064 2.064 0 1.139-.924 2.064-2.064 2.064zm15.11 13.02h-3.553v-5.569c0-1.328-.027-3.037-1.852-3.037-1.854 0-2.136 1.445-2.136 2.939v5.667H9.354V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286z"/></svg>
+                       </a>
+                     )}
+                     {settings?.socialFacebook && (
+                       <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title={c('cta.social.facebookTitle', 'Facebook')}>
+                         <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                       </a>
+                     )}
                    </div>
 
                    <button type="submit" disabled={submitState === "loading"} className="flex-1 w-full h-[60px] bg-[#D4AF37] text-[#111111] text-[13px] font-black tracking-[0.2em] uppercase hover:bg-white hover:text-black hover:shadow-[0_10px_30px_rgba(212,175,55,0.4)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 rounded-2xl disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">

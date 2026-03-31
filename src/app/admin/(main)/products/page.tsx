@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Edit2,
+  ExternalLink,
   Filter,
   Image as ImageIcon,
   Loader2,
@@ -12,6 +14,8 @@ import {
   Trash2,
 } from "lucide-react";
 import AdminModal from "@/components/admin/AdminModal";
+import { readClientCache, writeClientCache } from "@/lib/cache/client-cache";
+import { fetchJson, isAbortLikeError } from "@/lib/http/client";
 
 type ProductStatus = "DRAFT" | "PUBLISHED";
 
@@ -37,6 +41,8 @@ const STATUS_OPTIONS = [
   { value: "PUBLISHED", label: "已发布" },
   { value: "DRAFT", label: "草稿" },
 ];
+const PRODUCTS_CACHE_KEY = "admin:products:list";
+const PRODUCTS_CACHE_TTL_MS = 30 * 1000;
 
 function formatDate(iso: string) {
   const date = new Date(iso);
@@ -44,6 +50,9 @@ function formatDate(iso: string) {
 }
 
 export default function ProductsPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -51,22 +60,36 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [selectedCategory, setSelectedCategory] = useState("全部分类");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const fetchControllerRef = useRef<AbortController | null>(null);
+  const didInitFromUrlRef = useRef(false);
 
   const fetchProducts = async () => {
+    fetchControllerRef.current?.abort();
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
     setLoading(true);
     setErrorMessage("");
+    const cached = readClientCache<ProductListItem[]>(PRODUCTS_CACHE_KEY, PRODUCTS_CACHE_TTL_MS);
+    if (cached) {
+      setProducts(cached);
+      setLoading(false);
+    }
     try {
-      const response = await fetch("/api/admin/products", { cache: "no-store" });
-      const result = (await response.json()) as ProductListResult;
+      const result = await fetchJson<ProductListResult>("/api/admin/products", {
+        signal: controller.signal,
+      });
 
-      if (!response.ok || !result.ok || !result.data) {
+      if (!result.ok || !result.data) {
         setErrorMessage("加载产品失败，请刷新重试。");
         return;
       }
 
       setProducts(result.data);
-    } catch {
+      writeClientCache(PRODUCTS_CACHE_KEY, result.data);
+    } catch (error) {
+      if (isAbortLikeError(error)) return;
       setErrorMessage("网络异常，加载失败。");
     } finally {
       setLoading(false);
@@ -75,7 +98,44 @@ export default function ProductsPage() {
 
   useEffect(() => {
     void fetchProducts();
+    return () => fetchControllerRef.current?.abort();
   }, []);
+
+  useEffect(() => {
+    if (didInitFromUrlRef.current) return;
+    const q = searchParams.get("q") ?? "";
+    const status = searchParams.get("status") ?? "ALL";
+    const category = searchParams.get("category") ?? "全部分类";
+    setSearchQuery(q);
+    setDebouncedSearchQuery(q);
+    setSelectedStatus(status);
+    setSelectedCategory(category);
+    didInitFromUrlRef.current = true;
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (!didInitFromUrlRef.current) return;
+    const params = new URLSearchParams(searchParams.toString());
+    const q = debouncedSearchQuery.trim();
+    if (q) params.set("q", q);
+    else params.delete("q");
+    if (selectedStatus && selectedStatus !== "ALL") params.set("status", selectedStatus);
+    else params.delete("status");
+    if (selectedCategory && selectedCategory !== "全部分类") params.set("category", selectedCategory);
+    else params.delete("category");
+    const next = params.toString();
+    const current = searchParams.toString();
+    if (next !== current) {
+      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+    }
+  }, [debouncedSearchQuery, selectedStatus, selectedCategory, pathname, router, searchParams]);
 
   const categories = useMemo(() => {
     const values = [...new Set(products.map((item) => item.category))];
@@ -83,7 +143,7 @@ export default function ProductsPage() {
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    const keyword = searchQuery.trim().toLowerCase();
+    const keyword = debouncedSearchQuery.trim().toLowerCase();
     return products.filter((product) => {
       const matchesKeyword =
         !keyword ||
@@ -99,7 +159,7 @@ export default function ProductsPage() {
 
       return matchesKeyword && matchesStatus && matchesCategory;
     });
-  }, [products, searchQuery, selectedStatus, selectedCategory]);
+  }, [products, debouncedSearchQuery, selectedStatus, selectedCategory]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -194,13 +254,13 @@ export default function ProductsPage() {
       ) : null}
 
       <div className="overflow-hidden rounded-xl border border-black/[0.06] bg-white shadow-sm">
-        <div className="grid grid-cols-[auto_2fr_1fr_1fr_1fr_auto] items-center gap-4 border-b border-black/[0.05] bg-black/[0.02] px-6 py-3 text-[10px] font-semibold tracking-[0.1em] text-[#111111]/40 uppercase">
+          <div className="grid grid-cols-[auto_2fr_1fr_1fr_1fr_auto] items-center gap-4 border-b border-black/[0.05] bg-black/[0.02] px-6 py-3 text-[10px] font-semibold tracking-[0.1em] text-[#111111]/40 uppercase">
           <div className="w-12">封面</div>
           <div>产品名称</div>
           <div>分类</div>
           <div>状态</div>
           <div>创建时间</div>
-          <div className="w-16 text-right">操作</div>
+          <div className="w-24 text-right">操作</div>
         </div>
 
         <div className="divide-y divide-black/[0.04]">
@@ -266,7 +326,16 @@ export default function ProductsPage() {
                   {formatDate(product.createdAt)}
                 </div>
 
-                <div className="flex w-16 justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex w-24 justify-end gap-1">
+                  <a
+                    href={`/products/${product.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-8 w-8 items-center justify-center rounded-md text-[#111111]/40 hover:bg-black/[0.04] hover:text-[#111111]"
+                    title="前台查看"
+                  >
+                    <ExternalLink size={14} />
+                  </a>
                   <Link
                     href={`/admin/products/${product.id}/edit`}
                     className="flex h-8 w-8 items-center justify-center rounded-md text-[#111111]/40 hover:bg-black/[0.04] hover:text-[#111111]"

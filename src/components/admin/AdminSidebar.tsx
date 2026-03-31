@@ -60,6 +60,7 @@ export default function AdminSidebar() {
               <li key={href}>
                 <Link
                   href={href}
+                  prefetch
                   className={`
                     relative flex items-center gap-3.5 rounded-xl px-4 py-3.5
                     text-[15px] font-medium transition-all duration-200

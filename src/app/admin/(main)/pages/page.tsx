@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback, createContext, useContext, useRef } from "react";
 import { Save, Globe, ImageIcon, Film, Home, Package, Wrench, Info, BookOpen, Phone, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { SUPPORTED_LOCALES, LOCALE_LABELS } from "@/lib/i18n/locales";
 
 // ─── 页面列表 ─────────────────────────────────────────────────────────────────
 
-const LOCALES = [
-  { id: "zh", label: "中文" },
-  { id: "en", label: "English" },
-];
+const LOCALES = SUPPORTED_LOCALES.map((id) => ({
+  id,
+  label: LOCALE_LABELS[id],
+}));
 
 const PAGES_LIST = [
   { id: "home",     name: "网站首页", slug: "/",         icon: Home },
@@ -358,6 +359,9 @@ function HomeFields({ zh }: { zh: boolean }) {
         <FieldRow label="右侧辅助说明文字">
           <TextArea name="categories.desc" defaultValue={zh ? "无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。" : "Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum."} />
         </FieldRow>
+        <FieldRow label="无分类时提示文案">
+          <TextInput name="categories.emptyText" defaultValue={zh ? "暂无分类，请在后台「分类管理」中添加" : "No categories yet. Add them in the admin panel."} />
+        </FieldRow>
         {/* ⚠️ 分类卡片（名称 + 图片）已迁移至独立的「分类管理」模块统一管理 */}
         <div className="rounded-xl border border-[#D4AF37]/30 bg-[#FFFBF0] p-4 space-y-1.5">
           <p className="text-[13px] font-semibold text-[#B8860B]">📌 分类卡片由「分类管理」统一控制</p>
@@ -379,6 +383,17 @@ function HomeFields({ zh }: { zh: boolean }) {
         </FieldRow>
         <FieldRow label="右下角「查看全部」按钮文字">
           <TextInput name="hot.btnText" defaultValue={zh ? "游览所有 300+ 在线设备" : "View All 300+ Listed Machines"} />
+        </FieldRow>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="卡片角标：现货状态">
+            <TextInput name="hot.inStockLabel" defaultValue={zh ? "现货就绪" : "In Stock"} />
+          </FieldRow>
+          <FieldRow label="CTA 联系标签">
+            <TextInput name="cta.directContactLabel" defaultValue={zh ? "专属直联" : "Direct Contact"} />
+          </FieldRow>
+        </div>
+        <FieldRow label="无产品时提示文案">
+          <TextInput name="hot.emptyText" defaultValue={zh ? "暂无在售产品，请在后台「产品列表」中添加" : "No products yet. Add them in the admin panel."} />
         </FieldRow>
       </div>
 
@@ -527,6 +542,17 @@ function HomeFields({ zh }: { zh: boolean }) {
         <FieldRow label="表单提交按钮文字">
           <TextInput name="cta.submitBtn" defaultValue={zh ? "立即委托寻机" : "Commission a Search Now"} />
         </FieldRow>
+        <div className="grid grid-cols-3 gap-4">
+          <FieldRow label="社交图标标题：WhatsApp">
+            <TextInput name="cta.social.whatsappTitle" defaultValue="WhatsApp" />
+          </FieldRow>
+          <FieldRow label="社交图标标题：LinkedIn">
+            <TextInput name="cta.social.linkedinTitle" defaultValue="LinkedIn" />
+          </FieldRow>
+          <FieldRow label="社交图标标题：Facebook">
+            <TextInput name="cta.social.facebookTitle" defaultValue="Facebook" />
+          </FieldRow>
+        </div>
       </div>
 
     </div>
@@ -555,13 +581,98 @@ function ProductsFields({ zh }: { zh: boolean }) {
         </FieldRow>
       </div>
       <div className="space-y-5">
-        <SectionHeader title="模块二：筛选区文案" note="搜索框占位与列表无结果时的提示" />
+        <SectionHeader title="模块二：筛选区文案" note="搜索、筛选、排序、列表状态等文案" />
+        <FieldRow label="筛选区顶部小标签">
+          <TextInput name="filter.badge" defaultValue={zh ? "精确寻机" : "SEARCH"} />
+        </FieldRow>
+        <FieldRow label="筛选面板标题">
+          <TextInput name="filter.panelTitle" defaultValue={zh ? "筛选机械库" : "FILTERS"} />
+        </FieldRow>
+        <FieldRow label="打开筛选按钮文字">
+          <TextInput name="filter.openBtn" defaultValue={zh ? "打开终端" : "OPEN TERMINAL"} />
+        </FieldRow>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="移动端筛选面板标题">
+            <TextInput name="filter.mobileTitle" defaultValue={zh ? "滤镜终端" : "FILTERS TERMINAL"} />
+          </FieldRow>
+          <FieldRow label="移动端筛选分区标题">
+            <TextInput name="filter.mobileSectionTitle" defaultValue={zh ? "属性筛选大盘" : "FILTER TERMINAL"} />
+          </FieldRow>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="重置按钮文字">
+            <TextInput name="filter.resetBtn" defaultValue={zh ? "重置参数" : "RESET"} />
+          </FieldRow>
+          <FieldRow label="执行筛选按钮文字">
+            <TextInput name="filter.executeBtn" defaultValue={zh ? "执行绝对检索" : "EXECUTE SEARCH"} />
+          </FieldRow>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <FieldRow label="厂牌分组标题">
+            <TextInput name="filter.brandTitle" defaultValue={zh ? "核心厂牌" : "BRANDS"} />
+          </FieldRow>
+          <FieldRow label="类目分组标题">
+            <TextInput name="filter.categoryTitle" defaultValue={zh ? "器械类目" : "CATEGORIES"} />
+          </FieldRow>
+          <FieldRow label="年份分组标题">
+            <TextInput name="filter.yearTitle" defaultValue={zh ? "年份区间" : "YEAR RANGE"} />
+          </FieldRow>
+        </div>
         <FieldRow label="搜索框占位提示文字">
           <TextInput name="filter.searchPlaceholder" defaultValue={zh ? "搜索品牌、型号、工况..." : "Search brand, model, condition..."} />
         </FieldRow>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="结果区前缀文案">
+            <TextInput name="filter.resultsPrefix" defaultValue={zh ? "为您列阵" : "SHOWING"} />
+          </FieldRow>
+          <FieldRow label="结果区后缀文案">
+            <TextInput name="filter.resultsSuffix" defaultValue={zh ? "辆符合指标的实车" : "MACHINES FOUND"} />
+          </FieldRow>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="排序标签文案">
+            <TextInput name="filter.sortLabel" defaultValue={zh ? "排序:" : "SORT:"} />
+          </FieldRow>
+          <FieldRow label="加载中提示文案">
+            <TextInput name="filter.loadingText" defaultValue={zh ? "正在加载产品数据..." : "Loading products..."} />
+          </FieldRow>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <FieldRow label="排序项：年份最新">
+            <TextInput name="filter.sortNewest" defaultValue={zh ? "年份最新" : "Newest First"} />
+          </FieldRow>
+          <FieldRow label="排序项：工时最低">
+            <TextInput name="filter.sortHours" defaultValue={zh ? "工时最低" : "Lowest Hours"} />
+          </FieldRow>
+          <FieldRow label="排序项：厂牌 A-Z">
+            <TextInput name="filter.sortBrand" defaultValue={zh ? "厂牌 (A-Z)" : "Brand (A-Z)"} />
+          </FieldRow>
+        </div>
         <FieldRow label="无结果提示文字">
           <TextInput name="filter.emptyText" defaultValue={zh ? "暂无符合条件的产品，请尝试其他筛选项" : "No products found. Try different filters."} />
         </FieldRow>
+        <div className="grid grid-cols-3 gap-4">
+          <FieldRow label="卡片标签：现货状态">
+            <TextInput name="card.statusLabel" defaultValue={zh ? "现货状态" : "Available"} />
+          </FieldRow>
+          <FieldRow label="卡片标签：工时">
+            <TextInput name="card.hoursLabel" defaultValue={zh ? "工时" : "Hours"} />
+          </FieldRow>
+          <FieldRow label="卡片标签：自重">
+            <TextInput name="card.weightLabel" defaultValue={zh ? "自重" : "Weight"} />
+          </FieldRow>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <FieldRow label="卡片标签：动力">
+            <TextInput name="card.engineLabel" defaultValue={zh ? "动力" : "Engine"} />
+          </FieldRow>
+          <FieldRow label="卡片标签：定位">
+            <TextInput name="card.locationLabel" defaultValue={zh ? "定位" : "LOC"} />
+          </FieldRow>
+          <FieldRow label="卡片按钮文字">
+            <TextInput name="card.viewDetailsBtn" defaultValue={zh ? "查阅详尽机况" : "VIEW DETAILS"} />
+          </FieldRow>
+        </div>
       </div>
     </div>
   );
@@ -667,9 +778,37 @@ function ServicesFields({ zh }: { zh: boolean }) {
         <FieldRow label="表单描述框占位文字">
           <TextInput name="cta.formPlaceholder" defaultValue={zh ? "请描述您的意向机械型号与工况需求..." : "Please describe your machinery requirements..."} />
         </FieldRow>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="姓名输入框标题">
+            <TextInput name="cta.form.nameLabel" defaultValue={zh ? "您的称谓" : "YOUR NAME"} />
+          </FieldRow>
+          <FieldRow label="姓名输入框占位">
+            <TextInput name="cta.form.namePlaceholder" defaultValue={zh ? "您的称呼" : "Your Name"} />
+          </FieldRow>
+          <FieldRow label="联系方式输入框标题">
+            <TextInput name="cta.form.contactLabel" defaultValue={zh ? "联系方式 (WhatsApp / 邮箱)" : "CONTACT (WHATSAPP/EMAIL)"} />
+          </FieldRow>
+          <FieldRow label="联系方式输入框占位">
+            <TextInput name="cta.form.contactPlaceholder" defaultValue={zh ? "联系方式" : "Contact Details"} />
+          </FieldRow>
+          <FieldRow label="需求输入框标题">
+            <TextInput name="cta.form.messageLabel" defaultValue={zh ? "工况与型号需求" : "REQUIREMENTS"} />
+          </FieldRow>
+        </div>
         <FieldRow label="表单提交按钮文字">
           <TextInput name="cta.submitBtn" defaultValue={zh ? "立即获取 CIF 底价" : "GET CIF PRICE NOW"} />
         </FieldRow>
+        <div className="grid grid-cols-3 gap-4">
+          <FieldRow label="社交图标标题：WhatsApp">
+            <TextInput name="cta.social.whatsappTitle" defaultValue="WhatsApp" />
+          </FieldRow>
+          <FieldRow label="社交图标标题：LinkedIn">
+            <TextInput name="cta.social.linkedinTitle" defaultValue="LinkedIn" />
+          </FieldRow>
+          <FieldRow label="社交图标标题：Facebook">
+            <TextInput name="cta.social.facebookTitle" defaultValue="Facebook" />
+          </FieldRow>
+        </div>
       </div>
 
     </div>
@@ -801,9 +940,37 @@ function AboutFields({ zh }: { zh: boolean }) {
         <FieldRow label="表单描述框占位文字">
           <TextInput name="cta.formPlaceholder" defaultValue={zh ? "请描述您的意向厂矿机械型号与特殊发运需求..." : "Message details (e.g., machine model required or company enquiry) *"} />
         </FieldRow>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="姓名输入框标题">
+            <TextInput name="cta.form.nameLabel" defaultValue={zh ? "您的称谓" : "YOUR NAME"} />
+          </FieldRow>
+          <FieldRow label="姓名输入框占位">
+            <TextInput name="cta.form.namePlaceholder" defaultValue={zh ? "您的称呼" : "Your Name"} />
+          </FieldRow>
+          <FieldRow label="联系方式输入框标题">
+            <TextInput name="cta.form.contactLabel" defaultValue={zh ? "联系方式 (WhatsApp / 邮箱)" : "CONTACT (WHATSAPP/EMAIL)"} />
+          </FieldRow>
+          <FieldRow label="联系方式输入框占位">
+            <TextInput name="cta.form.contactPlaceholder" defaultValue={zh ? "联系方式" : "Contact Details"} />
+          </FieldRow>
+          <FieldRow label="需求输入框标题">
+            <TextInput name="cta.form.messageLabel" defaultValue={zh ? "所需机型的极限工况与型号" : "REQUIREMENTS"} />
+          </FieldRow>
+        </div>
         <FieldRow label="表单提交按钮文字">
           <TextInput name="cta.submitBtn" defaultValue={zh ? "立即获取 CIF 底价" : "Send Enquiry Now"} />
         </FieldRow>
+        <div className="grid grid-cols-3 gap-4">
+          <FieldRow label="社交图标标题：WhatsApp">
+            <TextInput name="cta.social.whatsappTitle" defaultValue="WhatsApp" />
+          </FieldRow>
+          <FieldRow label="社交图标标题：LinkedIn">
+            <TextInput name="cta.social.linkedinTitle" defaultValue="LinkedIn" />
+          </FieldRow>
+          <FieldRow label="社交图标标题：Facebook">
+            <TextInput name="cta.social.facebookTitle" defaultValue="Facebook" />
+          </FieldRow>
+        </div>
       </div>
 
     </div>
@@ -833,6 +1000,23 @@ function InsightsFields({ zh }: { zh: boolean }) {
       </div>
       <div className="space-y-5">
         <SectionHeader title="模块二：列表区文案" note="文章卡片动态拉取" />
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="分类 Tab：全部">
+            <TextInput name="list.tabAll" defaultValue={zh ? "全部内参" : "ALL INSIGHTS"} />
+          </FieldRow>
+          <FieldRow label="分类 Tab：采购避坑">
+            <TextInput name="list.tabGuides" defaultValue={zh ? "采购避坑" : "GUIDES"} />
+          </FieldRow>
+          <FieldRow label="分类 Tab：出海维保">
+            <TextInput name="list.tabMaintenance" defaultValue={zh ? "出海维保" : "MAINTENANCE"} />
+          </FieldRow>
+          <FieldRow label="分类 Tab：港口实录">
+            <TextInput name="list.tabReports" defaultValue={zh ? "港口实录" : "REPORTS"} />
+          </FieldRow>
+        </div>
+        <FieldRow label="加载中提示文案">
+          <TextInput name="list.loadingText" defaultValue={zh ? "加载中..." : "Loading..."} />
+        </FieldRow>
         <FieldRow label="空状态主文案">
           <TextInput name="list.emptyText" defaultValue={zh ? "暂无文章" : "No articles yet"} />
         </FieldRow>
@@ -880,6 +1064,12 @@ function ContactFields({ zh }: { zh: boolean }) {
           <TextArea name="info.hqDesc" defaultValue={zh ? "无视时区差与洲际屏障。我们的国际贸易工程师将在 12 小时内为您响应跨洋货单、极致型号垂询与实机验车请求。" : "Crossing time zones and continental barriers, our trade engineers respond within 12 hours to any inquiry."} />
         </FieldRow>
         <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="地址模块标题">
+            <TextInput name="info.addrTitle" defaultValue={zh ? "上海总部与调度中枢" : "Shanghai HQ & Dispatch Hub"} />
+          </FieldRow>
+          <FieldRow label="地址补充说明">
+            <TextInput name="info.addrNote" defaultValue={zh ? "(紧邻重载特大型滚装海运枢纽)" : "Shanghai, China (Adjacent to RO-RO Port)"} />
+          </FieldRow>
           <FieldRow label="总部地址（中文）">
             <TextInput name="info.addrZh" defaultValue="中国上海市青浦区重型机械工业园 88 号" />
           </FieldRow>
@@ -889,16 +1079,48 @@ function ContactFields({ zh }: { zh: boolean }) {
           <FieldRow label="邮箱">
             <TextInput name="info.email" defaultValue="global@kxtjexcavator.com" />
           </FieldRow>
+          <FieldRow label="邮箱模块标题">
+            <TextInput name="info.emailTitle" defaultValue={zh ? "全系底库报价专线" : "Quotation Hotline"} />
+          </FieldRow>
           <FieldRow label="电话 / WhatsApp">
             <TextInput name="info.phone" defaultValue="+86 153 7531 9246" />
           </FieldRow>
+          <FieldRow label="电话模块标题">
+            <TextInput name="info.phoneTitle" defaultValue={zh ? "24小时全球技术抢修部" : "24/7 Technical Support"} />
+          </FieldRow>
         </div>
+        <FieldRow label="技术支持补充说明">
+          <TextInput name="info.supportNote" defaultValue={zh ? "支持全时区实时连线 / 视频排障" : "Live Video Support Across All Time Zones"} />
+        </FieldRow>
+        <FieldRow label="营业时间模块标题">
+          <TextInput name="info.hoursTitle" defaultValue={zh ? "营业时间" : "Business Hours"} />
+        </FieldRow>
         <FieldRow label="营业时间">
           <TextInput name="info.hours" defaultValue={zh ? "周一至周六 09:00 - 18:00 (UTC+8)，紧急询盘 24小时响应" : "Mon–Sat 09:00–18:00 UTC+8, emergency inquiries answered 24/7"} />
         </FieldRow>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="地图气泡标题">
+            <TextInput name="map.bubbleTitle" defaultValue={zh ? "中国机械 亚太调度中枢" : "KXTJ Machinery HQ"} />
+          </FieldRow>
+          <FieldRow label="地图气泡副标题">
+            <TextInput name="map.bubbleSubtitle" defaultValue="Shanghai Global Base" />
+          </FieldRow>
+        </div>
       </div>
       <div className="space-y-5">
         <SectionHeader title="模块三：大区联系人（4 位）" note="与前台「直连大洲业务总控」四张卡片顺序一致：1 尹世兵 2 尹洪峰 3 安娜·李 4 安妮" />
+        <FieldRow label="团队区块主标题">
+          <TextInput name="team.sectionTitle" defaultValue={zh ? "直连大洲业务总控" : "Direct Regional Contacts"} />
+        </FieldRow>
+        <FieldRow label="团队区块描述">
+          <TextArea name="team.sectionDesc" defaultValue={zh ? "跳过漫长的转接等待。我们根据全球大洲划分了独立的业务战区，随时接管您的专线询盘。" : "Skip the long waiting queue. Our regional teams are divided by continent, ready to handle your inquiries directly."} />
+        </FieldRow>
+        <FieldRow label="成员卡片：直线电话标签">
+          <TextInput name="team.directLineLabel" defaultValue={zh ? "专线直驳" : "Direct Line"} />
+        </FieldRow>
+        <FieldRow label="成员卡片：WhatsApp 标签">
+          <TextInput name="team.whatsappLabel" defaultValue="WhatsApp" />
+        </FieldRow>
         {[
           { nameZh: "尹世兵", nameEn: "Steven Yin", zh_title: "亚太区执行董事", en_title: "APAC Executive Director", defaultPhoto: "/images/avatars/yin.png", defaultPhone: "+8615156888267" },
           { nameZh: "尹洪峰", nameEn: "Frank Yin", zh_title: "拉非高级代办", en_title: "LATAM & Africa Lead", defaultPhoto: "/images/avatars/hong.png", defaultPhone: "+8619159103568" },
@@ -917,6 +1139,52 @@ function ContactFields({ zh }: { zh: boolean }) {
             </div>
           </div>
         ))}
+      </div>
+      <div className="space-y-5">
+        <SectionHeader title="模块四：底部询单 CTA（P0）" note="联系页底部深色表单区（标题、说明、表单文案）" />
+        <FieldRow label="主标题 — 普通色部分">
+          <TextInput name="bottomCta.title1" defaultValue={zh ? "即刻开启您的" : "Start Your"} />
+        </FieldRow>
+        <FieldRow label="主标题 — 金色高亮部分">
+          <TextInput name="bottomCta.titleGold" defaultValue={zh ? "重装之行" : "Heavy Equipment Journey"} />
+        </FieldRow>
+        <FieldRow label="描述文案">
+          <TextArea name="bottomCta.desc" defaultValue={zh ? "只需在联系表格中留下您的电子件或电话，我们即可向您发送各大厂牌机皇底价和私密库存表。" : "Simply leave your email or phone number, and we will send you the best prices on top brands and exclusive inventory lists."} />
+        </FieldRow>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldRow label="姓名输入框标题">
+            <TextInput name="bottomCta.form.nameLabel" defaultValue={zh ? "您的称谓" : "YOUR NAME"} />
+          </FieldRow>
+          <FieldRow label="姓名输入框占位">
+            <TextInput name="bottomCta.form.namePlaceholder" defaultValue={zh ? "您的姓名 *" : "Full Name *"} />
+          </FieldRow>
+          <FieldRow label="联系方式输入框标题">
+            <TextInput name="bottomCta.form.contactLabel" defaultValue={zh ? "联系方式 (WhatsApp / 邮箱)" : "CONTACT (WHATSAPP/EMAIL)"} />
+          </FieldRow>
+          <FieldRow label="联系方式输入框占位">
+            <TextInput name="bottomCta.form.contactPlaceholder" defaultValue={zh ? "电子邮箱或 WhatsApp *" : "Email or WhatsApp *"} />
+          </FieldRow>
+          <FieldRow label="需求输入框标题">
+            <TextInput name="bottomCta.form.messageLabel" defaultValue={zh ? "所需机型的极限工况与型号" : "REQUIREMENTS"} />
+          </FieldRow>
+          <FieldRow label="需求输入框占位">
+            <TextInput name="bottomCta.form.messagePlaceholder" defaultValue={zh ? "您需要哪些型号的重装机械报价? (例如: 需要三一 36C 挖掘机发往西非) *" : "Which models do you need quotes for? (e.g. SANY 36C excavator to West Africa) *"} />
+          </FieldRow>
+        </div>
+        <FieldRow label="提交按钮文案">
+          <TextInput name="bottomCta.submitBtn" defaultValue={zh ? "立即获取 CIF 底价" : "GET CIF PRICE NOW"} />
+        </FieldRow>
+        <div className="grid grid-cols-3 gap-4">
+          <FieldRow label="社交图标标题：WhatsApp">
+            <TextInput name="bottomCta.social.whatsappTitle" defaultValue="WhatsApp" />
+          </FieldRow>
+          <FieldRow label="社交图标标题：LinkedIn">
+            <TextInput name="bottomCta.social.linkedinTitle" defaultValue="LinkedIn" />
+          </FieldRow>
+          <FieldRow label="社交图标标题：Facebook">
+            <TextInput name="bottomCta.social.facebookTitle" defaultValue="Facebook" />
+          </FieldRow>
+        </div>
       </div>
     </div>
   );

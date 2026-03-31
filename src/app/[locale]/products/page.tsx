@@ -2,8 +2,8 @@
 import { ChevronDown, Check, ArrowRight, X, SlidersHorizontal, ArrowUpRight, Search } from 'lucide-react';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
-import { useState, useEffect, useMemo, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, useMemo, Suspense, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCatalogProducts } from '@/hooks/useProductCatalog';
 import { useCategories } from '@/hooks/useCategories';
 
@@ -62,6 +62,8 @@ function matchesWeight(weightStr: string, filter: string): boolean {
 }
 
 function ProductsContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('products');
@@ -69,11 +71,14 @@ function ProductsContent() {
   const { categories: catList } = useCategories();
   const searchParams = useSearchParams();
   const initCategory = searchParams.get('category');
+  const initQ = searchParams.get('q') ?? '';
   
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState(initQ);
+  const [searchQuery, setSearchQuery] = useState(initQ);
   const [sortOption, setSortOption] = useState('newest');
+  const didInitUrlRef = useRef(false);
 
   /* ── 动态筛选项：从已加载产品数据中提取 ── */
   const dynamicBrands = useMemo(() => {
@@ -170,6 +175,31 @@ function ProductsContent() {
     }
   }, [initCategory, catList]);
 
+  // 输入防抖：300ms 后触发实时过滤
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // URL 查询参数持久化（q）
+  useEffect(() => {
+    if (!didInitUrlRef.current) {
+      didInitUrlRef.current = true;
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    const q = searchQuery.trim();
+    if (q) params.set('q', q);
+    else params.delete('q');
+    const next = params.toString();
+    const current = searchParams.toString();
+    if (next !== current) {
+      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+    }
+  }, [pathname, router, searchParams, searchQuery]);
+
   // 筛选/搜索/排序变化时回到第 1 页（派生 UI 状态，此处 setState 是必要的）
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -220,13 +250,21 @@ function ProductsContent() {
                 <Search className="text-gray-400 ml-4 mr-3" size={20} />
                 <input 
                   type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  value={searchInput}
+                  onChange={e => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setSearchQuery(searchInput);
+                    }
+                  }}
                   placeholder={c('filter.searchPlaceholder', isZh ? '搜索品牌、型号、工况...' : 'Search brand, model, condition...')}
                   className="flex-1 bg-transparent text-white font-medium placeholder:text-gray-500 tracking-wider focus:outline-none text-base py-3"
                 />
-                <button className="bg-[#D4AF37] text-black font-black uppercase text-xs tracking-widest px-8 md:px-10 py-3.5 hover:bg-white hover:text-black hover:shadow-[0_10px_20px_rgba(212,175,55,0.3)] transition-all">
-                  {isZh ? '精确寻机' : 'SEARCH'}
+                <button
+                  onClick={() => setSearchQuery(searchInput)}
+                  className="bg-[#D4AF37] text-black font-black uppercase text-xs tracking-widest px-8 md:px-10 py-3.5 hover:bg-white hover:text-black hover:shadow-[0_10px_20px_rgba(212,175,55,0.3)] transition-all"
+                >
+                  {c('filter.badge', isZh ? '精确寻机' : 'SEARCH')}
                 </button>
               </div>
             </div>
@@ -239,9 +277,9 @@ function ProductsContent() {
         
         {/* 移动端过滤器触发按钮 */}
         <div className="lg:hidden w-full flex justify-between items-center bg-white p-4 border border-gray-200">
-           <span className="font-black text-[#111111] uppercase tracking-widest text-sm">{isZh ? '筛选机械库' : 'FILTERS'}</span>
+           <span className="font-black text-[#111111] uppercase tracking-widest text-sm">{c('filter.panelTitle', isZh ? '筛选机械库' : 'FILTERS')}</span>
            <button onClick={() => setIsMobileSidebarOpen(true)} className="flex items-center gap-2 text-xs font-bold text-gray-600 bg-gray-100 px-4 py-2 uppercase tracking-wide">
-             <SlidersHorizontal size={14} /> {isZh ? '打开终端' : 'OPEN TERMINAL'}
+             <SlidersHorizontal size={14} /> {c('filter.openBtn', isZh ? '打开终端' : 'OPEN TERMINAL')}
            </button>
         </div>
 
@@ -249,26 +287,26 @@ function ProductsContent() {
         <aside className={`fixed inset-y-0 left-0 z-[200] lg:relative lg:z-auto w-[300px] lg:w-[280px] bg-[#FAFAFA] lg:bg-transparent h-full lg:h-auto overflow-y-auto lg:overflow-visible transition-transform transform ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'} shrink-0`}>
           
           <div className="lg:hidden p-6 border-b border-gray-200 flex justify-between items-center bg-white sticky top-0 z-10">
-            <span className="font-black text-lg">{isZh ? '滤镜终端' : 'FILTERS TERMINAL'}</span>
+           <span className="font-black text-lg">{c('filter.mobileTitle', isZh ? '滤镜终端' : 'FILTERS TERMINAL')}</span>
             <X size={20} className="cursor-pointer text-gray-500" onClick={() => setIsMobileSidebarOpen(false)} />
           </div>
 
           <div className="p-6 lg:p-0 space-y-10">
             
-            <div className="flex items-center justify-between w-full h-[40px] pb-3 border-b border-gray-200 box-border">
-               <h3 className="font-bold text-[13px] text-[#111111] uppercase border-l-4 border-[#111111] pl-3 leading-none flex items-center">{isZh ? '属性筛选大盘' : 'FILTER TERMINAL'}</h3>
+            <div className="flex items-center justify-between w-full h-[44px] pb-3 border-b border-gray-200 box-border">
+               <h3 className="font-bold text-[13px] text-[#111111] uppercase tracking-[0.04em] border-l-4 border-[#111111] pl-3 h-6 leading-none flex items-center">{c('filter.mobileSectionTitle', isZh ? '属性筛选大盘' : 'FILTER TERMINAL')}</h3>
                <button 
                  onClick={() => setActiveFilters([])}
-                 className="text-[13px] font-bold text-gray-500 hover:text-[#D4AF37] transition-colors leading-none"
+                 className="text-[13px] font-bold uppercase tracking-[0.04em] text-gray-500 hover:text-[#D4AF37] transition-colors h-6 leading-none"
                >
-                 {isZh ? '重置参数' : 'RESET'}
+                 {c('filter.resetBtn', isZh ? '重置参数' : 'RESET')}
                </button>
             </div>
 
             {/* Filter Group: 品牌（动态从产品数据汇总） */}
             {dynamicBrands.length > 0 && (
               <div>
-                <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{isZh ? '核心厂牌' : 'BRANDS'}</h4>
+                <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{c('filter.brandTitle', isZh ? '核心厂牌' : 'BRANDS')}</h4>
                 <ul className="space-y-3">
                   {dynamicBrands.map(brand => (
                     <li key={brand}>
@@ -290,7 +328,7 @@ function ProductsContent() {
             {/* Filter Group: 品类（动态读取 categories 表）*/}
             {catList.length > 0 && (
               <div className="border-t border-gray-200 pt-8">
-                <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{isZh ? '器械类目' : 'CATEGORIES'}</h4>
+                <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{c('filter.categoryTitle', isZh ? '器械类目' : 'CATEGORIES')}</h4>
                 <ul className="space-y-3">
                   {catList.map(cat => {
                     const label = isZh ? cat.nameZh : cat.nameEn;
@@ -313,7 +351,7 @@ function ProductsContent() {
             {/* Filter Group: 年份（只展示实际有产品的区间） */}
             {dynamicYears.length > 0 && (
               <div className="border-t border-gray-200 pt-8 flex-1">
-                <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{isZh ? '年份区间' : 'YEAR RANGE'}</h4>
+                <h4 className="font-black text-sm text-[#111111] uppercase tracking-widest mb-4">{c('filter.yearTitle', isZh ? '年份区间' : 'YEAR RANGE')}</h4>
                 <ul className="space-y-3">
                   {dynamicYears.map(yr => (
                     <li key={yr}>
@@ -334,7 +372,7 @@ function ProductsContent() {
 
             {/* Sticky Action on Mobile */}
             <div className="lg:hidden sticky bottom-0 left-0 w-full p-4 bg-white border-t border-gray-200 mt-8">
-               <button onClick={() => setIsMobileSidebarOpen(false)} className="w-full bg-[#111111] text-white font-bold uppercase tracking-widest py-4 text-xs">{isZh ? '执行绝对检索' : 'EXECUTE SEARCH'}</button>
+               <button onClick={() => setIsMobileSidebarOpen(false)} className="w-full bg-[#111111] text-white font-bold uppercase tracking-widest py-4 text-xs">{c('filter.executeBtn', isZh ? '执行绝对检索' : 'EXECUTE SEARCH')}</button>
             </div>
 
           </div>
@@ -344,20 +382,20 @@ function ProductsContent() {
         <section className="flex-1 w-full">
            
            {/* Utility Bar */}
-           <div className="w-full flex flex-wrap items-center justify-between gap-y-2 mb-8 pb-3 border-b border-gray-200">
-              <div className="text-[#111111] font-bold text-[13px] leading-none flex items-center">
-                {isZh ? '为您列阵' : 'SHOWING'} <span className="font-black text-lg mx-2 text-[#D4AF37] leading-none transform translate-y-[-1px]">{filteredProducts.length}</span> {isZh ? '辆符合指标的实车' : 'MACHINES FOUND'}
+           <div className="w-full flex flex-wrap items-center justify-between gap-y-2 h-[44px] mb-8 pb-3 border-b border-gray-200 box-border">
+              <div className="text-[#111111] font-bold text-[13px] uppercase tracking-[0.04em] h-6 leading-none flex items-center">
+                {c('filter.resultsPrefix', isZh ? '为您列阵' : 'SHOWING')} <span className="font-black text-[13px] mx-2 text-[#D4AF37] leading-none">{filteredProducts.length}</span> {c('filter.resultsSuffix', isZh ? '辆符合指标的实车' : 'MACHINES FOUND')}
               </div>
-              <div className="flex items-center gap-2 leading-none shrink-0">
-                 <span className="text-[13px] font-bold text-gray-500 uppercase">{isZh ? '排序:' : 'SORT:'}</span>
+              <div className="flex items-center gap-2 h-6 leading-none shrink-0">
+                 <span className="text-[13px] font-bold uppercase tracking-[0.04em] text-gray-500">{c('filter.sortLabel', isZh ? '排序:' : 'SORT:')}</span>
                  <select
                    value={sortOption}
                    onChange={e => setSortOption(e.target.value)}
-                   className="bg-transparent border-0 font-bold text-[13px] text-[#111111] uppercase focus:outline-none cursor-pointer pr-4 appearance-none leading-none"
+                   className="bg-transparent border-0 font-bold text-[13px] uppercase tracking-[0.04em] text-[#111111] focus:outline-none cursor-pointer pr-4 appearance-none leading-none"
                  >
-                   <option value="newest">{isZh ? '年份最新' : 'Newest First'}</option>
-                   <option value="hours">{isZh ? '工时最低' : 'Lowest Hours'}</option>
-                   <option value="brand">{isZh ? '厂牌 (A-Z)' : 'Brand (A-Z)'}</option>
+                  <option value="newest">{c('filter.sortNewest', isZh ? '年份最新' : 'Newest First')}</option>
+                  <option value="hours">{c('filter.sortHours', isZh ? '工时最低' : 'Lowest Hours')}</option>
+                  <option value="brand">{c('filter.sortBrand', isZh ? '厂牌 (A-Z)' : 'Brand (A-Z)')}</option>
                  </select>
                  <ChevronDown size={14} className="text-[#111111] pointer-events-none relative -translate-x-3" />
               </div>
@@ -367,64 +405,64 @@ function ProductsContent() {
            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
               {loading ? (
                 <div className="col-span-full rounded border border-gray-200 bg-white px-6 py-10 text-sm text-gray-500">
-                  {isZh ? '正在加载产品数据...' : 'Loading products...'}
+                 {c('filter.loadingText', isZh ? '正在加载产品数据...' : 'Loading products...')}
                 </div>
               ) : currentProducts.length === 0 ? (
                 <div className="col-span-full rounded border border-gray-200 bg-white px-6 py-16 text-center text-[#111111] font-bold text-[15px]">
                   {c('filter.emptyText', isZh ? '暂无符合条件的产品，请尝试其他筛选项' : 'No products found. Try different filters.')}
                 </div>
               ) : currentProducts.map(product => (
-                <div key={product.id} className="bg-white border border-gray-200 hover:border-[#111111] transition-all duration-300 group flex flex-col relative rounded-sm group overflow-hidden">
+                <div key={product.id} className="bg-white border border-gray-200/90 hover:border-[#111111]/70 hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 group flex flex-col relative rounded-2xl overflow-hidden">
                    
                    {/* 图像部分 */}
                    <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
                     <Image src={product.image || '/images/products/1.jpg'} alt={product.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-[800ms]" />
                      
                      {/* B2B 核心指标盾牌 */}
-                     <div className="absolute top-3 left-3 bg-[#111111] text-white px-3 py-1 font-black text-[13px] tracking-widest uppercase flex items-center shadow-lg">
+                     <div className="absolute top-3 left-3 bg-[#111111] text-white px-2.5 py-1 font-black text-[12px] tracking-[0.12em] uppercase flex items-center rounded-md shadow-md">
                        {product.year}
                      </div>
-                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1 border border-white flex items-center gap-2 shadow-lg">
+                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 border border-white rounded-md flex items-center gap-2 shadow-md">
                        <span className="w-1.5 h-1.5 bg-[#25D366] rounded-full animate-pulse"></span>
-                       <span className="text-[#111111] font-bold text-[10px] tracking-widest uppercase">{isZh ? '现货状态' : 'Available'}</span>
+                      <span className="text-[#111111] font-bold text-[10px] tracking-[0.12em] uppercase">{c('card.statusLabel', isZh ? '现货状态' : 'Available')}</span>
                      </div>
                    </div>
 
                    {/* 详单文案区 */}
-                   <div className="p-6 flex-1 flex flex-col relative z-20 bg-white">
+                   <div className="p-5 flex-1 flex flex-col relative z-20 bg-white">
                       
-                      <div className="flex items-center justify-between mb-3 text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">
+                      <div className="flex items-center justify-between mb-2 text-[11px] font-bold uppercase tracking-[0.1em] text-[#9CA3AF]">
                         <span>{product.brand}</span>
                         <span className="text-gray-400">{product.category}</span>
                       </div>
                       
-                      <h2 className="text-[17px] font-black text-[#111111] leading-tight mb-5 group-hover:text-[#D4AF37] transition-colors">{product.title}</h2>
+                      <h2 className="text-[34px] font-black text-[#C8A12A] leading-none mb-4 group-hover:text-[#B8921E] transition-colors">{product.title}</h2>
                       
                       {/* 冷峻参数栅格 (Specs Grid) - 极简排版对齐 */}
-                      <div className="grid grid-cols-2 gap-y-3 gap-x-2 mt-auto">
-                        <div className="flex flex-col">
-                           <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">{isZh ? '工时' : 'Hours'}</span>
+                      <div className="grid grid-cols-2 gap-2 mt-auto">
+                        <div className="flex flex-col rounded-lg bg-[#F7F7F8] px-3 py-2.5">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.12em] mb-1">{c('card.hoursLabel', isZh ? '工时' : 'Hours')}</span>
                            <span className="text-xs font-black text-[#111111]">{product.hours}</span>
                         </div>
-                        <div className="flex flex-col">
-                           <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">{isZh ? '自重' : 'Weight'}</span>
+                        <div className="flex flex-col rounded-lg bg-[#F7F7F8] px-3 py-2.5">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.12em] mb-1">{c('card.weightLabel', isZh ? '自重' : 'Weight')}</span>
                            <span className="text-xs font-black text-[#111111]">{product.weight}</span>
                         </div>
-                        <div className="flex flex-col">
-                           <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">{isZh ? '动力' : 'Engine'}</span>
+                        <div className="flex flex-col rounded-lg bg-[#F7F7F8] px-3 py-2.5">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.12em] mb-1">{c('card.engineLabel', isZh ? '动力' : 'Engine')}</span>
                            <span className="text-xs font-black text-[#111111]">{product.engine}</span>
                         </div>
-                        <div className="flex flex-col border-l border-gray-100 pl-2">
-                           <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">{isZh ? '定位' : 'LOC'}</span>
+                        <div className="flex flex-col rounded-lg bg-[#F7F7F8] px-3 py-2.5">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.12em] mb-1">{c('card.locationLabel', isZh ? '定位' : 'LOC')}</span>
                            <span className="text-xs font-black text-[#111111] truncate">{product.location}</span>
                         </div>
                       </div>
 
                    </div>
 
-                   {/* 绝对居底的隐形突刺按钮 (Hover CTA) */}
-                   <Link href={`/products/${product.slug}`} className="absolute bottom-0 w-full bg-[#111111] text-white flex items-center justify-center gap-2 py-4 font-bold text-xs uppercase tracking-[0.2em] transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-30">
-                     {isZh ? '查阅详尽机况' : 'VIEW DETAILS'} <ArrowUpRight size={16} className="text-[#D4AF37]" />
+                   {/* 稳定常显 CTA，避免悬浮突兀 */}
+                   <Link href={`/products/${product.slug}`} className="w-full bg-[#111111] text-white flex items-center justify-center gap-2 py-4 font-bold text-xs uppercase tracking-[0.2em] transition-colors duration-200 hover:bg-black">
+                    {c('card.viewDetailsBtn', isZh ? '查阅详尽机况' : 'VIEW DETAILS')} <ArrowUpRight size={16} className="text-[#D4AF37]" />
                    </Link>
 
                 </div>

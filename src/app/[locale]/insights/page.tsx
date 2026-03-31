@@ -74,16 +74,16 @@ export default function InsightsPage() {
            
            <div className="flex gap-3 overflow-x-auto pb-2 md:pb-0 [&::-webkit-scrollbar]:hidden w-full md:w-auto">
              <button className="whitespace-nowrap px-8 py-2.5 rounded-full bg-[#111111] text-white text-[12px] font-bold tracking-widest uppercase shadow-md transition-all">
-               {isZh ? '全部内参' : 'ALL INSIGHTS'}
+              {c('list.tabAll', isZh ? '全部内参' : 'ALL INSIGHTS')}
              </button>
              <button className="whitespace-nowrap px-8 py-2.5 rounded-full bg-gray-50 text-gray-500 border border-gray-100 text-[12px] font-bold tracking-widest uppercase hover:bg-white hover:text-[#111111] hover:border-gray-200 hover:shadow-sm transition-all text-center">
-               {isZh ? '采购避坑' : 'GUIDES'}
+              {c('list.tabGuides', isZh ? '采购避坑' : 'GUIDES')}
              </button>
              <button className="whitespace-nowrap px-8 py-2.5 rounded-full bg-gray-50 text-gray-500 border border-gray-100 text-[12px] font-bold tracking-widest uppercase hover:bg-white hover:text-[#111111] hover:border-gray-200 hover:shadow-sm transition-all text-center">
-               {isZh ? '出海维保' : 'MAINTENANCE'}
+              {c('list.tabMaintenance', isZh ? '出海维保' : 'MAINTENANCE')}
              </button>
              <button className="whitespace-nowrap px-8 py-2.5 rounded-full bg-gray-50 text-gray-500 border border-gray-100 text-[12px] font-bold tracking-widest uppercase hover:bg-white hover:text-[#111111] hover:border-gray-200 hover:shadow-sm transition-all text-center">
-               {isZh ? '港口实录' : 'REPORTS'}
+              {c('list.tabReports', isZh ? '港口实录' : 'REPORTS')}
              </button>
            </div>
            
@@ -102,7 +102,7 @@ export default function InsightsPage() {
           
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <p className="text-gray-400 text-sm">{isZh ? '加载中...' : 'Loading...'}</p>
+              <p className="text-gray-400 text-sm">{c('list.loadingText', isZh ? '加载中...' : 'Loading...')}</p>
             </div>
           ) : articles.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -122,7 +122,7 @@ export default function InsightsPage() {
                 {/* 封面缩略图 */}
                 <div className="relative w-full aspect-[16/11] bg-[#111111] overflow-hidden rounded-t-3xl border-b border-gray-100/50">
                    <div className="absolute inset-0 bg-black/5 z-10 group-hover:bg-transparent transition-colors duration-500"></div>
-                   <Image src={article.coverImageUrl || '/images/insights/1.jpg'} alt={title} fill className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 group-hover:-rotate-1 transition-all duration-700 ease-out" />
+                   <Image src={article.coverImageUrl || '/images/insights/1.jpg'} alt={title} fill unoptimized className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 group-hover:-rotate-1 transition-all duration-700 ease-out" />
                    
                    {/* 悬浮强圆角类目标签 */}
                    <div className="absolute top-5 left-5 z-20 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.1)] border border-white/50">

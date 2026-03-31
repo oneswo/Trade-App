@@ -1,29 +1,52 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Edit2, Plus, Search, Trash2 } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AdminModal from "@/components/admin/AdminModal";
 import type { ArticleRecord } from "@/lib/data/repository";
+import { readClientCache, writeClientCache } from "@/lib/cache/client-cache";
+import { fetchJson, isAbortLikeError } from "@/lib/http/client";
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   PUBLISHED: { label: "已发布", className: "bg-green-50 text-green-700 border-green-200" },
   DRAFT: { label: "草稿", className: "bg-gray-100 text-gray-500 border-gray-200" },
 };
+const ARTICLES_CACHE_KEY = "admin:articles:list";
+const ARTICLES_CACHE_TTL_MS = 30 * 1000;
 
 export default function ArticlesPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [articles, setArticles] = useState<ArticleRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const fetchControllerRef = useRef<AbortController | null>(null);
+  const didInitFromUrlRef = useRef(false);
 
   const fetchArticles = async () => {
+    fetchControllerRef.current?.abort();
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
     setLoading(true);
+    const cached = readClientCache<ArticleRecord[]>(ARTICLES_CACHE_KEY, ARTICLES_CACHE_TTL_MS);
+    if (cached) {
+      setArticles(cached);
+      setLoading(false);
+    }
     try {
-      const res = await fetch("/api/admin/articles", { cache: "no-store" });
-      const json = (await res.json()) as { ok: boolean; data: ArticleRecord[] };
+      const json = await fetchJson<{ ok: boolean; data: ArticleRecord[] }>("/api/admin/articles", {
+        signal: controller.signal,
+      });
       if (json.ok) setArticles(json.data);
+      if (json.ok) writeClientCache(ARTICLES_CACHE_KEY, json.data);
+    } catch (error) {
+      if (isAbortLikeError(error)) return;
     } finally {
       setLoading(false);
     }
@@ -31,10 +54,39 @@ export default function ArticlesPage() {
 
   useEffect(() => {
     void fetchArticles();
+    return () => fetchControllerRef.current?.abort();
   }, []);
 
+  useEffect(() => {
+    if (didInitFromUrlRef.current) return;
+    const q = searchParams.get("q") ?? "";
+    setSearchQuery(q);
+    setDebouncedSearchQuery(q);
+    didInitFromUrlRef.current = true;
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (!didInitFromUrlRef.current) return;
+    const params = new URLSearchParams(searchParams.toString());
+    const q = debouncedSearchQuery.trim();
+    if (q) params.set("q", q);
+    else params.delete("q");
+    const next = params.toString();
+    const current = searchParams.toString();
+    if (next !== current) {
+      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+    }
+  }, [debouncedSearchQuery, pathname, router, searchParams]);
+
   const filtered = useMemo(() => {
-    const kw = searchQuery.trim().toLowerCase();
+    const kw = debouncedSearchQuery.trim().toLowerCase();
     if (!kw) return articles;
     return articles.filter(
       (a) =>
@@ -43,14 +95,15 @@ export default function ArticlesPage() {
         a.slug.toLowerCase().includes(kw) ||
         a.category.toLowerCase().includes(kw)
     );
-  }, [articles, searchQuery]);
+  }, [articles, debouncedSearchQuery]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
     setDeleting(true);
     try {
-      await fetch(`/api/admin/articles/${deleteId}`, { method: "DELETE" });
-      await fetchArticles();
+      const response = await fetch(`/api/admin/articles/${deleteId}`, { method: "DELETE" });
+      if (!response.ok) return;
+      setArticles((prev) => prev.filter((item) => item.id !== deleteId));
     } finally {
       setDeleting(false);
       setDeleteId(null);
@@ -59,12 +112,24 @@ export default function ArticlesPage() {
 
   const handleToggleStatus = async (article: ArticleRecord) => {
     const newStatus = article.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
-    await fetch(`/api/admin/articles/${article.id}`, {
+    const response = await fetch(`/api/admin/articles/${article.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
     });
-    await fetchArticles();
+    if (!response.ok) return;
+    setArticles((prev) =>
+      prev.map((item) =>
+        item.id === article.id
+          ? {
+              ...item,
+              status: newStatus,
+              publishedAt: newStatus === "PUBLISHED" ? item.publishedAt ?? new Date().toISOString() : item.publishedAt,
+              updatedAt: new Date().toISOString(),
+            }
+          : item
+      )
+    );
   };
 
   return (

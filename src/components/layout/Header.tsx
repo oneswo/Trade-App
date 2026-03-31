@@ -5,6 +5,7 @@ import { Link, usePathname } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
 import { Search, Globe, ChevronDown, Home, Package, ShieldCheck, Lightbulb, Info, PhoneCall, X, Factory, Menu } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { SUPPORTED_LOCALES, LOCALE_FLAGS, LOCALE_LABELS, isSupportedLocale, type SupportedLocale } from '@/lib/i18n/locales';
 
 export default function Header() {
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -218,63 +219,35 @@ export default function Header() {
            </div>
            
            {/* Modal Body: Flag Grid */}
-           <div className="p-4 md:p-6 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 max-h-[75vh] overflow-y-auto">
-             {[
-               { flag: "🇨🇳", lang: "简体中文", code: "zh", active: true },
-               { flag: "🇬🇧", lang: "English", code: "en", active: true },
-               { flag: "🇪🇸", lang: "Español", code: "es", active: false },
-               { flag: "🇫🇷", lang: "Français", code: "fr", active: false },
-               { flag: "🇷🇺", lang: "Русский", code: "ru", active: false },
-               { flag: "🇩🇪", lang: "Deutsch", code: "de", active: false },
-               { flag: "🇵🇹", lang: "Português", code: "pt", active: false },
-               { flag: "🇸🇦", lang: "العربية", code: "ar", active: false },
-               { flag: "🇮🇹", lang: "Italiano", code: "it", active: false },
-               { flag: "🇮🇩", lang: "Indonesia", code: "id", active: false },
-               { flag: "🇻🇳", lang: "Tiếng Việt", code: "vi", active: false },
-               { flag: "🇹🇭", lang: "ภาษาไทย", code: "th", active: false },
-               { flag: "🇿🇦", lang: "Afrikaans", code: "af", active: false },
-               { flag: "🇯🇵", lang: "日本語", code: "ja", active: false },
-               { flag: "🇰🇷", lang: "한국어", code: "ko", active: false },
-             ].map((item, idx) => {
-               const isCurrent = item.code === locale;
+          <div className="p-4 md:p-6 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 max-h-[75vh] overflow-y-auto">
+            {[...SUPPORTED_LOCALES].map((code) => {
+              const isCurrent = code === locale;
                return (
                  <Link 
-                   key={idx} 
-                   href={item.active ? pathname : "#"}
-                   locale={item.active ? (item.code as "en" | "zh") : undefined}
-                   onClick={(e) => {
-                     if (!item.active) { e.preventDefault(); return; }
+                  key={code}
+                  href={pathname}
+                  locale={code}
+                  onClick={(e) => {
+                    if (!isSupportedLocale(code)) { e.preventDefault(); return; }
                      setIsLangOpen(false);
                    }}
                    className={`
                      p-4 flex flex-col items-center justify-center gap-3 rounded-md relative overflow-hidden transition-all duration-300
-                     ${item.active 
-                        ? 'bg-white border border-gray-200 hover:border-[#111111] hover:shadow-[0_10px_20px_rgba(0,0,0,0.05)] group' 
-                        : 'bg-white border border-gray-200 cursor-not-allowed'
-                     }
+                    bg-white border border-gray-200 hover:border-[#111111] hover:shadow-[0_10px_20px_rgba(0,0,0,0.05)] group
                    `}
                  >
-                   {/* 维护中 Tag */}
-                   {!item.active && (
-                     <div className="absolute top-2 right-2 flex items-center">
-                       <span className="text-[9px] font-bold bg-amber-50 text-[#D4AF37] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded-sm tracking-widest shadow-sm">
-                         {isZh ? '更新中' : 'UPDATING'}
-                       </span>
-                     </div>
-                   )}
-
                    {/* Active Status Indicator */}
                    {isCurrent && (
                      <div className="absolute top-0 left-0 w-full h-[3px] bg-[#D4AF37]"></div>
                    )}
 
-                   <span className={`text-3xl md:text-4xl drop-shadow-sm transition-transform ${item.active ? 'group-hover:scale-110' : 'opacity-40 grayscale-[60%]'}`}>
-                     {item.flag}
+                  <span className="text-3xl md:text-4xl drop-shadow-sm transition-transform group-hover:scale-110">
+                    {LOCALE_FLAGS[code as SupportedLocale]}
                    </span>
                    <span className={`text-[11px] md:text-[13px] font-bold transition-colors 
-                     ${isCurrent ? 'text-[#D4AF37]' : item.active ? 'text-gray-500 group-hover:text-[#111111]' : 'text-gray-300'}
+                    ${isCurrent ? 'text-[#D4AF37]' : 'text-gray-500 group-hover:text-[#111111]'}
                    `}>
-                     {item.lang}
+                    {LOCALE_LABELS[code as SupportedLocale]}
                    </span>
                  </Link>
                );

@@ -4,14 +4,20 @@ import { MapPin, Mail, Clock, Send, HeadphonesIcon } from 'lucide-react';
 import { useInquirySubmit } from "@/hooks/useInquirySubmit";
 import { useLocale } from 'next-intl';
 import { usePageContent } from '@/hooks/usePageContent';
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export default function ContactPage() {
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('contact');
+  const { settings } = useSiteSettings();
   const { submitState, submitMessage, handleSubmit } = useInquirySubmit({
     source: "contact-page-form",
   });
+  const contactEmail = c('info.email', '15156888267@163.com');
+  const contactPhone = c('info.phone', '+86 17321077956');
+  const contactPhoneForTel = contactPhone.replace(/\s/g, '');
+  const contactPhoneForWhatsApp = contactPhone.replace(/[^0-9]/g, '');
 
   return (
     <main className="w-full bg-[#FAFAFA] pt-[72px]">
@@ -69,10 +75,10 @@ export default function ContactPage() {
                     <MapPin className="text-[#D4AF37] group-hover:text-[#111111] transition-colors" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2 text-white">{isZh ? '上海总部与调度中枢' : 'Shanghai HQ & Dispatch Hub'}</h4>
+                    <h4 className="font-bold text-lg mb-2 text-white">{c('info.addrTitle', isZh ? '上海总部与调度中枢' : 'Shanghai HQ & Dispatch Hub')}</h4>
                     <p className="text-gray-500 text-sm font-medium leading-relaxed">
                       {isZh ? c('info.addrZh', '中国上海市奉贤区金海公路6055号') : c('info.addrEn', 'No. 6055 Jinhai Road, Fengxian District')}<br/>
-                      {isZh ? '(紧邻重载特大型滚装海运枢纽)' : 'Shanghai, China (Adjacent to RO-RO Port)'}
+                      {c('info.addrNote', isZh ? '(紧邻重载特大型滚装海运枢纽)' : 'Shanghai, China (Adjacent to RO-RO Port)')}
                     </p>
                   </div>
                 </div>
@@ -82,9 +88,9 @@ export default function ContactPage() {
                     <Mail className="text-[#D4AF37] group-hover:text-[#111111] transition-colors" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2 text-white">{isZh ? '全系底库报价专线' : 'Quotation Hotline'}</h4>
-                    <a href="mailto:15156888267@163.com" className="text-gray-400 hover:text-[#D4AF37] transition-colors text-sm font-bold tracking-widest uppercase block mb-1">
-                      {c('info.email', '15156888267@163.com')}
+                    <h4 className="font-bold text-lg mb-2 text-white">{c('info.emailTitle', isZh ? '全系底库报价专线' : 'Quotation Hotline')}</h4>
+                    <a href={`mailto:${contactEmail}`} className="text-gray-400 hover:text-[#D4AF37] transition-colors text-sm font-bold tracking-widest uppercase block mb-1">
+                      {contactEmail}
                     </a>
                   </div>
                 </div>
@@ -94,11 +100,11 @@ export default function ContactPage() {
                     <HeadphonesIcon className="text-[#D4AF37] group-hover:text-[#111111] transition-colors" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2 text-white">{isZh ? '24小时全球技术抢修部' : '24/7 Technical Support'}</h4>
-                    <a href="tel:+8617321077956" className="text-gray-400 hover:text-[#D4AF37] transition-colors text-sm font-bold tracking-widest uppercase block mb-1">
-                      {c('info.phone', '+86 17321077956')}
+                    <h4 className="font-bold text-lg mb-2 text-white">{c('info.phoneTitle', isZh ? '24小时全球技术抢修部' : '24/7 Technical Support')}</h4>
+                    <a href={`tel:${contactPhoneForTel}`} className="text-gray-400 hover:text-[#D4AF37] transition-colors text-sm font-bold tracking-widest uppercase block mb-1">
+                      {contactPhone}
                     </a>
-                    <p className="text-[#D4AF37]/60 text-[10px] font-bold uppercase tracking-widest mt-1">{isZh ? '支持全时区实时连线 / 视频排障' : 'Live Video Support Across All Time Zones'}</p>
+                    <p className="text-[#D4AF37]/60 text-[10px] font-bold uppercase tracking-widest mt-1">{c('info.supportNote', isZh ? '支持全时区实时连线 / 视频排障' : 'Live Video Support Across All Time Zones')}</p>
                   </div>
                 </div>
 
@@ -107,7 +113,7 @@ export default function ContactPage() {
                     <Clock className="text-[#D4AF37] group-hover:text-[#111111] transition-colors" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2 text-white">{isZh ? '营业时间' : 'Business Hours'}</h4>
+                    <h4 className="font-bold text-lg mb-2 text-white">{c('info.hoursTitle', isZh ? '营业时间' : 'Business Hours')}</h4>
                     <p className="text-gray-500 text-sm font-medium leading-relaxed max-w-md">
                       {c('info.hours', isZh ? '周一至周六 09:00 - 18:00 (UTC+8)，紧急询盘 24小时响应' : 'Mon–Sat 09:00–18:00 UTC+8, emergency inquiries answered 24/7')}
                     </p>
@@ -134,8 +140,8 @@ export default function ContactPage() {
               {/* 中央自定义高端定位气泡 (替代谷歌原生白框的纯净展现) */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[130%] z-20 pointer-events-none flex flex-col items-center">
                  <div className="bg-[#111111] text-white px-6 py-4 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.4)] border border-white/5 flex flex-col items-center relative z-10">
-                    <span className="text-[#D4AF37] text-sm font-black tracking-widest mb-1">{isZh ? '中国机械 亚太调度中枢' : 'KXTJ Machinery HQ'}</span>
-                    <span className="text-gray-400 text-[10px] tracking-[0.15em] uppercase">Shanghai Global Base</span>
+                    <span className="text-[#D4AF37] text-sm font-black tracking-widest mb-1">{c('map.bubbleTitle', isZh ? '中国机械 亚太调度中枢' : 'KXTJ Machinery HQ')}</span>
+                    <span className="text-gray-400 text-[10px] tracking-[0.15em] uppercase">{c('map.bubbleSubtitle', 'Shanghai Global Base')}</span>
                  </div>
                  {/* 向下的指示尖角 */}
                  <div className="w-5 h-5 bg-[#111111] rotate-45 -mt-2.5 border-b border-r border-white/5 shadow-xl"></div>
@@ -150,9 +156,9 @@ export default function ContactPage() {
       <section id="sales-team" className="w-full py-16 md:py-32 bg-white">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8 relative z-10">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">{isZh ? '直连大洲业务总控' : 'Direct Regional Contacts'}</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">{c('team.sectionTitle', isZh ? '直连大洲业务总控' : 'Direct Regional Contacts')}</h2>
             <div className="w-12 h-1 bg-[#D4AF37] mx-auto mb-6"></div>
-            <p className="text-gray-500 text-sm font-medium">{isZh ? '跳过漫长的转接等待。我们根据全球大洲划分了独立的业务战区，随时接管您的专线询盘。' : 'Skip the long waiting queue. Our regional teams are divided by continent, ready to handle your inquiries directly.'}</p>
+            <p className="text-gray-500 text-sm font-medium">{c('team.sectionDesc', isZh ? '跳过漫长的转接等待。我们根据全球大洲划分了独立的业务战区，随时接管您的专线询盘。' : 'Skip the long waiting queue. Our regional teams are divided by continent, ready to handle your inquiries directly.')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -174,11 +180,11 @@ export default function ContactPage() {
 
                   <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线直驳' : 'Direct Line'}</span>
+                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{c('team.directLineLabel', isZh ? '专线直驳' : 'Direct Line')}</span>
                       <a href={`tel:${phone}`} className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">{displayPhone}</a>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
+                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{c('team.whatsappLabel', 'WhatsApp')}</span>
                       <a href={`https://wa.me/${phone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">{displayPhone}</a>
                     </div>
                   </div>
@@ -196,8 +202,8 @@ export default function ContactPage() {
         
         <div className="max-w-[900px] mx-auto px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white mb-6">{isZh ? '即刻开启您的' : 'Start Your'} <span className="text-[#D4AF37]">{isZh ? '重装之行' : 'Heavy Equipment Journey'}</span></h2>
-            <p className="text-gray-400 text-sm font-medium">{isZh ? '只需在联系表格中留下您的电子件或电话，我们即可向您发送各大厂牌机皇底价和私密库存表。' : 'Simply leave your email or phone number, and we will send you the best prices on top brands and exclusive inventory lists.'}</p>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white mb-6">{c('bottomCta.title1', isZh ? '即刻开启您的' : 'Start Your')} <span className="text-[#D4AF37]">{c('bottomCta.titleGold', isZh ? '重装之行' : 'Heavy Equipment Journey')}</span></h2>
+            <p className="text-gray-400 text-sm font-medium">{c('bottomCta.desc', isZh ? '只需在联系表格中留下您的电子件或电话，我们即可向您发送各大厂牌机皇底价和私密库存表。' : 'Simply leave your email or phone number, and we will send you the best prices on top brands and exclusive inventory lists.')}</p>
           </div>
 
           <div className="bg-[#1A1A1A] p-10 md:p-14 shadow-[0_30px_60px_rgba(0,0,0,0.5)] border border-white/10 mx-auto rounded-[32px] relative overflow-hidden">
@@ -216,18 +222,18 @@ export default function ContactPage() {
                  />
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="bg-[#111111] rounded-2xl px-6 py-2 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
-                     <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{isZh ? '您的称谓' : 'YOUR NAME'}</label>
-                     <input name="name" required type="text" placeholder={isZh ? '您的姓名 *' : 'Full Name *'} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
+                    <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{c('bottomCta.form.nameLabel', isZh ? '您的称谓' : 'YOUR NAME')}</label>
+                    <input name="name" required type="text" placeholder={c('bottomCta.form.namePlaceholder', isZh ? '您的姓名 *' : 'Full Name *')} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
                    </div>
                    <div className="bg-[#111111] rounded-2xl px-6 py-2 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
-                     <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{isZh ? '联系方式 (WhatsApp / 邮箱)' : 'CONTACT (WHATSAPP/EMAIL)'}</label>
-                     <input name="contact" required type="text" placeholder={isZh ? '电子邮箱或 WhatsApp *' : 'Email or WhatsApp *'} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
+                    <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mt-2 block">{c('bottomCta.form.contactLabel', isZh ? '联系方式 (WhatsApp / 邮箱)' : 'CONTACT (WHATSAPP/EMAIL)')}</label>
+                    <input name="contact" required type="text" placeholder={c('bottomCta.form.contactPlaceholder', isZh ? '电子邮箱或 WhatsApp *' : 'Email or WhatsApp *')} className="w-full py-2 text-sm focus:outline-none bg-transparent font-medium text-white placeholder:text-gray-600" />
                    </div>
                  </div>
                  
                  <div className="bg-[#111111] rounded-2xl px-6 py-4 border border-white/5 focus-within:border-[#D4AF37]/40 focus-within:bg-[#000000] transition-all group">
-                   <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mb-2 block">{isZh ? '所需机型的极限工况与型号' : 'REQUIREMENTS'}</label>
-                   <textarea name="message" required placeholder={isZh ? '您需要哪些型号的重装机械报价? (例如: 需要三一 36C 挖掘机发往西非) *' : 'Which models do you need quotes for? (e.g. SANY 36C excavator to West Africa) *'} rows={4} className="w-full py-2 text-sm focus:outline-none bg-transparent resize-none font-medium text-white placeholder:text-gray-600"></textarea>
+                  <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase mb-2 block">{c('bottomCta.form.messageLabel', isZh ? '所需机型的极限工况与型号' : 'REQUIREMENTS')}</label>
+                  <textarea name="message" required placeholder={c('bottomCta.form.messagePlaceholder', isZh ? '您需要哪些型号的重装机械报价? (例如: 需要三一 36C 挖掘机发往西非) *' : 'Which models do you need quotes for? (e.g. SANY 36C excavator to West Africa) *')} rows={4} className="w-full py-2 text-sm focus:outline-none bg-transparent resize-none font-medium text-white placeholder:text-gray-600"></textarea>
                  </div>
 
                  {submitMessage && (
@@ -238,15 +244,21 @@ export default function ContactPage() {
                  
                  <div className="flex flex-col sm:flex-row items-center gap-6 mt-6">
                    <div className="flex items-center gap-3 shrink-0 lg:mr-4">
-                      <a href="https://wa.me/8615156888267" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title="WhatsApp">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M11.996 0a11.965 11.965 0 00-10.23 18.238L.044 24l6.012-1.632A11.968 11.968 0 1011.996 0zm6.657 17.244c-.266.75-1.523 1.455-2.107 1.517-.5.061-1.144.15-3.333-.762-2.646-1.096-4.35-3.805-4.48-4.004-.13-.198-1.071-1.423-1.071-2.716 0-1.291.674-1.924.912-2.19.239-.265.518-.33.69-.33.17 0 .343 0 .493.007.158.007.368-.06.574.4.215.474.721 1.777.786 1.909.066.133.111.288.026.467-.085.18-.129.294-.258.438-.13.14-.268.309-.387.433-.13.13-.264.276-.115.539.148.261.662 1.11 1.402 1.874.953.985 1.79 1.285 2.052 1.405.263.12.417.098.572-.078.155-.175.67-1.02.85-1.371.18-.35.358-.291.597-.197.24.093 1.517.714 1.776.843.256.13.43.193.493.302.062.108.062.631-.205 1.38z"/></svg>
-                      </a>
-                      <a href="#" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title="LinkedIn">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" className="group-hover:scale-110 transition-transform"><path d="M22.23 0H1.77C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.008zM7.12 20.452H3.558V9h3.562v11.452zm-1.78-13.02c-1.144 0-2.065-.925-2.065-2.064 0-1.139.92-2.064 2.065-2.064 1.14 0 2.064.925 2.064 2.064 0 1.139-.924 2.064-2.064 2.064zm15.11 13.02h-3.553v-5.569c0-1.328-.027-3.037-1.852-3.037-1.854 0-2.136 1.445-2.136 2.939v5.667H9.354V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286z"/></svg>
-                      </a>
-                      <a href="#" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title="Facebook">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                      </a>
+                     {settings?.contactWhatsApp && (
+                      <a href={`https://wa.me/${settings.contactWhatsApp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title={c('bottomCta.social.whatsappTitle', 'WhatsApp')}>
+                         <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M11.996 0a11.965 11.965 0 00-10.23 18.238L.044 24l6.012-1.632A11.968 11.968 0 1011.996 0zm6.657 17.244c-.266.75-1.523 1.455-2.107 1.517-.5.061-1.144.15-3.333-.762-2.646-1.096-4.35-3.805-4.48-4.004-.13-.198-1.071-1.423-1.071-2.716 0-1.291.674-1.924.912-2.19.239-.265.518-.33.69-.33.17 0 .343 0 .493.007.158.007.368-.06.574.4.215.474.721 1.777.786 1.909.066.133.111.288.026.467-.085.18-.129.294-.258.438-.13.14-.268.309-.387.433-.13.13-.264.276-.115.539.148.261.662 1.11 1.402 1.874.953.985 1.79 1.285 2.052 1.405.263.12.417.098.572-.078.155-.175.67-1.02.85-1.371.18-.35.358-.291.597-.197.24.093 1.517.714 1.776.843.256.13.43.193.493.302.062.108.062.631-.205 1.38z"/></svg>
+                       </a>
+                     )}
+                     {settings?.socialLinkedin && (
+                      <a href={settings.socialLinkedin} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title={c('bottomCta.social.linkedinTitle', 'LinkedIn')}>
+                         <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" className="group-hover:scale-110 transition-transform"><path d="M22.23 0H1.77C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.008zM7.12 20.452H3.558V9h3.562v11.452zm-1.78-13.02c-1.144 0-2.065-.925-2.065-2.064 0-1.139.92-2.064 2.065-2.064 1.14 0 2.064.925 2.064 2.064 0 1.139-.924 2.064-2.064 2.064zm15.11 13.02h-3.553v-5.569c0-1.328-.027-3.037-1.852-3.037-1.854 0-2.136 1.445-2.136 2.939v5.667H9.354V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286z"/></svg>
+                       </a>
+                     )}
+                     {settings?.socialFacebook && (
+                      <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full bg-[#111111] border border-white/10 text-gray-500 hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all duration-300 group shadow-sm" title={c('bottomCta.social.facebookTitle', 'Facebook')}>
+                         <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                       </a>
+                     )}
                    </div>
                    
                    <button
@@ -254,7 +266,7 @@ export default function ContactPage() {
                      disabled={submitState === "loading"}
                      className="flex-1 w-full h-[60px] bg-[#D4AF37] text-[#111111] text-[13px] font-black tracking-[0.2em] uppercase hover:bg-white hover:text-black hover:shadow-[0_10px_30px_rgba(212,175,55,0.4)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 rounded-2xl disabled:opacity-60 disabled:cursor-not-allowed"
                    >
-                     {submitState === "loading" ? (isZh ? '提 交 中 ...' : 'SUBMITTING...') : (isZh ? '立即获取 CIF 底价' : 'GET CIF PRICE NOW')} <Send size={16} />
+                    {submitState === "loading" ? (isZh ? '提 交 中 ...' : 'SUBMITTING...') : c('bottomCta.submitBtn', isZh ? '立即获取 CIF 底价' : 'GET CIF PRICE NOW')} <Send size={16} />
                    </button>
                  </div>
               </form>

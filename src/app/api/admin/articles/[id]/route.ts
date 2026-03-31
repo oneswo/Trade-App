@@ -60,10 +60,18 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   const repo = getArticleRepo();
+  const current = await repo.findById(id);
+  if (!current) {
+    return Response.json({ ok: false, error: "Not found" }, { status: 404 });
+  }
   const updated = await repo.update(id, parsed.data);
 
   if (!updated) {
     return Response.json({ ok: false, error: "Not found" }, { status: 404 });
+  }
+
+  if (current.coverImageUrl && current.coverImageUrl !== updated.coverImageUrl) {
+    await deleteR2Objects([current.coverImageUrl]);
   }
 
   return Response.json({ ok: true, data: updated });

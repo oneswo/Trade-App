@@ -137,15 +137,15 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full mt-2">
                 <div className="flex items-center justify-start sm:justify-center gap-2 bg-white px-3 py-2.5 border border-gray-200 shadow-sm rounded-xl">
                   <CheckCircle2 size={15} className="text-[#25D366] shrink-0" />
-                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-wide text-[#111111]">{isZh ? '第三方 SGS 检测' : 'SGS Certified'}</span>
+                  <span className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.04em] whitespace-nowrap text-[#111111]">{isZh ? '第三方 SGS 检测' : 'SGS Verified'}</span>
                 </div>
                 <div className="flex items-center justify-start sm:justify-center gap-2 bg-white px-3 py-2.5 border border-gray-200 shadow-sm rounded-xl">
                   <ShieldCheck size={15} className="text-[#111111] shrink-0" />
-                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-wide text-[#111111]">{isZh ? '100% 性能满载实测' : '100% Performance Tested'}</span>
+                  <span className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.04em] whitespace-nowrap text-[#111111]">{isZh ? '100% 性能满载实测' : '100% Load Tested'}</span>
                 </div>
                 <div className="flex items-center justify-start sm:justify-center gap-2 bg-[#111111] px-3 py-2.5 text-white shadow-md rounded-xl">
                   <Ship size={15} className="text-[#D4AF37] shrink-0" />
-                  <span className="text-[11px] xl:text-[12px] font-bold uppercase tracking-wide text-[#D4AF37]">{isZh ? '准现车滚装发运' : 'Ro-Ro Ready'}</span>
+                  <span className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.04em] whitespace-nowrap text-[#D4AF37]">{isZh ? '准现车滚装发运' : 'Ro-Ro Ready'}</span>
                 </div>
               </div>
             </div>

@@ -100,7 +100,7 @@ function DeliveryCard({ tag, date, location, title, videoUrl, posterUrl }: {
             </button>
           </>
         ) : posterUrl ? (
-          <Image src={posterUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+          <Image src={posterUrl} alt={title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" />
         ) : (
           <div className="w-full h-full bg-[#1a1a1a] flex items-center justify-center">
             <Play size={32} className="text-white/20" />
@@ -269,7 +269,7 @@ export default function Home() {
           }))} />
         ) : (
           <div className="px-8 pb-16 text-center text-gray-400 text-sm py-20">
-            {isZh ? '暂无分类，请在后台「分类管理」中添加' : 'No categories yet. Add them in the admin panel.'}
+            {c('categories.emptyText', isZh ? '暂无分类，请在后台「分类管理」中添加' : 'No categories yet. Add them in the admin panel.')}
           </div>
         )}
       </section>
@@ -305,7 +305,7 @@ export default function Home() {
                 <div className="relative w-full aspect-[4/3] bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
                   <Image src={item.image || '/hero.png'} alt={item.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" />
                   <div className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-lg z-10 bg-[#D4AF37]">
-                    {isZh ? '现货就绪' : 'In Stock'}
+                    {c('hot.inStockLabel', isZh ? '现货就绪' : 'In Stock')}
                   </div>
                 </div>
                 <div className="px-8 mt-6">
@@ -324,7 +324,7 @@ export default function Home() {
               </Link>
             )) : (
               <div className="col-span-3 text-center text-gray-400 text-sm py-20">
-                {isZh ? '暂无在售产品，请在后台「产品列表」中添加' : 'No products yet. Add them in the admin panel.'}
+                {c('hot.emptyText', isZh ? '暂无在售产品，请在后台「产品列表」中添加' : 'No products yet. Add them in the admin panel.')}
               </div>
             )}
           </FadeUp>
@@ -381,7 +381,7 @@ export default function Home() {
               </video>
             ) : (
               <>
-                 <Image src={c('depth.posterUrl', '/hero.png')} alt="KXTJ Global Factory Base" fill className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000" />
+                 <Image src={c('depth.posterUrl', '/hero.png')} alt="KXTJ Global Factory Base" fill unoptimized className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000" />
                  {/* 超酷的左侧黑色渐变滤镜，让两色完美融合 */}
                  <div className="absolute inset-0 bg-gradient-to-r from-[#111111] via-transparent to-transparent z-0"></div>
                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500 z-10"></div>
@@ -487,7 +487,7 @@ export default function Home() {
                         <PhoneCall size={20} className="text-[#D4AF37]" />
                      </div>
                      <div>
-                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{isZh ? '专属直联' : 'Direct Contact'}</p>
+                       <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{c('cta.directContactLabel', isZh ? '专属直联' : 'Direct Contact')}</p>
                         <a href={`tel:${c('cta.phone', '+8617321077956').replace(/\s/g,'')}`} className="text-white font-bold tracking-wider hover:text-[#D4AF37] transition-colors block">{c('cta.phone', '+86 1732 107 7956')}</a>
                      </div>
                   </div>
@@ -533,17 +533,17 @@ export default function Home() {
                <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
                  <div className="flex items-center gap-3 shrink-0 lg:mr-4">
                      {settings?.contactWhatsApp && (
-                        <a href={`https://wa.me/${settings.contactWhatsApp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white flex items-center justify-center transition-all duration-300 group" title="WhatsApp">
+                        <a href={`https://wa.me/${settings.contactWhatsApp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white flex items-center justify-center transition-all duration-300 group" title={c('cta.social.whatsappTitle', 'WhatsApp')}>
                           <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M11.996 0a11.965 11.965 0 00-10.23 18.238L.044 24l6.012-1.632A11.968 11.968 0 1011.996 0zm6.657 17.244c-.266.75-1.523 1.455-2.107 1.517-.5.061-1.144.15-3.333-.762-2.646-1.096-4.35-3.805-4.48-4.004-.13-.198-1.071-1.423-1.071-2.716 0-1.291.674-1.924.912-2.19.239-.265.518-.33.69-.33.17 0 .343 0 .493.007.158.007.368-.06.574.4.215.474.721 1.777.786 1.909.066.133.111.288.026.467-.085.18-.129.294-.258.438-.13.14-.268.309-.387.433-.13.13-.264.276-.115.539.148.261.662 1.11 1.402 1.874.953.985 1.79 1.285 2.052 1.405.263.12.417.098.572-.078.155-.175.67-1.02.85-1.371.18-.35.358-.291.597-.197.24.093 1.517.714 1.776.843.256.13.43.193.493.302.062.108.062.631-.205 1.38z"/></svg>
                         </a>
                      )}
                      {settings?.socialLinkedin && (
-                        <a href={settings.socialLinkedin} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white flex items-center justify-center transition-all duration-300 group" title="LinkedIn">
+                        <a href={settings.socialLinkedin} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white flex items-center justify-center transition-all duration-300 group" title={c('cta.social.linkedinTitle', 'LinkedIn')}>
                           <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" className="group-hover:scale-110 transition-transform"><path d="M22.23 0H1.77C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.008zM7.12 20.452H3.558V9h3.562v11.452zm-1.78-13.02c-1.144 0-2.065-.925-2.065-2.064 0-1.139.92-2.064 2.065-2.064 1.14 0 2.064.925 2.064 2.064 0 1.139-.924 2.064-2.064 2.064zm15.11 13.02h-3.553v-5.569c0-1.328-.027-3.037-1.852-3.037-1.854 0-2.136 1.445-2.136 2.939v5.667H9.354V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286z"/></svg>
                         </a>
                      )}
                      {settings?.socialFacebook && (
-                        <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all duration-300 group" title="Facebook">
+                        <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all duration-300 group" title={c('cta.social.facebookTitle', 'Facebook')}>
                           <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                         </a>
                      )}
