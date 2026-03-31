@@ -303,7 +303,7 @@ export default function Home() {
             ) : catalogProducts.length > 0 ? catalogProducts.slice(0, 6).map((item, index) => (
               <Link href={item.slug ? `/products/${item.slug}` as `/${string}` : '/products'} key={index} className="group bg-white flex flex-col cursor-pointer hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden pb-8 border border-gray-200">
                 <div className="relative w-full aspect-[4/3] bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
-                  <Image src={item.image || '/hero.png'} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" />
+                  <Image src={item.image || '/hero.png'} alt={item.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" />
                   <div className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-lg z-10 bg-[#D4AF37]">
                     {isZh ? '现货就绪' : 'In Stock'}
                   </div>

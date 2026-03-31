@@ -90,6 +90,7 @@ export default function ProductDetailPage() {
                 src={product.images[normalizedMediaIndex] || product.image || '/images/products/1.jpg'} 
                 alt={product.title} 
                 fill 
+                unoptimized
                 className="object-cover group-hover:scale-105 transition-transform duration-[1500ms] ease-out" 
               />
             ) : (
@@ -177,7 +178,7 @@ export default function ProductDetailPage() {
                 className={`relative w-full aspect-square border-2 p-[2px] transition-all outline-none group overflow-hidden bg-white rounded-xl ${normalizedMediaIndex === -1 ? 'border-[#111111]' : 'border-transparent hover:border-gray-300'}`}
               >
                 <div className="w-full h-full relative overflow-hidden bg-gray-100 rounded-[8px]">
-                  <Image src={product.images[0] || '/images/products/1.jpg'} alt="Video Thumbnail" fill className="object-cover" />
+                  <Image src={product.images[0] || '/images/products/1.jpg'} alt="Video Thumbnail" fill unoptimized className="object-cover" />
                   
                   {/* 半透明遮罩与播放按钮 */}
                   <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center transition-colors group-hover:bg-black/40 z-10">
@@ -199,7 +200,7 @@ export default function ProductDetailPage() {
                 className={`relative w-full aspect-square border-2 p-[2px] transition-all outline-none group rounded-xl ${normalizedMediaIndex === index ? 'border-[#111111]' : 'border-transparent hover:border-gray-300'}`}
               >
                 <div className="w-full h-full relative overflow-hidden bg-gray-100 rounded-[8px]">
-                  <Image src={img} alt={`Thumbnail ${index + 1}`} fill className="object-cover" />
+                  <Image src={img} alt={`Thumbnail ${index + 1}`} fill unoptimized className="object-cover" />
                   {normalizedMediaIndex !== index && <div className="absolute inset-0 bg-white/40 transition-opacity duration-300 group-hover:opacity-0"></div>}
                 </div>
               </button>
@@ -422,7 +423,7 @@ export default function ProductDetailPage() {
           {relatedProducts.map(item => (
             <Link key={item.id} href={`/products/${item.slug}`} className="bg-white border border-gray-200 hover:border-[#111111] transition-colors group flex flex-col relative rounded-2xl overflow-hidden hover:shadow-xl">
               <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
-                 <Image src={item.image || '/images/products/1.jpg'} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-[800ms] grayscale group-hover:grayscale-0" />
+                 <Image src={item.image || '/images/products/1.jpg'} alt={item.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-[800ms] grayscale group-hover:grayscale-0" />
                  <div className="absolute top-4 left-4 bg-[#111111] text-white px-3 py-1 font-black text-[13px] tracking-widest uppercase rounded-lg">
                    {item.year}
                  </div>

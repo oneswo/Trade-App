@@ -378,7 +378,7 @@ function ProductsContent() {
                    
                    {/* 图像部分 */}
                    <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
-                     <Image src={product.image || '/images/products/1.jpg'} alt={product.title} fill className="object-cover group-hover:scale-105 transition-transform duration-[800ms]" />
+                    <Image src={product.image || '/images/products/1.jpg'} alt={product.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-[800ms]" />
                      
                      {/* B2B 核心指标盾牌 */}
                      <div className="absolute top-3 left-3 bg-[#111111] text-white px-3 py-1 font-black text-[13px] tracking-widest uppercase flex items-center shadow-lg">
