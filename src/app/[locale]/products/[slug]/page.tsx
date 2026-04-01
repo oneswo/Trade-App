@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useInquirySubmit } from "@/hooks/useInquirySubmit";
 import { useCatalogProductDetail } from '@/hooks/useProductCatalog';
+import { usePageContent } from '@/hooks/usePageContent';
 import { useLocale } from 'next-intl';
 
 export default function ProductDetailPage() {
@@ -24,6 +25,7 @@ export default function ProductDetailPage() {
   const { submitState, submitMessage, handleSubmit } = useInquirySubmit({
     source: "product-detail-cta",
   });
+  const { get: cms } = usePageContent("product-detail");
 
   const scrollToAnchor = (id: string) => {
     const element = document.getElementById(id);
@@ -280,27 +282,28 @@ export default function ProductDetailPage() {
       </section>
 
       {/* ======================= 版块 3：硬核图文与场站实力 (Immersive Details & Factory) ======================= */}
+      {product.enableTrustCards !== false && (
       <section className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 mb-24 lg:mb-32">
         <h2 className="text-sm font-black text-center uppercase tracking-[0.3em] text-gray-400 mb-12 flex items-center justify-center gap-4">
           <span className="w-12 h-px bg-gray-200"></span>
-          KXTJ GLOBAL {isZh ? '交付实力保障' : 'DELIVERY EXCELLENCE'}
+          KXTJ GLOBAL {cms('delivery.sectionTitle', isZh ? '交付实力保障' : 'DELIVERY EXCELLENCE')}
           <span className="w-12 h-px bg-gray-200"></span>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 xl:gap-10">
-          
+
           {/* Card 1 */}
           <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
             <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
-               <Image src="/images/products/2.jpg" alt="Inspection" fill className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               <Image src={cms('delivery.card1.image', '/images/products/2.jpg')} alt="Inspection" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
                <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
                  <Target size={56} strokeWidth={1.5} />
                </div>
             </div>
             <div className="p-8 lg:p-10">
-              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{isZh ? '125 项底盘与液压深度检测' : '125-Point Hydraulic & Chassis Inspection'}</h3>
+              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{cms('delivery.card1.title', isZh ? '125 项底盘与液压深度检测' : '125-Point Hydraulic & Chassis Inspection')}</h3>
               <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                {isZh ? '从冷机启动烟色、到液压大泵主阀的滴漏渗油排查，我们的场内工程师会对该设备出具近乎苛刻的验机报告。您将看到未经任何滤镜处理的高清细节。' : 'From cold-start smoke analysis to main pump leak detection, our engineers provide an uncompromising report. You will see raw, unfiltered high-definition footage.'}
+                {cms('delivery.card1.desc', isZh ? '从冷机启动烟色、到液压大泵主阀的滴漏渗油排查，我们的场内工程师会对该设备出具近乎苛刻的验机报告。您将看到未经任何滤镜处理的高清细节。' : 'From cold-start smoke analysis to main pump leak detection, our engineers provide an uncompromising report. You will see raw, unfiltered high-definition footage.')}
               </p>
             </div>
           </div>
@@ -308,15 +311,15 @@ export default function ProductDetailPage() {
           {/* Card 2 */}
           <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
             <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
-               <Image src="/images/products/4.jpg" alt="Warehouse" fill className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               <Image src={cms('delivery.card2.image', '/images/products/4.jpg')} alt="Warehouse" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
                <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
                  <Factory size={56} strokeWidth={1.5} />
                </div>
             </div>
             <div className="p-8 lg:p-10">
-              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{isZh ? '3000+ 台场地现车集结结网' : '3,000+ Units Ready in Storage'}</h3>
+              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{cms('delivery.card2.title', isZh ? '3000+ 台场地现车集结结网' : '3,000+ Units Ready in Storage')}</h3>
               <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                {isZh ? '上海综保区直发。我们不是“空手套白狼”的中介机构，每一台设备均在我们的全硬化地坪仓库中真实趴放，接受您的视频连线抽检或第三方登船验收。' : 'Shipped directly from Shanghai Bonded Zone. Every machine is physically sitting in our hardened yards, ready for your real-time video inspection or third-party (SGS) boarding verification.'}
+                {cms('delivery.card2.desc', isZh ? '上海综保区直发。我们不是"空手套白狼"的中介机构，每一台设备均在我们的全硬化地坪仓库中真实趴放，接受您的视频连线抽检或第三方登船验收。' : 'Shipped directly from Shanghai Bonded Zone. Every machine is physically sitting in our hardened yards, ready for your real-time video inspection or third-party (SGS) boarding verification.')}
               </p>
             </div>
           </div>
@@ -324,21 +327,22 @@ export default function ProductDetailPage() {
           {/* Card 3 */}
           <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
             <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
-               <Image src="/images/products/5.jpg" alt="Shipping" fill className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               <Image src={cms('delivery.card3.image', '/images/products/5.jpg')} alt="Shipping" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
                <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
                  <Anchor size={56} strokeWidth={1.5} />
                </div>
             </div>
             <div className="p-8 lg:p-10">
-              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{isZh ? 'Ro-Ro 与 Flat Rack 深海装调' : 'Ro-Ro & Flat Rack Deep-Sea Rigging'}</h3>
+              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{cms('delivery.card3.title', isZh ? 'Ro-Ro 与 Flat Rack 深海装调' : 'Ro-Ro & Flat Rack Deep-Sea Rigging')}</h3>
               <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                {isZh ? '针对 20 吨及以上的重型怪兽，我们具有长达十余年的特种集装箱绑扎与滚装船订舱护航经验。确保您的钢铁资产横跨经纬线，安全登陆母港。' : 'For 20-ton+ heavy monsters, we have over a decade of experience in special container lashing and Ro-Ro vessel booking. Ensuring your steel assets land safely across the oceans.'}
+                {cms('delivery.card3.desc', isZh ? '针对 20 吨及以上的重型怪兽，我们具有长达十余年的特种集装箱绑扎与滚装船订舱护航经验。确保您的钢铁资产横跨经纬线，安全登陆母港。' : 'For 20-ton+ heavy monsters, we have over a decade of experience in special container lashing and Ro-Ro vessel booking. Ensuring your steel assets land safely across the oceans.')}
               </p>
             </div>
           </div>
 
         </div>
       </section>
+      )}
 
       {/* ======================= 版块 4：压盖级横向全宽黑底金线大表单 (Transverse CTA Form) ======================= */}
       <section id="inquiry-cta" className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 mb-24 lg:mb-32 scroll-mt-32">

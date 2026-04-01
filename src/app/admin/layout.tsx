@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Admin Console | KXTJ",
-  description: "KXTJ Internal Management Console",
+  title: "Heavox控制台",
+  description: "Heavox控制台",
+  icons: {
+    icon: "/heavox-admin-icon.svg",
+    shortcut: "/heavox-admin-icon.svg",
+    apple: "/heavox-admin-icon.svg",
+  },
   robots: "noindex, nofollow",
 };
 

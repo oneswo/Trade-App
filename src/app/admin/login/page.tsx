@@ -8,7 +8,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -21,7 +21,7 @@ function LoginForm() {
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       const result = (await response.json()) as { ok: boolean };
@@ -48,12 +48,12 @@ function LoginForm() {
           管理员身份 ID
         </label>
         <input
-          type="email"
+          type="text"
           required
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="admin@example.com"
+          autoComplete="username"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          placeholder="请输入管理员用户名"
           className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3.5 text-[14px] font-bold text-white placeholder:text-white/20 placeholder:font-medium outline-none transition-all hover:bg-white/[0.04] focus:border-[#D4AF37]/50 focus:bg-[#000000] focus:ring-4 focus:ring-[#D4AF37]/10"
         />
       </div>

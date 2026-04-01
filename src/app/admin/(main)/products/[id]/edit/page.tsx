@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import AdminNewProductPage from "../../new/page"; // 复用你设计好的高级布局
+import ProductEditorForm from "@/components/admin/ProductEditorForm";
 
 export default function EditProductPage() {
   const params = useParams<{ id: string | string[] }>();
@@ -16,6 +16,5 @@ export default function EditProductPage() {
     );
   }
 
-  // 传递 productId 给复用的组件，让它知道是编辑模式
-  return <AdminNewProductPage productId={productId} />;
+  return <ProductEditorForm productId={productId} />;
 }

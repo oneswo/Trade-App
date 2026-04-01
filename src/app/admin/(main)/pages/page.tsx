@@ -15,6 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { SUPPORTED_LOCALES, LOCALE_LABELS } from "@/lib/i18n/locales";
+import { clearPageContentCache } from "@/hooks/usePageContent";
 import { Ctx } from "./_context";
 import { HomeFields } from "./_fields/home";
 import { ProductsFields } from "./_fields/products";
@@ -22,6 +23,7 @@ import { ServicesFields } from "./_fields/services";
 import { AboutFields } from "./_fields/about";
 import { InsightsFields } from "./_fields/insights";
 import { ContactFields } from "./_fields/contact";
+import { ProductDetailFields } from "./_fields/product-detail";
 
 // ─── 页面列表 ─────────────────────────────────────────────────────────────────
 
@@ -33,6 +35,7 @@ const LOCALES = SUPPORTED_LOCALES.map((id) => ({
 const PAGES_LIST = [
   { id: "home", name: "网站首页", slug: "/", icon: Home },
   { id: "products", name: "产品列表", slug: "/products", icon: Package },
+  { id: "product-detail", name: "产品详情", slug: "/products/[slug]", icon: Package },
   { id: "services", name: "服务支持", slug: "/services", icon: Wrench },
   { id: "about", name: "关于我们", slug: "/about", icon: Info },
   { id: "insights", name: "行业智库", slug: "/insights", icon: BookOpen },
@@ -50,17 +53,16 @@ export default function PagesManagementPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
-  // 切换页面或语言时，从 API 加载已保存内容（重置字段是必要的副作用）
+  // 切换页面或语言时，从 API 加载已保存内容
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 切换页/语言时先进入加载态
     setIsLoading(true);
-    setFields({});
     fetch(`/api/page-content?pageId=${activePageId}&locale=${activeLang}`)
       .then((r) => r.json())
       .then((res) => {
-        if (res.ok && res.data) setFields(res.data);
+        setFields(res.ok && res.data ? res.data : {});
       })
-      .catch(() => {})
+      .catch(() => setFields({}))
       .finally(() => setIsLoading(false));
   }, [activePageId, activeLang]);
 
@@ -85,7 +87,12 @@ export default function PagesManagementPage() {
         }),
       });
       const json = await res.json();
-      setSaveState(json.ok ? "success" : "error");
+      if (json.ok) {
+        clearPageContentCache(activePageId, activeLang);
+        setSaveState("success");
+      } else {
+        setSaveState("error");
+      }
     } catch {
       setSaveState("error");
     }
@@ -101,6 +108,8 @@ export default function PagesManagementPage() {
         return <HomeFields zh={zh} />;
       case "products":
         return <ProductsFields zh={zh} />;
+      case "product-detail":
+        return <ProductDetailFields zh={zh} />;
       case "services":
         return <ServicesFields zh={zh} />;
       case "about":

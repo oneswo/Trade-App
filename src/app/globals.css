@@ -133,33 +133,23 @@
    Hero 标题多语言样式 - 使用 :lang() 避免 Hydration 闪烁
    ======================================== */
 
-/* 首页 Hero 标题 */
+/* 首页 Hero 标题 - 优化字号避免跳变 */
 .hero-title-home {
   @apply font-black tracking-tight text-white leading-tight drop-shadow-2xl w-full;
+  /* 使用统一的 clamp 避免媒体查询导致的字号跳变 */
 }
-.hero-title-home:lang(zh) {
-  font-size: clamp(2rem, 8vw, 76px);
+.hero-title-home.hero-zh {
+  font-size: clamp(2.5rem, 6.5vw, 84px);
   white-space: nowrap;
 }
-.hero-title-home:lang(en) {
-  font-size: 36px;
+.hero-title-home.hero-en {
+  font-size: clamp(2rem, 4.5vw, 52px);
   white-space: normal;
 }
-@media (min-width: 640px) {
-  .hero-title-home:lang(zh) { font-size: clamp(2.5rem, 7vw, 76px); }
-}
-@media (min-width: 768px) {
-  .hero-title-home:lang(zh) { font-size: clamp(3rem, 6vw, 76px); }
-  .hero-title-home:lang(en) { font-size: 46px; }
-}
 @media (min-width: 1024px) {
-  .hero-title-home:lang(en) {
-    font-size: 52px;
+  .hero-title-home.hero-en {
     white-space: nowrap;
   }
-}
-@media (min-width: 1280px) {
-  .hero-title-home:lang(zh) { font-size: 84px; }
 }
 
 /* 通用内页 Hero 标题 */
@@ -168,20 +158,20 @@
   font-size: clamp(2rem, 9vw, 48px);
   white-space: normal;
 }
-.hero-title:lang(en) {
+.hero-title.hero-en {
   font-size: clamp(1.75rem, 7vw, 36px);
   white-space: normal;
 }
 @media (min-width: 640px) {
   .hero-title { font-size: clamp(2.5rem, 8vw, 60px); }
-  .hero-title:lang(en) { font-size: clamp(2rem, 6vw, 46px); }
+  .hero-title.hero-en { font-size: clamp(2rem, 6vw, 46px); }
 }
 @media (min-width: 768px) {
   .hero-title { font-size: 80px; white-space: nowrap; }
-  .hero-title:lang(en) { font-size: 46px; white-space: nowrap; }
+  .hero-title.hero-en { font-size: 46px; white-space: nowrap; }
 }
 @media (min-width: 1024px) {
-  .hero-title:lang(en) { font-size: 52px; }
+  .hero-title.hero-en { font-size: 52px; }
 }
 
 /* ========================================
@@ -194,4 +184,19 @@
 
 .landing-animate {
   animation: landing-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* FadeUp component states */
+.fade-up-hidden {
+  opacity: 0;
+  transform: translateY(32px);
+  transition-property: opacity, transform;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fade-up-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition-property: opacity, transform;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }

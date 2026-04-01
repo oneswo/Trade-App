@@ -18,7 +18,13 @@ export function HomeFields({ zh }: { zh: boolean }) {
         <SectionHeader title="模块一 — 全屏首页大图（Hero）" note="对应首页第一屏视频背景区域" />
         <div className="grid grid-cols-2 gap-4">
           <ImageUpload name="hero.posterUrl" label="视频封面图（poster）" hint="视频加载前显示" aspectHint="建议 16:9，JPG / PNG，最大 5MB" />
-          <VideoUpload name="hero.videoUrl" label="背景视频" hint="MP4，最大 80MB" />
+          <VideoUpload name="hero.videoUrl" label="背景视频" hint="MP4，最大 80MB" posterFieldName="hero.posterUrl" />
+        </div>
+        <div className="rounded-xl border border-blue-500/30 bg-blue-50 p-4 space-y-1.5">
+          <p className="text-[13px] font-semibold text-blue-700">💡 智能封面提取</p>
+          <p className="text-[12px] text-blue-600/80 leading-relaxed">
+            上传视频后，如果未手动上传封面图，系统会自动提取视频第一帧作为封面，并标记为"自动提取"。您也可以随时手动上传更合适的封面图替换。
+          </p>
         </div>
         <FieldRow label="顶部小标签文字">
           <TextInput name="hero.tag" defaultValue={zh ? "面向国际市场的高端二手工程机械" : "PREMIUM USED HEAVY EQUIPMENT FOR GLOBAL MARKETS"} />
@@ -112,7 +118,7 @@ export function HomeFields({ zh }: { zh: boolean }) {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <ImageUpload name="depth.posterUrl" label="右侧封面图（播放前显示）" aspectHint="建议 16:9，JPG / PNG" />
-          <VideoUpload name="depth.videoUrl" label="右侧工厂宣传视频" hint="MP4，最大 80MB" />
+          <VideoUpload name="depth.videoUrl" label="右侧工厂宣传视频" hint="MP4，最大 80MB" posterFieldName="depth.posterUrl" />
         </div>
       </div>
 
@@ -175,8 +181,8 @@ export function HomeFields({ zh }: { zh: boolean }) {
         ].map((card, i) => (
           <CardBlock key={i} index={i + 1} label="交付记录卡片">
             <div className="grid grid-cols-2 gap-4">
-              <VideoUpload name={`delivery.${i}.videoUrl`} label="卡片视频" hint="MP4，最大 80MB" />
               <ImageUpload name={`delivery.${i}.posterUrl`} label="视频封面图" hint="视频播放前显示" aspectHint="建议 4:3，JPG / PNG" />
+              <VideoUpload name={`delivery.${i}.videoUrl`} label="卡片视频" hint="MP4，最大 80MB" posterFieldName={`delivery.${i}.posterUrl`} />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <FieldRow label="发货标签">

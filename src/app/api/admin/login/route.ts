@@ -6,7 +6,7 @@ import { ADMIN_SESSION_COOKIE } from "@/lib/auth/constants";
 import { signSession } from "@/lib/auth/session";
 
 const loginSchema = z.object({
-  email: z.string().trim().email(),
+  identifier: z.string().trim().min(1),
   password: z.string().trim().min(1),
 });
 
@@ -22,11 +22,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const email = parsed.data.email.toLowerCase();
+    const identifier = parsed.data.identifier.toLowerCase();
     const password = parsed.data.password;
 
     const repo = getAdminAuthRepo();
-    const admin = await repo.findByEmail(email);
+    const admin = await repo.findByIdentifier(identifier);
 
     // 支持 bcrypt 哈希密码（生产环境）和明文密码（dev 环境变量）
     const isValid =

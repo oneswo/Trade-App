@@ -148,6 +148,7 @@ export function ImageUpload({
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const currentUrl = get(name, defaultValue);
+  const isAutoExtracted = get(`${name}_auto`, '') === 'true';
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -164,6 +165,7 @@ export function ImageUpload({
       const json = await res.json();
       if (json.ok && json.data?.url) {
         set(name, json.data.url);
+        set(`${name}_auto`, ''); // 手动上传时清除自动标记
       } else {
         setError(json.error || "上传失败");
       }
@@ -192,6 +194,11 @@ export function ImageUpload({
           {label}
         </label>
         {hint && <span className="text-[12px] text-[#111111]/25">{hint}</span>}
+        {isAutoExtracted && (
+          <span className="text-[11px] text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded">
+            ✓ 自动提取
+          </span>
+        )}
       </div>
       <input
         ref={inputRef}
@@ -208,6 +215,11 @@ export function ImageUpload({
             alt="已上传图片"
             className="w-full h-32 object-cover rounded-xl border border-black/[0.08]"
           />
+          {isAutoExtracted && (
+            <div className="absolute top-2 right-2 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg">
+              自动提取
+            </div>
+          )}
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-3">
             <button
               type="button"
@@ -218,7 +230,10 @@ export function ImageUpload({
             </button>
             <button
               type="button"
-              onClick={() => set(name, "")}
+              onClick={() => {
+                set(name, "");
+                set(`${name}_auto`, '');
+              }}
               className="px-3 py-1.5 bg-red-500 text-white text-[11px] font-medium rounded-lg hover:bg-red-600"
             >
               删除
@@ -263,16 +278,72 @@ export function VideoUpload({
   name,
   label,
   hint,
+  posterFieldName,
 }: {
   name: string;
   label: string;
   hint?: string;
+  posterFieldName?: string; // 关联的封面字段名
 }) {
   const { get, set } = useCtx();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [extractingFrame, setExtractingFrame] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const currentUrl = get(name, "");
+
+  // 提取视频第一帧
+  const extractFirstFrame = async (videoUrl: string): Promise<string | null> => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      video.crossOrigin = 'anonymous';
+      video.preload = 'metadata';
+      
+      video.onloadeddata = () => {
+        video.currentTime = 0.1; // 跳到 0.1 秒，避免黑帧
+      };
+      
+      video.onseeked = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const file = new File([blob], 'video-frame.jpg', { type: 'image/jpeg' });
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('kind', 'image');
+                
+                fetch('/api/admin/uploads', {
+                  method: 'POST',
+                  body: formData,
+                }).then(res => res.json()).then(json => {
+                  if (json.ok && json.data?.url) {
+                    resolve(json.data.url);
+                  } else {
+                    resolve(null);
+                  }
+                }).catch(() => resolve(null));
+              } else {
+                resolve(null);
+              }
+            }, 'image/jpeg', 0.9);
+          } else {
+            resolve(null);
+          }
+        } catch {
+          resolve(null);
+        }
+      };
+      
+      video.onerror = () => resolve(null);
+      video.src = videoUrl;
+    });
+  };
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -286,6 +357,20 @@ export function VideoUpload({
       const json = await res.json();
       if (json.ok && json.data?.url) {
         set(name, json.data.url);
+        
+        // 如果指定了封面字段，且封面字段为空，自动提取第一帧
+        if (posterFieldName) {
+          const currentPoster = get(posterFieldName, "");
+          if (!currentPoster) {
+            setExtractingFrame(true);
+            const frameUrl = await extractFirstFrame(json.data.url);
+            setExtractingFrame(false);
+            if (frameUrl) {
+              set(posterFieldName, frameUrl);
+              set(`${posterFieldName}_auto`, 'true'); // 标记为自动提取
+            }
+          }
+        }
       } else {
         setError(json.error || "上传失败");
       }
@@ -349,11 +434,11 @@ export function VideoUpload({
         </div>
       ) : (
         <div
-          onClick={() => !uploading && inputRef.current?.click()}
+          onClick={() => !uploading && !extractingFrame && inputRef.current?.click()}
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           className={`flex h-28 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors ${
-            uploading
+            uploading || extractingFrame
               ? "border-blue-300 bg-blue-50"
               : "border-black/[0.1] bg-[#FAFAFA] hover:border-black/20 hover:bg-black/[0.02]"
           }`}
@@ -362,6 +447,11 @@ export function VideoUpload({
             <>
               <Loader2 size={20} className="text-blue-500 animate-spin" />
               <span className="text-[11px] text-blue-500 font-medium">上传中...</span>
+            </>
+          ) : extractingFrame ? (
+            <>
+              <Loader2 size={20} className="text-green-500 animate-spin" />
+              <span className="text-[11px] text-green-500 font-medium">正在提取封面...</span>
             </>
           ) : (
             <>
