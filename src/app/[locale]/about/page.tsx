@@ -58,7 +58,7 @@ export default function AboutPage() {
             {/* Block A: 左图右文 - 现代化总库 */}
             <div className="relative flex flex-col md:flex-row items-center justify-between group">
               <div className="w-full md:w-1/2 relative aspect-[4/3] rounded-3xl shadow-[-20px_20px_0_#EEEEEE] group-hover:shadow-[-20px_20px_0_#D4AF37] transition-all duration-500 overflow-hidden border border-gray-200">
-                <Image fill unoptimized src={c('blockA.image', '/images/about/office.jpg')} alt="上海现代化总库" className="object-cover group-hover:scale-105 transition-transform duration-1000" />
+                <Image fill unoptimized priority src={c('blockA.image', '/images/about/office.jpg')} alt="上海现代化总库" className="object-cover group-hover:scale-105 transition-transform duration-1000" />
               </div>
               <div className="w-full md:w-5/12 text-left mt-16 md:mt-0 relative md:pl-16">
                 <h2 className="text-4xl md:text-5xl font-black text-[#111111] leading-tight tracking-tighter mb-8 pt-4">

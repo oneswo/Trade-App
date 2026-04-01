@@ -101,7 +101,7 @@ export default function DashboardPage() {
 
 
       {/* ── 统计卡片 ── */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {STATS.map(({ id, label, value, sub, icon: Icon, accent, badge }) => (
           <div
             key={id}
@@ -154,9 +154,9 @@ export default function DashboardPage() {
         </div>
 
         {/* 列标题 */}
-        <div className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr] gap-4 border-b border-black/[0.04] px-6 py-3">
-          {["客户信息", "关联产品", "地区", "时间", "状态"].map((col) => (
-            <span key={col} className="text-[10px] font-semibold tracking-[0.12em] text-[#111111]/25 uppercase">
+        <div className="grid grid-cols-[1fr_1fr] md:grid-cols-[2fr_2fr_1fr_1fr_1fr] gap-4 border-b border-black/[0.04] px-6 py-3">
+          {["客户信息", "关联产品", "地区", "时间", "状态"].map((col, idx) => (
+            <span key={col} className={`text-[10px] font-semibold tracking-[0.12em] text-[#111111]/25 uppercase ${idx >= 2 && idx <= 3 ? "hidden md:block" : ""}`}>
               {col}
             </span>
           ))}
@@ -174,7 +174,7 @@ export default function DashboardPage() {
                 <button
                   onClick={() => setActiveInquiryId(inq.id)}
                 className="
-                  group relative grid grid-cols-[2fr_2fr_1fr_1fr_1fr] gap-4 items-center px-6 py-4 text-left
+                  group relative grid grid-cols-[1fr_1fr] md:grid-cols-[2fr_2fr_1fr_1fr_1fr] gap-4 items-center px-6 py-4 text-left
                   transition-colors duration-150 hover:bg-black/[0.02] cursor-pointer block w-full
                 "
               >
@@ -195,13 +195,13 @@ export default function DashboardPage() {
                 <p className="text-[12px] font-medium text-[#111111]/60 truncate group-hover:text-[#111111]/80">{inq.product}</p>
 
                 {/* 地区 */}
-                <p className="text-[12px] text-[#111111]/50 flex items-center gap-1.5">
+                <p className="text-[12px] text-[#111111]/50 items-center gap-1.5 hidden md:flex">
                   <span>{inq.country}</span>
                   <span>{inq.region}</span>
                 </p>
 
                 {/* 时间 */}
-                <div className="flex items-center gap-1.5 text-[11px] text-[#111111]/40">
+                <div className="items-center gap-1.5 text-[11px] text-[#111111]/40 hidden md:flex">
                   <Clock size={11} />
                   {inq.time}
                 </div>

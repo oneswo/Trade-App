@@ -50,6 +50,7 @@ export function useInquirySubmit({ source }: UseInquirySubmitOptions) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitState === "loading") return;
     setSubmitState("loading");
     setSubmitMessage("");
 

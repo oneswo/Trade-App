@@ -55,7 +55,7 @@ export default function AdminTopbar() {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-52 z-30 flex h-16 items-center justify-between border-b border-black/[0.06] bg-white/90 px-8 backdrop-blur-md">
+    <header className="fixed top-0 right-0 left-0 md:left-52 z-30 flex h-16 items-center justify-between border-b border-black/[0.06] bg-white/90 px-4 pl-16 md:pl-8 md:px-8 backdrop-blur-md">
 
       {/* 左侧：面包屑 */}
       <nav className="flex items-center gap-2 text-[15px]">

@@ -44,8 +44,10 @@ export function usePageContent(pageId: string) {
     // 读 localStorage 作为备用，但不立即 setState（避免中间态闪烁）
     const lsData = readLs(cacheKey);
 
+    const controller = new AbortController();
+
     // 异步拉取最新内容，一次性更新
-    fetch(`/api/page-content?pageId=${pageId}&locale=${locale}`)
+    fetch(`/api/page-content?pageId=${pageId}&locale=${locale}`, { signal: controller.signal })
       .then(r => r.json())
       .then(res => {
         const d = (res.ok && res.data) ? res.data : {};
@@ -53,7 +55,8 @@ export function usePageContent(pageId: string) {
         writeLs(cacheKey, d);
         setData(d);
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err instanceof Error && err.name === 'AbortError') return;
         // API 失败时回退到 localStorage 缓存
         if (lsData) {
           memCache.set(cacheKey, lsData);
@@ -61,6 +64,8 @@ export function usePageContent(pageId: string) {
         }
       })
       .finally(() => setIsLoaded(true));
+
+    return () => controller.abort();
   }, [pageId, locale, cacheKey]);
 
   const get = useCallback(

@@ -18,12 +18,12 @@ export default function AdminMainLayout({
       <AdminSidebar />
 
       {/* 右侧主体区域 */}
-      <div className="flex flex-1 flex-col pl-52">
+      <div className="flex flex-1 flex-col pl-0 md:pl-52">
         {/* 吸顶 Topbar */}
         <AdminTopbar />
 
         {/* 主内容区，顶部留出 Topbar 高度 */}
-        <main className="mt-16 flex-1 overflow-auto p-8">
+        <main className="mt-16 flex-1 overflow-auto p-4 md:p-8">
           {children}
         </main>
       </div>

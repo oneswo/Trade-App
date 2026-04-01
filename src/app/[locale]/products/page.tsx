@@ -416,7 +416,7 @@ function ProductsContent() {
                    
                    {/* 图像部分 */}
                    <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
-                    <Image src={product.image || '/images/products/1.jpg'} alt={product.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-[800ms]" />
+                    <Image src={product.image || '/images/products/1.jpg'} alt={product.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-[800ms]" onError={(e) => { e.currentTarget.src = '/images/products/1.jpg'; }} />
                      
                      {/* B2B 核心指标盾牌 */}
                      <div className="absolute top-3 left-3 bg-[#111111] text-white px-2.5 py-1 font-black text-[12px] tracking-[0.12em] uppercase flex items-center rounded-md shadow-md">
