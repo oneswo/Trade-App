@@ -4,17 +4,17 @@ import Image from 'next/image';
 import { Link, usePathname } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
 import { Search, Globe, ChevronDown, Home, Package, ShieldCheck, Lightbulb, Info, PhoneCall, X, Factory, Menu } from 'lucide-react';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useSiteSettings, type SiteSettings } from '@/hooks/useSiteSettings';
 import { SUPPORTED_LOCALES, LOCALE_FLAGS, LOCALE_LABELS, isSupportedLocale, type SupportedLocale } from '@/lib/i18n/locales';
 
-export default function Header() {
+export default function Header({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
   const pathname = usePathname();
   const isZh = locale === 'zh';
-  const { settings } = useSiteSettings();
+  const { settings } = useSiteSettings(initialSettings);
 
   // 路由变化时关闭移动菜单
   useEffect(() => { setIsMobileMenuOpen(false); }, [pathname]);

@@ -1,14 +1,14 @@
 "use client";
 import { Link } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useSiteSettings, type SiteSettings } from '@/hooks/useSiteSettings';
 import { useCategories } from '@/hooks/useCategories';
 import { useBrands } from '@/hooks/useBrands';
 
-export default function Footer() {
+export default function Footer({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const locale = useLocale();
   const isZh = locale === 'zh';
-  const { settings } = useSiteSettings();
+  const { settings } = useSiteSettings(initialSettings);
   const { categories } = useCategories();
   const { brands } = useBrands();
 

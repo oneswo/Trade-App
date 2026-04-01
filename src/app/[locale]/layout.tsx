@@ -32,14 +32,16 @@ export default async function RootLayout({
 }>) {
   await params;
   const messages = await getMessages();
+  const repo = getSiteSettingsRepo();
+  const siteSettings = await repo.get();
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAFA] text-[#111111]">
       <NextIntlClientProvider messages={messages}>
         <HtmlLang />
-        <Header />
+        <Header initialSettings={siteSettings} />
         {children}
-        <Footer />
+        <Footer initialSettings={siteSettings} />
         <GlobalFab />
       </NextIntlClientProvider>
     </div>

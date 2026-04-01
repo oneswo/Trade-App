@@ -26,26 +26,26 @@ export interface SiteSettings {
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  siteName: "KXTJ 重工机械",
-  siteNameEn: "KXTJ Heavy Machinery",
-  logoText: "中国机械",
-  logoTextEn: "CHINA MACHINERY",
+  siteName: "海沃克斯",
+  siteNameEn: "Heavox — Heavy Power, Global Trust",
+  logoText: "海沃克斯",
+  logoTextEn: "Heavox",
   logoImageUrl: null,
-  contactName: "Jack Yin",
-  contactPhone: "+86 17321077956",
-  contactEmail: "15156888267@163.com",
-  contactWhatsApp: "+86 15375319246",
-  contactAddress: "中国上海市奉贤区金海路6055号",
-  contactAddressEn: "No. 6055, Jinhai Rd, Fengxian District, Shanghai, China",
+  contactName: "Andy",
+  contactPhone: "+86 13866668888",
+  contactEmail: "Andy@163.com",
+  contactWhatsApp: "+86 13866668888",
+  contactAddress: "中国上海市黄浦江边",
+  contactAddressEn: "Huangpu River, Shanghai, China",
   socialX: "",
   socialInstagram: "",
   socialFacebook: "",
   socialYoutube: "",
   socialTiktok: "",
   socialLinkedin: "",
-  copyrightText: "中国机械",
+  copyrightText: "海沃克斯",
   copyrightTextEn: "CHINA MACHINERY",
-  copyrightUrl: "WWW.ONESWO.COM",
+  copyrightUrl: "www.heavox.com",
 };
 
 // 全局缓存（30 秒 TTL，避免管理员保存后前台长期看不到变化）
@@ -91,19 +91,24 @@ async function fetchSiteSettings(bustCache = false): Promise<SiteSettings> {
   return fetchPromise;
 }
 
-export function useSiteSettings() {
-  // 使用 lazy initializer 直接从缓存初始化，避免在 effect 内同步 setState
+export function useSiteSettings(initialData?: SiteSettings | null) {
+  // 如果服务端传入了 initialData，立即预热全局缓存，避免所有组件首帧闪默认值
+  if (initialData && !cachedSettings) {
+    cachedSettings = initialData;
+    cacheTimestamp = Date.now();
+  }
+
   const [settings, setSettings] = useState<SiteSettings>(() => {
     if (cachedSettings && Date.now() - cacheTimestamp < CACHE_TTL) return cachedSettings;
-    return DEFAULT_SETTINGS;
+    return initialData ?? DEFAULT_SETTINGS;
   });
   const [loading, setLoading] = useState(
-    () => !(cachedSettings && Date.now() - cacheTimestamp < CACHE_TTL)
+    () => !(cachedSettings && Date.now() - cacheTimestamp < CACHE_TTL) && !initialData
   );
 
   useEffect(() => {
     if (cachedSettings && Date.now() - cacheTimestamp < CACHE_TTL) {
-      return; // 已从缓存初始化，无需重新请求
+      return;
     }
     fetchSiteSettings().then((data) => {
       setSettings(data);
