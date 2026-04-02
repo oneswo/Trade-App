@@ -7,17 +7,49 @@ export const VALID_PAGE_IDS = [
   "product-detail",
   "services",
   "about",
-  "insights",
   "contact",
 ] as const;
 
 export type ValidPageId = (typeof VALID_PAGE_IDS)[number];
 
 const OBSOLETE_PAGE_CONTENT_PREFIXES: Partial<Record<ValidPageId, string[]>> = {
-  home: ["cta."],
-  about: ["cta."],
-  services: ["cta."],
-  contact: ["bottomCta."],
+  home: ["cta.", "hero.tag", "hero.subtitle", "hero.btn1", "hero.btn2", "hero.posterUrl", "hero.videoUrl", "depth."],
+  /** 与前台 ProductsPageClient 对齐后移除的字段（曾存在于旧版 CMS） */
+  products: [
+    "hero.",
+    "filter.badge",
+    "filter.resultsPrefix",
+    "filter.panelTitle",
+    "filter.openBtn",
+    "filter.mobileTitle",
+    "filter.mobileSectionTitle",
+    "filter.executeBtn",
+    "filter.resetBtn",
+    "filter.searchPlaceholder",
+    "filter.sortLabel",
+    "filter.sortNewest",
+    "filter.sortHours",
+    "filter.sortBrand",
+    "filter.resultsSuffix",
+    "card.hoursLabel",
+    "card.weightLabel",
+    "card.engineLabel",
+    "card.locationLabel",
+  ],
+  /** 与前台产品详情页对齐：移除旧交付卡片与已固定化的状态/后缀文案 */
+  "product-detail": [
+    "delivery.",
+    "gallery.yearSuffix",
+    "gallery.stockPrefix",
+    "gallery.stockSuffix",
+    "page.",
+  ],
+  /** 与前台 AboutPageClient 对齐：移除未使用的 Hero 字段 */
+  about: ["cta.", "hero."],
+  /** 与前台 ServicesPageClient 对齐：移除未使用的 Hero 字段 */
+  services: ["cta.", "hero."],
+  /** 与前台 ContactPageClient 对齐：移除未使用的 Hero 字段 */
+  contact: ["bottomCta.", "hero.", "map.bubbleSubtitle", "team.directLineLabel", "team.whatsappLabel"],
 };
 
 export function isSharedMediaField(fieldName: string) {

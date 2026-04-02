@@ -13,47 +13,12 @@ export default function ServicesPageClient({
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('services', initialContent);
-  const heroBgImage = c('hero.bgImage', '');
 
   return (
     <main className="w-full bg-[#FAFAFA] pt-[72px]">
-      {/* 1. 沉浸式英雄头图 (Cinematic Hero) */}
-      <section className="relative w-full h-[450px] md:h-[500px] flex items-center justify-center bg-[#111111] overflow-hidden">
-         {/* 背景暗纹蒙版与网格 */}
-         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
-         <div className="absolute inset-0 opacity-60 bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]" style={heroBgImage ? { backgroundImage: `url('${heroBgImage}')` } : undefined}></div>
-         <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-[#111111]/10 pointer-events-none"></div>
-         
-         {/* 琥珀色微光 (Radiant Glow) */}
-         <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#D4AF37] opacity-[0.05] blur-[120px] rounded-full pointer-events-none"></div>
-         <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-[#D4AF37] opacity-[0.03] blur-[150px] rounded-full pointer-events-none"></div>
-
-         <div className="relative z-10 flex flex-col items-center px-4 w-full max-w-[1100px] mx-auto text-center mt-4">
-            
-            {/* 顶部分类小提示 */}
-            <div className="flex items-center justify-center gap-3 text-[#D4AF37] text-xs font-bold tracking-[0.2em] uppercase mb-8 border border-[#D4AF37]/20 rounded-full px-5 py-2 bg-[#D4AF37]/5 backdrop-blur-md shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span> 
-              {c('hero.tag', isZh ? '重资产出海专属服务' : 'HEAVY EQUIPMENT EXPORT SERVICES')}
-            </div>
-
-            <h1 className={`hero-title ${isZh ? 'hero-zh' : 'hero-en'}`}>
-              {c('hero.title1', isZh ? '中国源头，' : 'From China, ')}<span className="text-[#D4AF37]">{c('hero.titleGold', isZh ? '全球交付。' : 'Global Delivery.')}</span>
-            </h1>
-
-            {/* 副标题 (Height Locked) */}
-            <div className="w-full flex items-center justify-center min-h-[60px] md:min-h-[80px]">
-              <p className="text-gray-400 text-base sm:text-lg md:text-[21px] font-medium opacity-90 max-w-[900px] text-center leading-relaxed">
-                {isZh
-                  ? c('hero.desc', '从源头查勘到重载交付，我们提供全链路保姆式出海护航，确保每台机械以巅峰状态抵达。')
-                  : c('hero.desc', 'From factory inspection to heavy-load delivery, we provide end-to-end export escorts to ensure every machine arrives in peak condition.')}
-              </p>
-            </div>
-
-         </div>
-      </section>
 
       {/* 2. 六大特权服务矩阵 (Premium Service Matrix) */}
-      <section className="w-full py-24 md:py-32 bg-[#FAFAFA]">
+      <section className="w-full py-16 md:py-24 bg-[#FAFAFA]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black text-[#111111] tracking-tighter mb-6">{c('matrix.title', isZh ? '重装出海全维保障体系' : 'Premium Heavy Equipment Services')}</h2>

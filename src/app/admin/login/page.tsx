@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Cpu, Loader2, ArrowRight } from "lucide-react";
+import { Cpu, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 function LoginForm() {
   const router = useRouter();
@@ -10,6 +10,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,15 +63,25 @@ function LoginForm() {
         <label className="text-[11px] font-bold tracking-widest text-[#D4AF37]/80 uppercase">
           高阶安全密钥
         </label>
-        <input
-          type="password"
-          required
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3.5 text-[14px] font-bold text-white placeholder:text-white/20 placeholder:font-medium outline-none transition-all hover:bg-white/[0.04] focus:border-[#D4AF37]/50 focus:bg-[#000000] focus:ring-4 focus:ring-[#D4AF37]/10"
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            required
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3.5 pr-12 text-[14px] font-bold text-white placeholder:text-white/20 placeholder:font-medium outline-none transition-all hover:bg-white/[0.04] focus:border-[#D4AF37]/50 focus:bg-[#000000] focus:ring-4 focus:ring-[#D4AF37]/10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-white/35 transition-colors hover:text-[#D4AF37]"
+            aria-label={showPassword ? "隐藏密码" : "显示密码"}
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
       </div>
 
       {errorMessage && (
@@ -90,7 +101,7 @@ function LoginForm() {
         {loading ? (
           <>
             <Loader2 size={16} className="animate-spin text-[#111111]" />
-            正在解密...
+            正在登录...
           </>
         ) : (
           <>
@@ -116,12 +127,9 @@ export default function AdminLoginPage() {
           <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-white/[0.03] backdrop-blur-md shadow-[0_0_40px_rgba(212,175,55,0.1)] border border-white/[0.08] mb-6 relative">
             <Cpu size={28} className="text-[#D4AF37]" strokeWidth={1.5} />
           </div>
-          <h1 className="text-2xl font-black text-white tracking-tight mb-2">
+          <h1 className="text-2xl font-black text-white tracking-tight">
             进入控制中心
           </h1>
-          <p className="text-[11px] font-bold text-white/40 tracking-widest uppercase">
-            Secure Admin Portal Phase
-          </p>
         </div>
 
         {/* 玻璃态冷峻黑卡片 */}
@@ -130,14 +138,6 @@ export default function AdminLoginPage() {
             <LoginForm />
           </Suspense>
         </div>
-        
-        {/* 底部版权 */}
-        <div className="mt-12 text-center">
-          <p className="text-[10px] font-bold tracking-widest text-white/20 uppercase">
-            RESTRICTED ACCESS • KXTJ CONTROL
-          </p>
-        </div>
-
       </div>
     </div>
   );

@@ -7,13 +7,12 @@ import { useParams } from 'next/navigation';
 import { 
   ChevronRight, Play, 
   CheckCircle2, ShieldCheck, Ship,
-  ArrowUpRight, Anchor, Target, Factory, ArrowRight
+  ArrowUpRight
 } from 'lucide-react';
 import { useCatalogProductDetail } from '@/hooks/useProductCatalog';
+import { openInquiryModal } from '@/lib/inquiries/modal';
 import { usePageContent } from '@/hooks/usePageContent';
 import { useLocale } from 'next-intl';
-import { ProductCardMedia } from '@/components/products/ProductCardMedia';
-import { openInquiryModal } from '@/lib/inquiries/modal';
 
 export default function ProductDetailPage() {
   const params = useParams<{ slug: string | string[] }>();
@@ -21,7 +20,7 @@ export default function ProductDetailPage() {
   const isZh = locale === 'zh';
   const rawSlug = params?.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug || '';
-  const { product, relatedProducts, loading } = useCatalogProductDetail(slug);
+  const { product, loading } = useCatalogProductDetail(slug);
   const [activeMedia, setActiveMedia] = useState<number>(0); 
   const { get: cms } = usePageContent("product-detail");
 
@@ -30,7 +29,7 @@ export default function ProductDetailPage() {
       <main className="w-full bg-[#FAFAFA] min-h-screen pt-[100px] pb-20">
         <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12">
           <div className="rounded-xl border border-black/[0.06] bg-white px-6 py-12 text-sm text-[#111111]/55">
-            {isZh ? '正在加载产品详情...' : 'Loading product details...'}
+            {isZh ? "正在加载产品详情..." : "Loading product details..."}
           </div>
         </div>
       </main>
@@ -42,7 +41,7 @@ export default function ProductDetailPage() {
       <main className="w-full bg-[#FAFAFA] min-h-screen pt-[100px] pb-20">
         <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12">
           <div className="rounded-xl border border-black/[0.06] bg-white px-6 py-12 text-sm text-[#111111]/55">
-            {isZh ? '未找到该产品，请返回列表查看其他设备。' : 'Product not found. Please go back to browse other machines.'}
+            {isZh ? "未找到该产品，请返回列表查看其他设备。" : "Product not found. Please go back to browse other machines."}
           </div>
         </div>
       </main>
@@ -55,19 +54,20 @@ export default function ProductDetailPage() {
       : product.images.length === 0
         ? -1
         : Math.min(activeMedia, Math.max(product.images.length - 1, 0));
-  const deliveryCard1Image = cms('delivery.card1.image', '');
-  const deliveryCard2Image = cms('delivery.card2.image', '');
-  const deliveryCard3Image = cms('delivery.card3.image', '');
 
   return (
     <main className="w-full bg-[#FAFAFA] min-h-screen pt-[80px] md:pt-[100px] pb-20">
       
       {/* 0. 顶部极简路径 / 面包屑导航 */}
-      <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 flex items-center justify-between mb-8">
-        <nav className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">
-          <Link href="/" className="hover:text-[#111111] transition-colors">首页大盘</Link>
+      <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 flex items-center justify-between -mt-1 md:-mt-2 mb-6">
+        <nav className="flex items-center gap-2 text-[11px] md:text-[13px] font-bold uppercase tracking-[0.18em] text-gray-400">
+          <Link href="/" className="hover:text-[#111111] transition-colors">
+            {cms("breadcrumb.home", isZh ? "首页" : "Home")}
+          </Link>
           <ChevronRight size={14} className="text-gray-300" />
-          <Link href="/products" className="hover:text-[#111111] transition-colors">检索地图</Link>
+          <Link href="/products" className="hover:text-[#111111] transition-colors">
+            {cms("breadcrumb.products", isZh ? "产品列表" : "Products")}
+          </Link>
           <ChevronRight size={14} className="text-gray-300" />
           <span className="text-gray-500">{product.category}</span>
           <ChevronRight size={14} className="text-gray-300" />
@@ -104,22 +104,20 @@ export default function ProductDetailPage() {
                    <div className="w-20 h-20 border border-white/20 bg-white/5 backdrop-blur-md flex items-center justify-center transition-colors z-10">
                      <Play size={32} className="text-white fill-white ml-2" />
                    </div>
-                   <span className="absolute bottom-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">暂无产品视频</span>
+                   <span className="absolute bottom-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
+                     {cms("gallery.noVideo", isZh ? "暂无产品视频" : "No product video")}
+                   </span>
                 </div>
               )
             )}
-            
-            <div className="absolute top-4 left-4 bg-[#111111] text-white px-3 py-1.5 font-black text-xs tracking-widest uppercase flex items-center shadow-lg pointer-events-none z-20 rounded-xl">
-              {product.year} 款
-            </div>
             
             <div className="absolute top-4 right-4 pointer-events-none gap-3 items-center flex z-20">
               <span className="bg-white/90 backdrop-blur-sm px-3.5 py-1.5 flex items-center gap-2 border border-gray-200 shadow-sm rounded-xl">
                 <span className="w-1.5 h-1.5 bg-[#25D366] rounded-full animate-pulse"></span>
                 <span className="text-[#111111] font-black text-[11px] tracking-widest leading-none pt-[1px]">
-                  {isZh
-                    ? `库存现车: ${product.stockAmount ?? '--'} 台`
-                    : `IN STOCK: ${product.stockAmount ?? '--'}`}
+                  {cms("gallery.stockLabel", isZh ? "现货数量" : "In Stock")}{" "}
+                  {product.stockAmount ?? "--"}
+                  {isZh ? " 台" : ""}
                 </span>
               </span>
             </div>
@@ -136,15 +134,21 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full mt-2">
                 <div className="flex items-center justify-start sm:justify-center gap-2 bg-white px-3 py-2.5 border border-gray-200 shadow-sm rounded-xl">
                   <CheckCircle2 size={15} className="text-[#25D366] shrink-0" />
-                  <span className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.04em] whitespace-nowrap text-[#111111]">{isZh ? '第三方 SGS 检测' : 'SGS Verified'}</span>
+                  <span className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.04em] whitespace-nowrap text-[#111111]">
+                    {cms("badge.sgs", isZh ? "第三方 SGS 检测" : "SGS Verified")}
+                  </span>
                 </div>
                 <div className="flex items-center justify-start sm:justify-center gap-2 bg-white px-3 py-2.5 border border-gray-200 shadow-sm rounded-xl">
                   <ShieldCheck size={15} className="text-[#111111] shrink-0" />
-                  <span className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.04em] whitespace-nowrap text-[#111111]">{isZh ? '100% 性能满载实测' : '100% Load Tested'}</span>
+                  <span className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.04em] whitespace-nowrap text-[#111111]">
+                    {cms("badge.loadTest", isZh ? "100% 性能满载实测" : "100% Load Tested")}
+                  </span>
                 </div>
                 <div className="flex items-center justify-start sm:justify-center gap-2 bg-[#111111] px-3 py-2.5 text-white shadow-md rounded-xl">
                   <Ship size={15} className="text-[#D4AF37] shrink-0" />
-                  <span className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.04em] whitespace-nowrap text-[#D4AF37]">{isZh ? '准现车滚装发运' : 'Ro-Ro Ready'}</span>
+                  <span className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.04em] whitespace-nowrap text-[#D4AF37]">
+                    {cms("badge.roRo", isZh ? "准现车滚装发运" : "Ro-Ro Ready")}
+                  </span>
                 </div>
               </div>
             </div>
@@ -153,7 +157,7 @@ export default function ProductDetailPage() {
             <div className="w-full flex-1 bg-white border border-gray-200 p-6 xl:p-8 shadow-sm flex flex-col overflow-hidden rounded-2xl">
               <div className="flex flex-col items-center mb-6 xl:mb-8 shrink-0">
                 <h3 className="text-[12px] xl:text-[13px] font-black uppercase tracking-[0.3em] text-[#111111]">
-                  {isZh ? '机皇核心指标' : 'Core Specifications'}
+                  {cms("coreSpecs.title", isZh ? "机皇核心指标" : "Core Specifications")}
                 </h3>
                 <div className="w-8 h-1 bg-[#D4AF37] mt-3 rounded-full"></div>
               </div>
@@ -225,8 +229,12 @@ export default function ProductDetailPage() {
               <div className="absolute top-0 left-0 w-full h-full bg-[#D4AF37] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out z-0"></div>
               
               <div className="relative z-10 flex flex-col items-start text-left">
-                <span className="text-lg md:text-xl xl:text-2xl font-black mb-1 xl:mb-2 group-hover:text-black transition-colors">{isZh ? '获取私密底价与实车视频' : 'Get Private Quote & Videos'}</span>
-                <span className="text-[11px] xl:text-[12px] font-bold tracking-widest text-gray-400 group-hover:text-black/70 transition-colors">{isZh ? '10 分钟内连线售前工程师' : 'Talk to Engineer in 10 mins'}</span>
+                <span className="text-lg md:text-xl xl:text-2xl font-black mb-1 xl:mb-2 group-hover:text-black transition-colors">
+                  {cms("cta.title", isZh ? "获取私密底价与实车视频" : "Get Private Quote & Videos")}
+                </span>
+                <span className="text-[11px] xl:text-[12px] font-bold tracking-widest text-gray-400 group-hover:text-black/70 transition-colors">
+                  {cms("cta.subtitle", isZh ? "10 分钟内连线售前工程师" : "Talk to Engineer in 10 mins")}
+                </span>
               </div>
               <ArrowUpRight size={28} className="relative z-10 text-[#D4AF37] group-hover:text-black transition-colors" />
             </button>
@@ -237,8 +245,8 @@ export default function ProductDetailPage() {
       </section>
 
       {/* ======================= 版块 2：专业总成全宽参数墙 (Full-Width Tech Specs Wall) ======================= */}
-      <section className="w-full bg-[#F5F5F7] border-y border-gray-200 py-16 lg:py-24 mb-24 lg:mb-32">
-        <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8 xl:px-12">
+      <section className="w-full bg-[#F5F5F7] border-y border-gray-200 py-16 lg:py-24">
+        <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12">
            
            <div className="bg-white rounded-3xl p-8 md:p-12 lg:p-16 xl:p-20 shadow-2xl shadow-gray-200/50 relative overflow-hidden">
              
@@ -249,10 +257,10 @@ export default function ProductDetailPage() {
              <div className="mb-12 border-b-2 border-[#111111] pb-6 flex items-end justify-between relative z-10">
                <div>
                  <h2 className="text-2xl md:text-3xl lg:text-[36px] font-black text-[#111111] tracking-tight mb-2">
-                   {isZh ? '详尽技术规格档案' : 'Detailed Technical Specifications'}
+                   {cms("techWall.title", isZh ? "详尽技术规格档案" : "Detailed Technical Specifications")}
                  </h2>
                  <p className="text-gray-400 text-xs md:text-sm tracking-[0.2em] uppercase font-bold">
-                   {isZh ? '精确到毫米的严苛工况数据背书' : 'Precision engineering data backing'}
+                   {cms("techWall.subtitle", isZh ? "精确到毫米的严苛工况数据背书" : "Precision engineering data backing")}
                  </p>
                </div>
                <div className="hidden md:flex items-center justify-center w-16 h-16 bg-[#25D366]/10 rounded-2xl text-[#25D366]">
@@ -277,121 +285,17 @@ export default function ProductDetailPage() {
              <div className="mt-12 pt-6 flex items-start gap-3 relative z-10">
                <span className="text-[#D4AF37] mt-0.5">*</span>
                <p className="text-[12px] text-gray-400 tracking-widest font-medium leading-relaxed max-w-3xl">
-                 {isZh ? '尺寸、工时和容量等运行数据可能因测量方式及设备后续加装套件不同而存在细微误差或变动，此表仅作为原厂出厂标准核算参考。最终成交前，请与您的专属顾问连线并获取精准的实车视频或第三方（SGS）出具的实时核实报告。' : 'Dimensions, operating hours, and capacities may slightly vary due to continuous usage or aftermarket attachments. Please confirm with your dedicated advisor.'}
+                 {cms(
+                   "techWall.disclaimer",
+                   isZh
+                     ? "尺寸、工时和容量等运行数据可能因测量方式及设备后续加装套件不同而存在细微误差或变动，此表仅作为原厂出厂标准核算参考。最终成交前，请与您的专属顾问连线并获取精准的实车视频或第三方（SGS）出具的实时核实报告。"
+                     : "Dimensions, operating hours, and capacities may slightly vary due to continuous usage or aftermarket attachments. Please confirm with your dedicated advisor."
+                 )}
                </p>
              </div>
 
            </div>
 
-        </div>
-      </section>
-
-      {/* ======================= 版块 3：硬核图文与场站实力 (Immersive Details & Factory) ======================= */}
-      {product.enableTrustCards !== false && (
-      <section className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 mb-24 lg:mb-32">
-        <h2 className="text-sm font-black text-center uppercase tracking-[0.3em] text-gray-400 mb-12 flex items-center justify-center gap-4">
-          <span className="w-12 h-px bg-gray-200"></span>
-          KXTJ GLOBAL {cms('delivery.sectionTitle', isZh ? '交付实力保障' : 'DELIVERY EXCELLENCE')}
-          <span className="w-12 h-px bg-gray-200"></span>
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 xl:gap-10">
-
-          {/* Card 1 */}
-          <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
-            <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
-               {deliveryCard1Image ? (
-                 <Image src={deliveryCard1Image} alt="Inspection" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
-               ) : (
-                 <div className="absolute inset-0 bg-[#111111]" />
-               )}
-               <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
-                 <Target size={56} strokeWidth={1.5} />
-               </div>
-            </div>
-            <div className="p-8 lg:p-10">
-              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{cms('delivery.card1.title', isZh ? '125 项底盘与液压深度检测' : '125-Point Hydraulic & Chassis Inspection')}</h3>
-              <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                {cms('delivery.card1.desc', isZh ? '从冷机启动烟色、到液压大泵主阀的滴漏渗油排查，我们的场内工程师会对该设备出具近乎苛刻的验机报告。您将看到未经任何滤镜处理的高清细节。' : 'From cold-start smoke analysis to main pump leak detection, our engineers provide an uncompromising report. You will see raw, unfiltered high-definition footage.')}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2 */}
-          <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
-            <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
-               {deliveryCard2Image ? (
-                 <Image src={deliveryCard2Image} alt="Warehouse" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
-               ) : (
-                 <div className="absolute inset-0 bg-[#111111]" />
-               )}
-               <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
-                 <Factory size={56} strokeWidth={1.5} />
-               </div>
-            </div>
-            <div className="p-8 lg:p-10">
-              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{cms('delivery.card2.title', isZh ? '3000+ 台场地现车集结结网' : '3,000+ Units Ready in Storage')}</h3>
-              <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                {cms('delivery.card2.desc', isZh ? '上海综保区直发。我们不是"空手套白狼"的中介机构，每一台设备均在我们的全硬化地坪仓库中真实趴放，接受您的视频连线抽检或第三方登船验收。' : 'Shipped directly from Shanghai Bonded Zone. Every machine is physically sitting in our hardened yards, ready for your real-time video inspection or third-party (SGS) boarding verification.')}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
-            <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
-               {deliveryCard3Image ? (
-                 <Image src={deliveryCard3Image} alt="Shipping" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
-               ) : (
-                 <div className="absolute inset-0 bg-[#111111]" />
-               )}
-               <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
-                 <Anchor size={56} strokeWidth={1.5} />
-               </div>
-            </div>
-            <div className="p-8 lg:p-10">
-              <h3 className="text-lg font-black text-[#111111] mb-4 group-hover:text-[#D4AF37] transition-colors">{cms('delivery.card3.title', isZh ? 'Ro-Ro 与 Flat Rack 深海装调' : 'Ro-Ro & Flat Rack Deep-Sea Rigging')}</h3>
-              <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                {cms('delivery.card3.desc', isZh ? '针对 20 吨及以上的重型怪兽，我们具有长达十余年的特种集装箱绑扎与滚装船订舱护航经验。确保您的钢铁资产横跨经纬线，安全登陆母港。' : 'For 20-ton+ heavy monsters, we have over a decade of experience in special container lashing and Ro-Ro vessel booking. Ensuring your steel assets land safely across the oceans.')}
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </section>
-      )}
-
-      {/* ======================= 版块 5：同级段霸主推荐 (Related Products Array) ======================= */}
-      <section className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12">
-        <h3 className="text-xl md:text-2xl font-black text-[#111111] mb-10 tracking-tight flex items-center gap-4">
-          如果您在犹豫，不妨看看同级猎手 <ArrowRight size={24} className="text-[#D4AF37]"/>
-        </h3>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {relatedProducts.map(item => (
-            <Link key={item.id} href={`/products/${item.slug}`} className="bg-white border border-gray-200 hover:border-[#111111] transition-colors group flex flex-col relative rounded-2xl overflow-hidden hover:shadow-xl">
-              <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
-                 <ProductCardMedia
-                   src={item.coverMediaUrl}
-                   type={item.coverMediaType}
-                   alt={item.title}
-                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-[800ms] grayscale group-hover:grayscale-0"
-                 />
-                 <div className="absolute top-4 left-4 bg-[#111111] text-white px-3 py-1 font-black text-[13px] tracking-widest uppercase rounded-lg">
-                   {item.year}
-                 </div>
-              </div>
-              <div className="p-6">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] mb-2">{item.brand}</div>
-                <h4 className="text-[15px] font-black text-[#111111] line-clamp-1 mb-4">{item.title}</h4>
-                <div className="flex items-center justify-between text-xs font-black text-gray-500">
-                  <span>{item.weight} 级</span>
-                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                  <span>{item.hours} 工时</span>
-                </div>
-              </div>
-            </Link>
-          ))}
         </div>
       </section>
 

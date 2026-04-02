@@ -12,19 +12,27 @@ export function clearCategoriesCache() {
   cacheTimestamp = 0;
 }
 
-export function useCategories() {
+export function useCategories(initialCategories?: CategoryRecord[] | null) {
   // 使用 lazy initializer 直接从缓存初始化，避免在 effect 内同步 setState
   const [categories, setCategories] = useState<CategoryRecord[]>(() => {
+    if (initialCategories) {
+      return initialCategories;
+    }
     if (cachedCategories && Date.now() - cacheTimestamp < CACHE_TTL) {
       return cachedCategories;
     }
     return [];
   });
   const [loading, setLoading] = useState(
-    () => !(cachedCategories && Date.now() - cacheTimestamp < CACHE_TTL)
+    () => initialCategories == null && !(cachedCategories && Date.now() - cacheTimestamp < CACHE_TTL)
   );
 
   useEffect(() => {
+    if (initialCategories) {
+      cachedCategories = initialCategories;
+      cacheTimestamp = Date.now();
+      return;
+    }
     if (cachedCategories && Date.now() - cacheTimestamp < CACHE_TTL) {
       return; // 已从缓存初始化，无需重新请求
     }
@@ -41,7 +49,7 @@ export function useCategories() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialCategories]);
 
   return { categories, loading };
 }

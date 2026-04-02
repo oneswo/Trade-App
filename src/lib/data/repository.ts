@@ -2,23 +2,19 @@ export * from "./types";
 
 import {
   mockAdminAuthRepo,
-  mockArticleRepo,
   mockCategoryRepo,
   mockInquiryRepo,
   mockPageContentRepo,
   mockProductRepo,
   mockSiteSettingsRepo,
-  mockTicketRepo,
 } from "./mock-repository";
 import type {
   AdminAuthRepo,
-  ArticleRepo,
   CategoryRepo,
   InquiryRepo,
   PageContentRepo,
   ProductRepo,
   SiteSettingsRepo,
-  TicketRepo,
 } from "./types";
 
 function isSupabaseConfigured() {
@@ -64,24 +60,6 @@ export function getProductRepo(): ProductRepo {
     return supabaseProductRepo;
   }
   return mockProductRepo;
-}
-
-export function getArticleRepo(): ArticleRepo {
-  if (isSupabaseConfigured()) {
-    const { supabaseArticleRepo } =
-      require("./supabase-repository") as typeof import("./supabase-repository");
-    return supabaseArticleRepo;
-  }
-  return mockArticleRepo;
-}
-
-export function getTicketRepo(): TicketRepo {
-  if (isSupabaseConfigured()) {
-    const { supabaseTicketRepo } =
-      require("./supabase-repository") as typeof import("./supabase-repository");
-    if (supabaseTicketRepo) return supabaseTicketRepo;
-  }
-  return mockTicketRepo;
 }
 
 export function getCategoryRepo(): CategoryRepo {

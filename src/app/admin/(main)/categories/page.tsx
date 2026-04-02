@@ -39,10 +39,10 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
       {value ? (
-        <div className="relative group">
+        <div className="relative group aspect-[4/3] overflow-hidden rounded-xl border border-black/[0.08] bg-[#F6F6F6]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="分类图片" className="w-full h-36 object-cover rounded-xl border border-black/[0.08]" />
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-3">
+          <img src={value} alt="分类图片" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
             <button type="button" onClick={() => inputRef.current?.click()}
               className="px-3 py-1.5 bg-white text-[11px] font-medium rounded-lg hover:bg-gray-100">更换</button>
             <button type="button" onClick={() => onChange("")}
@@ -51,11 +51,11 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
         </div>
       ) : (
         <div onClick={() => !uploading && inputRef.current?.click()}
-          className={`flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors ${uploading ? "border-blue-300 bg-blue-50" : "border-black/[0.1] bg-[#FAFAFA] hover:border-black/20"}`}>
+          className={`flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors ${uploading ? "border-blue-300 bg-blue-50" : "border-black/[0.1] bg-[#FAFAFA] hover:border-black/20"}`}>
           {uploading ? (
             <><Loader2 size={20} className="text-blue-500 animate-spin" /><span className="text-[11px] text-blue-500">上传中...</span></>
           ) : (
-            <><ImageIcon size={20} className="text-[#111111]/25" /><span className="text-[11px] text-[#111111]/40">点击上传</span><span className="text-[10px] text-[#111111]/25">建议 3:2，JPG / PNG</span></>
+            <><ImageIcon size={20} className="text-[#111111]/25" /><span className="text-[11px] text-[#111111]/40">点击上传</span><span className="text-[10px] text-[#111111]/25">建议 4:3，JPG / PNG</span></>
           )}
         </div>
       )}

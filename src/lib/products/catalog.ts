@@ -1,4 +1,5 @@
 import { DEFAULT_LOCALE, type SupportedLocale } from "@/lib/i18n/locales";
+import type { ProductRecord } from "@/lib/data/repository";
 import {
   buildLegacyProductMediaSlots,
   getOrderedProductImages,
@@ -75,6 +76,9 @@ interface ApiProductDetailItem extends ApiProductListItem {
   videoUrl: string | null;
   enableTrustCards?: boolean;
 }
+
+type ProductListSource = ApiProductListItem | ProductRecord;
+type ProductDetailSource = ApiProductDetailItem | ProductRecord;
 
 const BRAND_ZH: Record<string, string> = {
   CAT: "卡特",
@@ -218,7 +222,7 @@ function resolveProductMedia(item: ApiProductDetailItem | ApiProductListItem) {
   };
 }
 
-function toApiCard(item: ApiProductListItem, locale: SupportedLocale): CatalogProductCard {
+export function toCatalogProductCard(item: ProductListSource, locale: SupportedLocale): CatalogProductCard {
   const year = item.coreMetrics?.year || String(new Date(item.createdAt).getFullYear() || "--");
   const title = locale === "zh" ? (item.nameZh || item.name) : (item.nameEn || item.name);
   const { primary, images } = resolveProductMedia(item);
@@ -241,8 +245,8 @@ function toApiCard(item: ApiProductListItem, locale: SupportedLocale): CatalogPr
   };
 }
 
-function toApiDetail(item: ApiProductDetailItem, locale: SupportedLocale): CatalogProductDetail {
-  const card = toApiCard(item, locale);
+export function toCatalogProductDetail(item: ProductDetailSource, locale: SupportedLocale): CatalogProductDetail {
+  const card = toCatalogProductCard(item, locale);
   const specs = Array.isArray(item.specs) ? item.specs : [];
   const { images } = resolveProductMedia(item);
 
@@ -305,7 +309,7 @@ export async function getCatalogProducts(
   try {
     const data = await fetchJson<ApiProductListItem[]>("/api/products");
     if (!data) return [];
-    return data.map((item) => toApiCard(item, locale));
+    return data.map((item) => toCatalogProductCard(item, locale));
   } catch {
     return [];
   }
@@ -323,7 +327,7 @@ export async function getCatalogProductDetail(
     );
 
     if (data) {
-      return toApiDetail(data, locale);
+      return toCatalogProductDetail(data, locale);
     }
     return null;
   } catch {

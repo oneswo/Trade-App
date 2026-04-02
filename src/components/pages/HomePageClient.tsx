@@ -1,7 +1,6 @@
 "use client";
-import React, { useState, useRef, useEffect, useSyncExternalStore, type ReactNode } from 'react';
-import Image from 'next/image';
-import { ArrowRight, ArrowLeft, Settings, ShieldCheck, Globe, Wrench, Factory, PhoneCall, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import React, { useState, useRef, useEffect, type ReactNode } from 'react';
+import { ArrowRight, ArrowLeft, Settings, ShieldCheck, Globe, Wrench, Factory, PhoneCall, Play, Volume2, VolumeX } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import NumberTicker from '@/components/ui/number-ticker';
 import AutoCarousel from '@/components/ui/auto-carousel';
@@ -13,7 +12,6 @@ import { ProductCardMedia } from '@/components/products/ProductCardMedia';
 
 type PageContentProps = {
   initialContent?: Record<string, string> | null;
-  heroBlur?: string;
 };
 
 /* ── Scroll-reveal: IntersectionObserver 触发淡入 ── */
@@ -53,9 +51,9 @@ function FadeUp({ children, delay = 0, duration = 800, className = '', style = {
 }
 
 // 交付卡片视频播放器组件
-function DeliveryCard({ tag, date, location, title, videoUrl, posterUrl }: {
+function DeliveryCard({ tag, date, location, title, videoUrl }: {
   tag: string; date: string; location: string; title: string;
-  videoUrl?: string; posterUrl?: string;
+  videoUrl?: string;
 }) {
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -75,13 +73,12 @@ function DeliveryCard({ tag, date, location, title, videoUrl, posterUrl }: {
 
   return (
     <div className="group cursor-pointer shrink-0 w-[82vw] sm:w-[420px] snap-center">
-      <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden mb-6 border border-gray-200 bg-[#111111]">
+      <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden mb-6 border border-[#D8D6CF] bg-[#111110]">
         {videoUrl && !videoError ? (
           <>
             <video
               ref={videoRef}
               src={videoUrl}
-              poster={posterUrl || undefined}
               muted={muted}
               loop
               playsInline
@@ -96,7 +93,7 @@ function DeliveryCard({ tag, date, location, title, videoUrl, posterUrl }: {
             >
               {!playing && (
                 <div className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                  <Play size={22} className="text-[#111111] fill-[#111111] ml-1" />
+                  <Play size={22} className="text-[#111110] fill-[#111110] ml-1" />
                 </div>
               )}
             </div>
@@ -108,59 +105,30 @@ function DeliveryCard({ tag, date, location, title, videoUrl, posterUrl }: {
               {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
             </button>
           </>
-        ) : posterUrl ? (
-          <Image src={posterUrl} alt={title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" />
         ) : (
           <div className="w-full h-full bg-[#1a1a1a] flex items-center justify-center">
             <Play size={32} className="text-white/20" />
           </div>
         )}
         {/* 左下角标签 */}
-        <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-md px-4 py-2 text-[11px] font-black tracking-widest uppercase flex flex-col gap-1 shadow-lg border border-gray-100 pointer-events-none">
-          <span className="text-[#D4AF37]">{tag}</span>
-          {location && <span className="text-[#111111]">{location}</span>}
+        <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-md px-4 py-2 text-[11px] font-black tracking-widest uppercase flex flex-col gap-1 shadow-lg border border-[#D8D6CF] pointer-events-none">
+          <span className="text-[#C8960A]">{tag}</span>
+          {location && <span className="text-[#111110]">{location}</span>}
         </div>
       </div>
-      <p className="text-gray-400 font-bold text-[10px] tracking-widest uppercase mb-3">{date}</p>
-      <h4 className="text-[1.125rem] font-black leading-relaxed group-hover:text-gray-500 transition-colors text-[#111111]">{title}</h4>
+      <span className="inline-block bg-[#EDECEA] text-[#3A3A38] font-bold text-[11px] tracking-widest uppercase mb-4 px-3 py-1.5 rounded-full">{date}</span>
+      <h4 className="text-[1.125rem] font-black leading-relaxed text-[#111110] border-l-[3px] border-[#C8960A] pl-4">{title}</h4>
     </div>
   );
 }
 
-export default function HomePageClient({ initialContent, heroBlur }: PageContentProps) {
+export default function HomePageClient({ initialContent }: PageContentProps) {
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('home', initialContent);
-  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
-  const [isFactoryVideoPlaying, setIsFactoryVideoPlaying] = useState(false);
-  const [heroImageLoaded, setHeroImageLoaded] = useState(false);
-  const [heroVideoLoaded, setHeroVideoLoaded] = useState(false);
-  const isHydrated = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
   const newsScrollRef = useRef<HTMLDivElement>(null);
   const { categories: catList, loading: catsLoading } = useCategories();
   const { products: catalogProducts, loading: productsLoading } = useCatalogProducts();
-  const heroVideoUrl = c('hero.videoUrl', '');
-  const heroPosterUrl = c('hero.posterUrl', '');
-  const depthVideoUrl = c('depth.videoUrl', '');
-  const depthPosterUrl = c('depth.posterUrl', '');
-  
-  // 调试：在开发环境打印配置
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🎬 Hero 配置:', { heroVideoUrl, heroPosterUrl });
-    }
-  }, [heroVideoUrl, heroPosterUrl]);
-
-  // 优先使用 poster，如果没有则不显示图片（只显示黑色背景）
-  const activePoster = heroPosterUrl;
-  const activeVideo  = heroVideoUrl;
-  // 背景图：只有真实上传的 poster 才显示，否则纯黑色
-  const baseImageSrc = activePoster || null;
 
 
   // 从页面内容配置读取4张交付卡片数据
@@ -172,7 +140,6 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
       ? c(`delivery.${i}.titleZh`, ["3 台 CAT 336 重型挖掘机翻新完毕，发往西非","沃尔沃三机组合验收完成，阿布扎比港口交割","首单南美洲！两台小松 D155 推土机完成安第斯清关","批量沃尔沃装载机抵达圣保罗，南美大区配送启动"][i])
       : c(`delivery.${i}.titleEn`, ["Three CAT 336 heavy excavators refurbished and shipped to West Africa.","Volvo three-unit assembly accepted and commissioned in Abu Dhabi port.","First South American order! Two Komatsu D155 dozers cleared customs for the Andes.","Batch of Volvo wheel loaders arrived in São Paulo for South American distribution."][i]),
     videoUrl: c(`delivery.${i}.videoUrl`, ""),
-    posterUrl: c(`delivery.${i}.posterUrl`, ""),
   }));
 
   const scrollNews = (direction: 'left' | 'right') => {
@@ -181,115 +148,63 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
     }
   };
 
-  const toggleHeroVideo = () => {
-    if (heroVideoRef.current) {
-      if (isPlayingVideo) {
-        heroVideoRef.current.pause();
-      } else {
-        heroVideoRef.current.play();
-      }
-      setIsPlayingVideo(!isPlayingVideo);
-    }
-  };
-
   return (
     <main className="w-full flex-1">
       {/* =========================================
-          Step 1: 黄金首屏 (Hero Pure Video) 
+          Step 1: 英雄区 (Reference Design — Light BG)
       ============================================= */}
-      <section
-        className="relative w-full h-screen min-h-[800px] flex items-center justify-center overflow-hidden bg-[#111111]"
-        style={isHydrated && heroBlur ? { backgroundImage: `url(${heroBlur})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
-      >
+      <section className="bg-[#F9F8F5]">
+        <div className="min-h-[calc(100vh-64px)] flex flex-col justify-center items-center px-6 sm:px-[60px] py-20 max-w-[1100px] mx-auto">
 
-        {/* 背景层：遮罩始终可见，图片/视频各自独立淡入 */}
-        <div className="absolute inset-0 z-0 bg-[#111111]">
-          {/* 底层静态图：只有真实上传的 poster 才显示 */}
-          {baseImageSrc && (
-            <Image
-              src={baseImageSrc}
-              alt="Hero"
-              fill
-              priority
-              unoptimized
-              className={`object-cover transition-opacity duration-700 ${heroImageLoaded ? 'opacity-90' : 'opacity-0'}`}
-              onLoad={() => setHeroImageLoaded(true)}
-            />
-          )}
-          {/* 视频层：有 URL 时叠加于图片之上 */}
-          {activeVideo && (
-            <video
-              key={activeVideo}
-              ref={heroVideoRef}
-              src={activeVideo}
-              poster={activePoster || undefined}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${heroVideoLoaded ? 'opacity-90' : 'opacity-0'}`}
-              onPlay={() => setIsPlayingVideo(true)}
-              onPause={() => setIsPlayingVideo(false)}
-              onLoadedData={() => setHeroVideoLoaded(true)}
-            />
-          )}
-          {/* 渐变遮罩层 */}
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent opacity-90" />
-        </div>
-
-        {/* 内容区 */}
-        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-8 flex flex-col items-center text-center pt-20">
-          <div className="inline-flex items-center gap-3 px-5 py-2.5 border border-white/20 backdrop-blur-md mb-8">
-             <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
-             <span className="text-white text-xs font-bold uppercase tracking-[0.2em]">{c('hero.tag', isZh ? '面向国际市场的高端二手工程机械' : 'PREMIUM USED HEAVY EQUIPMENT FOR GLOBAL MARKETS')}</span>
+          {/* 两行大标题 */}
+          <div className="hero-fade-2 hero-title-home mb-3">
+            {c('hero.title1', isZh ? '铸塑未来的' : 'Built to Power')}
+          </div>
+          <div className={`hero-fade-2 hero-title-home hero-gold ${isZh ? 'hero-zh' : ''} mb-16`}>
+            {c('hero.titleGold', isZh ? '重工力量' : "the World's Work.")}
           </div>
 
-          <h1 className={`hero-title-home ${isZh ? 'hero-zh' : 'hero-en tracking-tight'} relative`}>
-            <span className={isZh ? '' : 'block xl:inline leading-tight'}>{c('hero.title1', isZh ? '铸塑未来的' : 'Built to Power')}</span>
-            {isZh ? ' ' : <span className="hidden xl:inline"> </span>}
-            <span className={`text-transparent bg-clip-text bg-gradient-to-b from-[#D4AF37] via-[#F3E5AB] to-[#8C7322] drop-shadow-2xl ${isZh ? 'px-2' : 'block xl:inline px-2 xl:px-0 leading-tight'}`}>{c('hero.titleGold', isZh ? '重工力量' : "the World's Work")}</span>
-            {isZh ? '' : <br className="hidden xl:block" />}
-          </h1>
-          <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6">
-             <a href="#categories" className="w-full sm:w-[230px] h-[56px] rounded-full border border-transparent bg-[#D4AF37] text-white text-[14px] font-bold tracking-widest hover:bg-white hover:text-[#111111] transition-all duration-300 shadow-xl flex items-center justify-center gap-3 group">
-               {c('hero.btn1', isZh ? '探索核心机械' : 'Browse Equipment')}
-               <ArrowRight size={18} className="rotate-90 sm:rotate-0 group-hover:translate-x-1 transition-transform" />
-             </a>
-             {activeVideo && (
-               <button
-                  onClick={toggleHeroVideo}
-                  className={`w-full sm:w-[230px] h-[56px] rounded-full border border-white/30 text-[14px] font-bold tracking-widest transition-all duration-500 backdrop-blur-md flex items-center justify-center gap-3 group shadow-xl ${isPlayingVideo ? 'bg-white text-[#111111]' : 'bg-black/40 text-white hover:bg-white hover:text-[#111111]'}`}
-               >
-                 {isPlayingVideo ? (
-                   <>
-                     <Pause size={18} className="text-current fill-current relative left-0.5" />
-                     {c('hero.btn2', isZh ? '暂停实景视频' : 'Pause Video')}
-                   </>
-                 ) : (
-                   <>
-                     <Play size={18} className="text-current fill-current relative left-0.5" />
-                     {c('hero.btn2', isZh ? '播放实景视频' : 'Play Video')}
-                   </>
-                 )}
-               </button>
-             )}
+          {/* 分隔线 */}
+          <div className="hero-fade-4 w-full h-px bg-[#D8D6CF] mb-12" />
+
+          {/* 4列统计 */}
+          <div className="hero-fade-5 w-full grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0">
+            {[
+              { numKey: 'hero.stat1.num', numDefault: '3000', suffix: '+', labelKey: 'hero.stat1.label', labelZh: '全球交付设备', labelEn: 'Machines Delivered' },
+              { numKey: 'hero.stat2.num', numDefault: '50',   suffix: '+', labelKey: 'hero.stat2.label', labelZh: '覆盖国家', labelEn: 'Countries Served' },
+              { numKey: 'hero.stat3.num', numDefault: '20',   suffix: '+', labelKey: 'hero.stat3.label', labelZh: '年行业经验', labelEn: 'Years Experience' },
+              { numKey: 'hero.stat4.num', numDefault: '100',  suffix: '%', labelKey: 'hero.stat4.label', labelZh: '全检率', labelEn: 'Full Inspection Rate' },
+            ].map((stat, i) => (
+              <div key={i} className={`${i > 0 ? 'md:pl-10 md:border-l md:border-[#D8D6CF]' : ''} ${i < 3 ? 'md:pr-10' : ''}`}>
+                <div className="flex items-baseline gap-0.5" style={{ fontFamily: "var(--font-bebas), 'Bebas Neue', sans-serif" }}>
+                  <span className="text-[clamp(40px,5vw,60px)] leading-none text-[#111110] tracking-[0.02em]">
+                    <NumberTicker value={parseInt(c(stat.numKey, stat.numDefault)) || parseInt(stat.numDefault)} />
+                  </span>
+                  <span className="text-[clamp(28px,3.5vw,42px)] text-[#C8960A]" style={{ fontFamily: "var(--font-bebas), 'Bebas Neue', sans-serif" }}>
+                    {stat.suffix}
+                  </span>
+                </div>
+                <div className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#888780] mt-2.5 leading-snug">
+                  {c(stat.labelKey, isZh ? stat.labelZh : stat.labelEn)}
+                </div>
+              </div>
+            ))}
           </div>
+
         </div>
       </section>
 
       {/* =========================================
           Step 2: 极速匹配品类画廊 (Auto Carousel)
       ============================================= */}
-      <section id="categories" className="w-full pt-28 pb-0 bg-white overflow-hidden relative">
+      <section id="categories" className="w-full pt-28 pb-0 bg-[#FAFAF8] overflow-hidden relative border-t border-[#EDECEA]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <FadeUp className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-12 gap-6 lg:gap-12">
             <div className={`lg:flex-1 ${isZh ? 'max-w-4xl' : 'max-w-md xl:max-w-lg'}`}>
-              <h2 className={`font-black tracking-tighter text-[#111111] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('categories.title', isZh ? '全矩阵设备覆盖' : 'Full-Spectrum Equipment Coverage')}</h2>
+              <h2 className={`font-black tracking-tighter text-[#111110] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('categories.title', isZh ? '全矩阵设备覆盖' : 'Full-Spectrum Equipment Coverage')}</h2>
             </div>
-            <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
-              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('categories.desc', isZh ? '无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。' : 'Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum.')}</p>
+            <div className="border-l-4 border-[#C8960A] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
+              <p className="text-[#888780] text-sm leading-relaxed font-medium">{c('categories.desc', isZh ? '无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。' : 'Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum.')}</p>
             </div>
           </FadeUp>
         </div>
@@ -308,7 +223,7 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
             img: cat.imageUrl || null,
           }))} />
         ) : (
-          <div className="px-8 pb-16 text-center text-gray-400 text-sm py-20">
+          <div className="px-8 pb-16 text-center text-[#888780] text-sm py-20">
             {c('categories.emptyText', isZh ? '暂无分类，请在后台「分类管理」中添加' : 'No categories yet. Add them in the admin panel.')}
           </div>
         )}
@@ -317,14 +232,14 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
       {/* =========================================
           Step 3: 严选热销机械 (6-Grid Featured)
       ============================================= */}
-      <section className="w-full py-16 md:py-32 bg-[#FAFAFA] border-t border-gray-100">
+      <section className="w-full py-16 md:py-32 bg-[#F9F8F5] border-t border-[#EDECEA]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <FadeUp className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-16 gap-6 lg:gap-12">
             <div className={`lg:flex-1 ${isZh ? 'max-w-4xl' : 'max-w-md xl:max-w-lg'}`}>
-              <h2 className={`font-black tracking-tighter text-[#111111] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('hot.title', isZh ? '严选热销机皇' : 'Top-Rated Machines, Handpicked')}</h2>
+              <h2 className={`font-black tracking-tighter text-[#111110] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('hot.title', isZh ? '严选热销机皇' : 'Top-Rated Machines, Handpicked')}</h2>
             </div>
-            <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
-              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('hot.desc', isZh ? '全系通过100项核心排查。以更低故障率与极速回本周期，成为跨国基建抢单的绝对主力。' : 'Rigorously 100-point inspected. These high-ROI units offer peak performance and serve as the trusted backbone for infrastructure worldwide.')}</p>
+            <div className="border-l-4 border-[#C8960A] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
+              <p className="text-[#888780] text-sm leading-relaxed font-medium">{c('hot.desc', isZh ? '这些顶级现货机型经过 100 项全案严苛过滤，代表着本月极低的故障率和极高的投资回报比，是全球大型基建的首选制胜装备。' : 'Every unit has passed a rigorous 100-point inspection — the lowest failure rates and highest ROI of the month.')}</p>
             </div>
           </FadeUp>
 
@@ -341,41 +256,41 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
                 </div>
               ))
             ) : catalogProducts.length > 0 ? catalogProducts.slice(0, 6).map((item, index) => (
-              <Link href={item.slug ? `/products/${item.slug}` as `/${string}` : '/products'} key={index} className="group bg-white flex flex-col cursor-pointer hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden pb-8 border border-gray-200">
-                <div className="relative w-full aspect-[4/3] bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
+              <Link href={item.slug ? `/products/${item.slug}` as `/${string}` : '/products'} key={index} className="group bg-[#FFFFFF] flex flex-col cursor-pointer hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden pb-8 border border-[#D8D6CF]">
+                <div className="relative w-full aspect-[4/3] bg-[#F6F4F0] rounded-t-2xl overflow-hidden">
                   <ProductCardMedia
                     src={item.coverMediaUrl}
                     type={item.coverMediaType}
                     alt={item.title}
                     className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
                   />
-                  <div className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-lg z-10 bg-[#D4AF37]">
+                  <div className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-lg z-10 bg-[#C8960A]">
                     {c('hot.inStockLabel', isZh ? '现货就绪' : 'In Stock')}
                   </div>
                 </div>
                 <div className="px-8 mt-6">
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                  <span className="text-xs font-bold text-[#888780] uppercase tracking-widest block mb-1">
                     {item.brand}
                   </span>
-                  <div className="flex items-center justify-between group-hover:text-[#D4AF37] transition-colors">
-                    <h4 className="text-2xl font-black text-[#111111] leading-tight text-inherit">
+                  <div className="flex items-center justify-between group-hover:text-[#C8960A] transition-colors">
+                    <h4 className="text-2xl font-black text-[#111110] leading-tight text-inherit">
                       {item.title}
                     </h4>
-                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-[#111111] group-hover:text-white transition-all transform group-hover:translate-x-1 border border-gray-100">
-                      <ArrowRight size={18} className="text-gray-400 group-hover:text-[#D4AF37] transition-colors" />
+                    <div className="w-10 h-10 rounded-full bg-[#F6F4F0] flex items-center justify-center flex-shrink-0 group-hover:bg-[#111110] group-hover:text-white transition-all transform group-hover:translate-x-1 border border-[#D8D6CF]">
+                      <ArrowRight size={18} className="text-[#888780] group-hover:text-[#C8960A] transition-colors" />
                     </div>
                   </div>
                 </div>
               </Link>
             )) : (
-              <div className="col-span-3 text-center text-gray-400 text-sm py-20">
+              <div className="col-span-3 text-center text-[#888780] text-sm py-20">
                 {c('hot.emptyText', isZh ? '暂无在售产品，请在后台「产品列表」中添加' : 'No products yet. Add them in the admin panel.')}
               </div>
             )}
           </FadeUp>
 
           <FadeUp delay={300} className="mt-16 text-center">
-            <Link href="/products" className="h-14 px-10 rounded-full bg-[#111111] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#D4AF37] hover:text-white transition-all shadow-xl inline-flex items-center justify-center gap-3 group">
+            <Link href="/products" className="h-14 px-10 rounded-full bg-[#111110] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#C8960A] hover:text-white transition-all shadow-xl inline-flex items-center justify-center gap-3 group">
               {c('hot.btnText', isZh ? '游览所有 300+ 在线设备' : 'View All 300+ Listed Machines')}
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -384,112 +299,37 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
       </section>
 
       {/* =========================================
-          Step 4: 终极信任破冰 (Company & Stats) 
+          Step 4: 打消出海痛点 (Core Services)
       ============================================= */}
-      <section className="w-full bg-[#111111] text-white relative border-b border-gray-800">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
-          {/* 左侧：实力宣告与动态数字 */}
-          <FadeUp className="p-14 md:p-20 lg:p-24 flex flex-col justify-center relative z-10 border-r border-white/10">
-            <h2 className="text-4xl md:text-5xl font-black leading-tight mb-8 drop-shadow-lg">
-              {c('depth.title1', isZh ? '二十载深耕专注' : 'Two Decades of Expertise.')}<br/>{c('depth.title2', isZh ? '构筑起坚实底盘。' : 'A Foundation You Can Trust.')}
-            </h2>
-            <p className="text-gray-400 leading-relaxed max-w-sm mb-12 text-sm">
-              {c('depth.desc', isZh ? '绝非单纯倒买。我们经营自有整备库，所有出海重卡均由资深工程师亲测排雷。绝不拼凑废铁，只输送能即刻下矿的巅峰运转力。' : 'More than a broker, we operate deep-inspection and refurbishment hubs. Every export unit is stress-tested by certified engineers. We deliver real heavy-duty power—not scrap iron.')}
-            </p>
-            
-            {/* 合并：紧凑化的高能数据组 */}
-            <div className="grid grid-cols-2 gap-x-6 gap-y-10">
-               <div>
-                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={parseInt(c('depth.stat.0.num', '3000')) || 3000} /><span className="text-[#D4AF37]">+</span></h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{c('depth.stat.0.label', isZh ? '全球成功交付设备' : 'Machines Delivered Globally')}</p>
-               </div>
-               <div>
-                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={parseInt(c('depth.stat.1.num', '50')) || 50} /><span className="text-[#D4AF37]">+</span></h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{c('depth.stat.1.label', isZh ? '无缝海运覆盖国家' : 'Countries Served by Sea')}</p>
-               </div>
-               <div>
-                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={parseInt(c('depth.stat.2.num', '2000')) || 2000} /><span className="text-[#D4AF37]">+</span></h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{c('depth.stat.2.label', isZh ? '平米超级仓储展区' : 'm² Warehousing & Prep Yard')}</p>
-               </div>
-               <div>
-                  <h4 className="text-3xl lg:text-4xl font-black mb-1 text-white"><NumberTicker value={parseInt(c('depth.stat.3.num', '100')) || 100} /><span className="text-[#D4AF37]">%</span></h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{c('depth.stat.3.label', isZh ? '全节点拆机复检率' : 'Full-Teardown Inspection Rate')}</p>
-               </div>
-            </div>
-          </FadeUp>
-
-          {/* 右侧：回到极致规整的 5:5 画报与播放器切换区域 */}
-          <div className="relative min-h-[400px] lg:min-h-full flex items-center justify-center group overflow-hidden bg-black">
-            {isFactoryVideoPlaying ? (
-              <video autoPlay controls className="absolute inset-0 w-full h-full object-cover z-20 animate-in fade-in duration-1000">
-                <source src={depthVideoUrl} type="video/mp4" />
-              </video>
-            ) : (
-              <>
-                 {depthPosterUrl ? (
-                   <Image src={depthPosterUrl} alt="KXTJ Global Factory Base" fill unoptimized className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000" />
-                 ) : depthVideoUrl ? (
-                   <video
-                     src={depthVideoUrl}
-                     muted
-                     playsInline
-                     autoPlay
-                     loop
-                     preload="metadata"
-                     className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000"
-                   />
-                 ) : (
-                   <div className="absolute inset-0 flex items-center justify-center bg-[#111111] text-white/30">
-                     <Play size={36} />
-                   </div>
-                 )}
-                 {/* 超酷的左侧黑色渐变滤镜，让两色完美融合 */}
-                 <div className="absolute inset-0 bg-gradient-to-r from-[#111111] via-transparent to-transparent z-0"></div>
-                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500 z-10"></div>
-                 
-                 {/* 居中悬浮的播放按钮，直接触发同比例原位播放 */}
-                 <button onClick={() => setIsFactoryVideoPlaying(true)} className="relative z-20 w-24 h-24 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center hover:scale-110 transition-all duration-300 group/play shadow-2xl">
-                   <div className="absolute inset-0 rounded-full border border-white/40 animate-ping opacity-30"></div>
-                   <Play size={32} className="text-white ml-2 group-hover/play:text-[#D4AF37] transition-colors" />
-                 </button>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================
-          Step 5: 打消出海痛点 (Core Services)
-      ============================================= */}
-      <section className="w-full py-16 md:py-32 bg-white">
+      <section className="w-full py-16 md:py-32 bg-[#FAFAF8]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <FadeUp className="text-center mb-24">
-            <h2 className="text-5xl font-black tracking-tighter text-[#111111] mb-4">{c('s5.title', isZh ? '世界级的交付与服务标准' : 'World-Class Delivery & Service')}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">{c('s5.desc', isZh ? '在跨国重装采购中，物流与售后往往是最大的阻碍。我们将为您彻底铲除这些摩擦力，提供真正的端到端出海服务体系。' : 'In cross-border heavy equipment procurement, logistics and after-sales support are often the greatest barriers. We eliminate that friction entirely, delivering a true end-to-end export service.')}</p>
+            <h2 className="text-5xl font-black tracking-tighter text-[#111110] mb-4">{c('s5.title', isZh ? '世界级的交付与服务标准' : 'World-Class Delivery & After-Sales Standards')}</h2>
+            <p className="text-[#888780] max-w-2xl mx-auto">{c('s5.desc', isZh ? '在跨国重装采购中，物流与售后往往是最大的阻碍。我们将为您彻底铲除这些摩擦力，提供真正的端到端出海服务体系。' : 'In cross-border heavy equipment procurement, logistics and after-sales are often the greatest barriers. We eliminate that friction entirely.')}</p>
           </FadeUp>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
             {[
-              { icon: ShieldCheck, title: c('s5.card.0.title', isZh ? "无死角动点实测" : "Certified Operational Status"), desc: c('s5.card.0.desc', isZh ? "深测发动机、液压主泵与回转马达等逾百处关键中枢。拒绝只看表面，订船前为您出具最原生的干活重载实录视频。" : "We verify the engine, main pump, and hydraulics under real stress. We provide unedited, full-load operational footage prior to shipment to guarantee zero unpleasant surprises.") },
-              { icon: Factory, title: c('s5.card.1.title', isZh ? "去油漆底薪级整备" : "Core Refurbishment & Paint"), desc: c('s5.card.1.desc', isZh ? "拒绝仅掩盖浮锈的“表面遮瑕喷漆法”。我们主动剔除底盘疲劳件与隐蔽处隐患，全车重喷，让二手机重回原厂巅峰态。" : "No cosmetic cover-ups here. We proactively replace internally fatigued parts and restore the physical body using OEM-standard coating, making a used machine look and run like new.") },
-              { icon: Wrench, title: c('s5.card.2.title', isZh ? "易损备件海运大礼包" : "Critical Spares Included"), desc: c('s5.card.2.desc', isZh ? "二手设备下矿最怕停工等小配件。出海发柜即直接带足全车必须的滤芯、皮带大礼包，从源头切断海外耗材断绝危机。" : "Used machines need vital maintenance. We pack free core wear parts (filters, belts, seals) intimately with your shipment, saving you from disastrous downtime at remote sites.") },
-              { icon: Settings, title: c('s5.card.3.title', isZh ? "恶劣工况特调防护" : "Harsh Environment Preps"), desc: c('s5.card.3.desc', isZh ? "海外极端特种矿区极度挑剔老设备底子。我们会主动为发往非洲高热区、南美高湿区的整机加厚管线、装甲与强制散热。" : "Mining abroad tests used equipment limits. We pre-modify cooling pipelines and reinforce undercarriages specifically combatting Africa's blazing heat or South America's humidity.") },
-              { icon: PhoneCall, title: c('s5.card.4.title', isZh ? "跨洋连线技术问诊" : "Remote Diagnostic Support"), desc: c('s5.card.4.desc', isZh ? "海外工地找不到正规挖掘机修理工？我们的双语大拿随时响应您的 WhatsApp 视频，手把手看图纸带您老外排解疑难杂症。" : "No authorized dealers nearby? Our bilingual engineers provide 24/7 video guidance via WhatsApp, walking your local mechanics directly through any complex repair breakdowns.") },
-              { icon: Globe, title: c('s5.card.5.title', isZh ? "全包免虑门到港运输" : "Streamlined Export Logistics"), desc: c('s5.card.5.desc', isZh ? "全权包办拆机塞框架箱、重金抢锁特种滚装舱位及报关批文。海外买手只需在目的港安全坐等，无须操心半点复杂手续。" : "We completely handle Flat Rack structural loading, RO-RO booking, and all export permits. You just comfortably wait at the destination port bypassing all complex cross-border documentation.") }
+              { icon: ShieldCheck, title: c('s5.card.0.title', isZh ? "100项隐患全排查" : "100-Point Pre-Export Inspection"), desc: c('s5.card.0.desc', isZh ? "从发动机、液压主泵到外观履带，严格执行原厂级全案检测体系，出具全流程权威视频报告。" : "From the engine and hydraulic main pump to undercarriage, every unit undergoes a factory-grade inspection with video report.") },
+              { icon: Factory, title: c('s5.card.1.title', isZh ? "全自管翻新与喷漆" : "In-House Overhaul & Refinishing"), desc: c('s5.card.1.desc', isZh ? "我们在国内拥有一流的数控机床与原厂喷漆房阵列，支持机器的动力总成大修与原厂化翻新装配。" : "Our facility houses CNC machinery and OEM-standard paint booths for full powertrain overhauls and factory-grade refinishing.") },
+              { icon: Wrench, title: c('s5.card.2.title', isZh ? "原厂级易损件直供" : "OEM-Grade Wear Parts Supply"), desc: c('s5.card.2.desc', isZh ? "为海外发盘一次性备齐各类核心易损件打包（如滤芯、皮带、销轴），大幅延长基建区作业生命。" : "Critical wear parts packed with every overseas shipment to maximize uptime in remote jobsite environments.") },
+              { icon: Settings, title: c('s5.card.3.title', isZh ? "工况重度改装调校" : "Heavy-Duty Site Adaptation"), desc: c('s5.card.3.desc', isZh ? "针对非洲极端高温和南美高湿度恶劣矿区，针对性地加强液压散热管线和冷媒，保障高温不沸腾。" : "For extreme heat in Africa and high-humidity South American mines, we reinforce hydraulic cooling lines and upgrade coolants.") },
+              { icon: PhoneCall, title: c('s5.card.4.title', isZh ? "7×24 终身技术指导" : "24/7 Lifetime Technical Support"), desc: c('s5.card.4.desc', isZh ? "拥有双语专家护航的紧急技术支援小队，提供无延迟的长途排错、图纸指引与跨国连线辅导。" : "Our bilingual technical team provides zero-delay remote diagnostics and live cross-border troubleshooting 24/7.") },
+              { icon: Globe, title: c('s5.card.5.title', isZh ? "跨洋海运零盲区清关" : "Door-to-Port Shipping & Customs"), desc: c('s5.card.5.desc', isZh ? "凭借深耕非洲、南美的高能航运合作伙伴，打磨出包税清关、滚装直航一体化的极简提货路线。" : "Backed by partners across Africa and South America, we provide all-inclusive customs clearance and RO-RO shipping.") }
             ].map((feature, i) => (
-              <FadeUp key={i} delay={i * 100} className="flex flex-col items-center text-center p-8 bg-gray-50 border border-gray-100 rounded-3xl hover:border-black transition-colors duration-500 shadow-sm hover:shadow-xl group">
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 group-hover:bg-[#111111] transition-all duration-500">
-                  <feature.icon strokeWidth={1.5} size={32} className="text-[#111111] group-hover:text-[#D4AF37] transition-colors" />
+              <FadeUp key={i} delay={i * 100} className="flex flex-col items-center text-center p-8 bg-[#F6F4F0] border border-[#D8D6CF] rounded-3xl hover:border-[#111110] transition-colors duration-500 shadow-sm hover:shadow-xl group">
+                <div className="w-20 h-20 bg-[#FFFFFF] rounded-full flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 group-hover:bg-[#C8960A] transition-all duration-500">
+                  <feature.icon strokeWidth={1.5} size={32} className="text-[#C8960A] group-hover:text-white transition-colors" />
                 </div>
-                <h5 className="text-xl font-black text-[#111111] mb-4">{feature.title}</h5>
-                <p className="text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
+                <h5 className="text-xl font-black text-[#111110] mb-4">{feature.title}</h5>
+                <p className="text-sm text-[#888780] leading-relaxed">{feature.desc}</p>
               </FadeUp>
             ))}
           </div>
           
           <div className="text-center">
-             <Link href="/services" className="h-16 px-12 rounded-full bg-[#111111] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl inline-flex items-center gap-4">
-                 {c('s5.btnText', isZh ? '探索完整增值出海体系' : 'Explore Full Export Services')}
+             <Link href="/services" className="h-16 px-12 rounded-full bg-[#111110] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#C8960A] hover:text-[#111110] transition-all shadow-xl inline-flex items-center gap-4">
+                 {c('s5.btnText', isZh ? '探索完整增值出海体系' : 'Explore Our Full Export Service Suite')}
                  <ArrowRight size={16} />
              </Link>
           </div>
@@ -499,14 +339,14 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
       {/* =========================================
           Step 6: 最新出海动态瀑布流 (Latest Delivery) 🌟NEW🌟
       ============================================= */}
-      <section className="w-full py-16 md:py-32 bg-[#FAFAFA] border-t border-gray-100">
+      <section className="w-full py-16 md:py-32 bg-[#F9F8F5] border-t border-[#EDECEA]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <FadeUp className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-16 gap-6 lg:gap-12">
             <div className={`lg:flex-1 ${isZh ? 'max-w-4xl' : 'max-w-[360px] md:max-w-md xl:max-w-lg'}`}>
-              <h2 className={`font-black tracking-tighter text-[#111111] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('news.title', isZh ? '交机实录与动态' : 'Live Delivery Updates')}</h2>
+              <h2 className={`font-black tracking-tighter text-[#111110] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('news.title', isZh ? '交机实录与动态' : 'Live Delivery Updates')}</h2>
             </div>
-            <div className="border-l-4 border-[#D4AF37] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
-              <p className="text-gray-500 text-sm leading-relaxed font-medium">{c('news.desc', isZh ? '从实景发车到跨洋拆箱。实时共享一线的发运视频与物流动态，让透明高效的硬核实力亲见于天下。' : 'Experience our end-to-end delivery capability. Watch live dispatch footage and international shipping updates directly from port to site.')}</p>
+            <div className="border-l-4 border-[#C8960A] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
+              <p className="text-[#888780] text-sm leading-relaxed font-medium">{c('news.desc', isZh ? '真实发盘、跨国海运、开箱验收。我们为您展示实时的设备全球周转录像与物流快讯，亲眼见证我们的端到端跨国履约与重装交付能力。' : 'Real shipments. International ocean freight. On-site unboxing. We share live footage and logistics updates from active global dispatches.')}</p>
             </div>
           </FadeUp>
           
@@ -519,10 +359,10 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
             
             {/* 左右精准拨动的按钮控件 */}
             <div className="flex items-center justify-center gap-6 mt-4 md:mt-12">
-               <button onClick={() => scrollNews('left')} className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-[#111111] bg-white hover:bg-black hover:text-white transition-all shadow-sm hover:shadow-lg hover:-translate-x-1">
+               <button onClick={() => scrollNews('left')} className="w-12 h-12 rounded-full border border-[#D8D6CF] flex items-center justify-center text-[#111110] bg-[#FFFFFF] hover:bg-[#111110] hover:text-white transition-all shadow-sm hover:shadow-lg hover:-translate-x-1">
                  <ArrowLeft size={18}/>
                </button>
-               <button onClick={() => scrollNews('right')} className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-[#111111] bg-white hover:bg-black hover:text-white transition-all shadow-sm hover:shadow-lg hover:translate-x-1">
+               <button onClick={() => scrollNews('right')} className="w-12 h-12 rounded-full border border-[#D8D6CF] flex items-center justify-center text-[#111110] bg-[#FFFFFF] hover:bg-[#111110] hover:text-white transition-all shadow-sm hover:shadow-lg hover:translate-x-1">
                  <ArrowRight size={18}/>
                </button>
             </div>

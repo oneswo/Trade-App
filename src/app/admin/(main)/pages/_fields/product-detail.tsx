@@ -1,118 +1,94 @@
 "use client";
 
-import {
-  SectionHeader,
-  FieldRow,
-  TextInput,
-  TextArea,
-  ImageUpload,
-  CardBlock,
-} from "../_components";
+import { SectionHeader, FieldRow, TextInput, TextArea } from "../_components";
 
+/**
+ * 与前台 `src/app/[locale]/products/[slug]/page.tsx` 中 usePageContent('product-detail') 键名、默认文案一致。
+ */
 export function ProductDetailFields({ zh }: { zh: boolean }) {
   return (
     <div className="space-y-12">
       <div className="space-y-5">
-        <SectionHeader
-          title="模块：交付实力保障卡片"
-          note="产品详情页底部的 3 张交付保障卡片（全站共用内容，单个产品可通过编辑器开关控制是否展示）"
-        />
+        <SectionHeader title="顶部导航" note="对应详情页上方返回路径" />
+        <FieldRow label="首页链文字">
+          <TextInput name="breadcrumb.home" defaultValue={zh ? "首页" : "Home"} />
+        </FieldRow>
+        <FieldRow label="产品列表链文字">
+          <TextInput name="breadcrumb.products" defaultValue={zh ? "产品列表" : "Products"} />
+        </FieldRow>
+      </div>
 
-        <FieldRow label="版块标题">
+      <div className="space-y-5">
+        <SectionHeader title="主图区" note="只保留真正有用的提示文案" />
+        <FieldRow label="无产品视频时提示">
+          <TextInput name="gallery.noVideo" defaultValue={zh ? "暂无产品视频" : "No product video"} />
+        </FieldRow>
+        <FieldRow label="库存角标文字">
+          <TextInput name="gallery.stockLabel" defaultValue={zh ? "现货数量" : "In Stock"} />
+        </FieldRow>
+      </div>
+
+      <div className="space-y-5">
+        <SectionHeader title="首屏标签" note="标题下方三枚标签" />
+        <FieldRow label="标签 1">
+          <TextInput name="badge.sgs" defaultValue={zh ? "第三方 SGS 检测" : "SGS Verified"} />
+        </FieldRow>
+        <FieldRow label="标签 2">
+          <TextInput name="badge.loadTest" defaultValue={zh ? "100% 性能满载实测" : "100% Load Tested"} />
+        </FieldRow>
+        <FieldRow label="标签 3">
+          <TextInput name="badge.roRo" defaultValue={zh ? "准现车滚装发运" : "Ro-Ro Ready"} />
+        </FieldRow>
+      </div>
+
+      <div className="space-y-5">
+        <SectionHeader title="核心参数区" note="右侧白色参数卡片标题" />
+        <FieldRow label="区块标题">
+          <TextInput name="coreSpecs.title" defaultValue={zh ? "机皇核心指标" : "Core Specifications"} />
+        </FieldRow>
+      </div>
+
+      <div className="space-y-5">
+        <SectionHeader title="询价 CTA" note="首屏右下角大按钮" />
+        <FieldRow label="主标题">
           <TextInput
-            name="delivery.sectionTitle"
+            name="cta.title"
+            defaultValue={zh ? "获取私密底价与实车视频" : "Get Private Quote & Videos"}
+          />
+        </FieldRow>
+        <FieldRow label="副标题">
+          <TextInput
+            name="cta.subtitle"
+            defaultValue={zh ? "10 分钟内连线售前工程师" : "Talk to Engineer in 10 mins"}
+          />
+        </FieldRow>
+      </div>
+
+      <div className="space-y-5">
+        <SectionHeader title="技术参数墙" note="中段灰底大卡片" />
+        <FieldRow label="主标题">
+          <TextInput
+            name="techWall.title"
+            defaultValue={zh ? "详尽技术规格档案" : "Detailed Technical Specifications"}
+          />
+        </FieldRow>
+        <FieldRow label="副标题（小字全大写风格）">
+          <TextInput
+            name="techWall.subtitle"
+            defaultValue={zh ? "精确到毫米的严苛工况数据背书" : "Precision engineering data backing"}
+          />
+        </FieldRow>
+        <FieldRow label="表格底部免责说明">
+          <TextArea
+            name="techWall.disclaimer"
+            rows={4}
             defaultValue={
-              zh ? "交付实力保障" : "DELIVERY EXCELLENCE"
+              zh
+                ? "尺寸、工时和容量等运行数据可能因测量方式及设备后续加装套件不同而存在细微误差或变动，此表仅作为原厂出厂标准核算参考。最终成交前，请与您的专属顾问连线并获取精准的实车视频或第三方（SGS）出具的实时核实报告。"
+                : "Dimensions, operating hours, and capacities may slightly vary due to continuous usage or aftermarket attachments. Please confirm with your dedicated advisor."
             }
           />
         </FieldRow>
-
-        {/* ── 卡片 1 ── */}
-        <CardBlock index={1} label="卡片">
-          <ImageUpload
-            name="delivery.card1.image"
-            label="卡片图片"
-            aspectHint="建议比例 16:9，JPG / PNG"
-          />
-          <FieldRow label="标题">
-            <TextInput
-              name="delivery.card1.title"
-              defaultValue={
-                zh
-                  ? "125 项底盘与液压深度检测"
-                  : "125-Point Hydraulic & Chassis Inspection"
-              }
-            />
-          </FieldRow>
-          <FieldRow label="描述">
-            <TextArea
-              name="delivery.card1.desc"
-              defaultValue={
-                zh
-                  ? "从冷机启动烟色、到液压大泵主阀的滴漏渗油排查，我们的场内工程师会对该设备出具近乎苛刻的验机报告。您将看到未经任何滤镜处理的高清细节。"
-                  : "From cold-start smoke analysis to main pump leak detection, our engineers provide an uncompromising report. You will see raw, unfiltered high-definition footage."
-              }
-            />
-          </FieldRow>
-        </CardBlock>
-
-        {/* ── 卡片 2 ── */}
-        <CardBlock index={2} label="卡片">
-          <ImageUpload
-            name="delivery.card2.image"
-            label="卡片图片"
-            aspectHint="建议比例 16:9，JPG / PNG"
-          />
-          <FieldRow label="标题">
-            <TextInput
-              name="delivery.card2.title"
-              defaultValue={
-                zh
-                  ? "3000+ 台场地现车集结结网"
-                  : "3,000+ Units Ready in Storage"
-              }
-            />
-          </FieldRow>
-          <FieldRow label="描述">
-            <TextArea
-              name="delivery.card2.desc"
-              defaultValue={
-                zh
-                  ? '上海综保区直发。我们不是"空手套白狼"的中介机构，每一台设备均在我们的全硬化地坪仓库中真实趴放，接受您的视频连线抽检或第三方登船验收。'
-                  : "Shipped directly from Shanghai Bonded Zone. Every machine is physically sitting in our hardened yards, ready for your real-time video inspection or third-party (SGS) boarding verification."
-              }
-            />
-          </FieldRow>
-        </CardBlock>
-
-        {/* ── 卡片 3 ── */}
-        <CardBlock index={3} label="卡片">
-          <ImageUpload
-            name="delivery.card3.image"
-            label="卡片图片"
-            aspectHint="建议比例 16:9，JPG / PNG"
-          />
-          <FieldRow label="标题">
-            <TextInput
-              name="delivery.card3.title"
-              defaultValue={
-                zh
-                  ? "Ro-Ro 与 Flat Rack 深海装调"
-                  : "Ro-Ro & Flat Rack Deep-Sea Rigging"
-              }
-            />
-          </FieldRow>
-          <FieldRow label="描述">
-            <TextArea
-              name="delivery.card3.desc"
-              defaultValue={
-                zh
-                  ? "针对 20 吨及以上的重型怪兽，我们具有长达十余年的特种集装箱绑扎与滚装船订舱护航经验。确保您的钢铁资产横跨经纬线，安全登陆母港。"
-                  : "For 20-ton+ heavy monsters, we have over a decade of experience in special container lashing and Ro-Ro vessel booking. Ensuring your steel assets land safely across the oceans."
-              }
-            />
-          </FieldRow>
-        </CardBlock>
       </div>
     </div>
   );

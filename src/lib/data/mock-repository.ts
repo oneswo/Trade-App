@@ -1,15 +1,11 @@
 import type {
   AdminAuthRepo,
   AdminRecord,
-  ArticleRecord,
-  ArticleRepo,
   CategoryRecord,
   CategoryRepo,
-  CreateArticleInput,
   CreateCategoryInput,
   CreateInquiryInput,
   CreateProductInput,
-  CreateTicketInput,
   InquiryRecord,
   InquiryRepo,
   PageContentRecord,
@@ -18,21 +14,15 @@ import type {
   ProductRepo,
   SiteSettings,
   SiteSettingsRepo,
-  TicketRecord,
-  TicketRepo,
-  UpdateArticleInput,
   UpdateCategoryInput,
   UpdateInquiryInput,
   UpdateProductInput,
-  UpdateTicketInput,
 } from "./types";
 import { DEFAULT_SITE_SETTINGS } from "./types";
 
 interface MockStore {
   inquiries: InquiryRecord[];
-  tickets: TicketRecord[];
   products: ProductRecord[];
-  articles: ArticleRecord[];
   pageContents: Record<string, PageContentRecord>;
   categories: CategoryRecord[];
   admins: AdminRecord[];
@@ -57,67 +47,7 @@ function createInitialStore(): MockStore {
       { id: "cat_4", slug: "Rollers", nameZh: "压路机", nameEn: "Rollers", imageUrl: null, sortOrder: 4, enabled: true, createdAt: now, updatedAt: now },
       { id: "cat_5", slug: "Cranes", nameZh: "起重机", nameEn: "Cranes", imageUrl: null, sortOrder: 5, enabled: true, createdAt: now, updatedAt: now },
     ],
-    articles: [
-      {
-        id: "art_1",
-        title: "Comprehensive Guide for Buying Used Excavators from China",
-        titleZh: "从中国购买二手挖掘机的全面避坑指南与跨国交割总结",
-        slug: "buying-used-excavators-from-china-guide",
-        category: "GUIDE",
-        summary: "From inspecting the swing motor to checking undercarriage blind spots, this guide helps you avoid costly pitfalls.",
-        summaryZh: "从查验回转马达到审查底盘件盲区，这篇详尽的出海提货指南将帮你避免损失数万美金的暗坑。",
-        content: "Full article content goes here.",
-        contentZh: "完整文章内容。",
-        coverImageUrl: null,
-        readTime: "8 MIN READ",
-        status: "PUBLISHED",
-        publishedAt: new Date("2026-10-24").toISOString(),
-        createdAt: now,
-        updatedAt: now,
-      },
-      {
-        id: "art_2",
-        title: "Maximizing Excavator ROI: Lifespan Extension & Simplified Maintenance",
-        titleZh: "挖掘机投资效益最大化：延长使用寿命和极简化维保策略",
-        slug: "maximizing-excavator-roi-maintenance",
-        category: "MAINTENANCE",
-        summary: "An experienced engineer tears down the Volvo EC210D cooling system to reveal the secrets of hydraulic longevity.",
-        summaryZh: "资深工程师亲自拆解沃尔沃 EC210D 的冷却系统，带您掌握核心液压部件的长效存活指标。",
-        content: "Full article content goes here.",
-        contentZh: "完整文章内容。",
-        coverImageUrl: null,
-        readTime: "5 MIN READ",
-        status: "PUBLISHED",
-        publishedAt: new Date("2026-09-18").toISOString(),
-        createdAt: now,
-        updatedAt: now,
-      },
-    ],
     inquiries: [],
-    tickets: [
-      {
-        id: "tk-001",
-        title: "前台产品视频好像在手机上有点卡",
-        description: "我用 iPhone 13 看那个挖掘机视频的时候，刚打开要转圈圈好几秒，能不能帮忙优化一下加载速度？",
-        type: "BUG",
-        status: "RESOLVED",
-        reply: "已为您接通全球 CDN 加速节点，并对视频进行了 WebM 格式压缩，现在手机端应该是秒开了，您可以清下缓存试试！",
-        screenshots: [],
-        createdAt: "2026-03-25T10:00:00.000Z",
-        updatedAt: "2026-03-25T14:00:00.000Z",
-      },
-      {
-        id: "tk-002",
-        title: "可以在首页加一排合作品牌的 Logo 吗",
-        description: "我们最近拿到了几个欧洲大厂的代理权，想在首页下面滚动的放几个 Logo 彰显实力。",
-        type: "FEATURE",
-        status: "PROCESSING",
-        reply: "收到，设计稿已经出好了，预计今晚给您上线这个新模块。",
-        screenshots: [],
-        createdAt: "2026-03-28T14:30:00.000Z",
-        updatedAt: "2026-03-28T15:30:00.000Z",
-      },
-    ],
     admins: [
       {
         id: "admin-local-1",
@@ -177,9 +107,6 @@ function getMockStore(): MockStore {
   if (!globalThis.__kxtjMockStore__.categories) {
     globalThis.__kxtjMockStore__.categories = createInitialStore().categories;
   }
-  if (!globalThis.__kxtjMockStore__.tickets) {
-    globalThis.__kxtjMockStore__.tickets = createInitialStore().tickets;
-  }
   return globalThis.__kxtjMockStore__;
 }
 
@@ -203,10 +130,6 @@ function cloneProduct(record: ProductRecord): ProductRecord {
         }
       : undefined,
   };
-}
-
-function cloneArticle(record: ArticleRecord): ArticleRecord {
-  return { ...record };
 }
 
 const SETTINGS_FILE = (() => {
@@ -307,56 +230,6 @@ export const mockAdminAuthRepo: AdminAuthRepo = {
   },
 };
 
-export const mockTicketRepo: TicketRepo = {
-  async list() {
-    const store = getMockStore();
-    return [...store.tickets].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  },
-
-  async findById(id) {
-    const store = getMockStore();
-    return store.tickets.find((ticket) => ticket.id === id) || null;
-  },
-
-  async create(input: CreateTicketInput) {
-    const now = new Date().toISOString();
-    const record: TicketRecord = {
-      id: `tk-${Date.now()}`,
-      title: input.title,
-      description: input.description,
-      type: input.type,
-      status: "PENDING",
-      reply: null,
-      screenshots: input.screenshots ?? [],
-      createdAt: now,
-      updatedAt: now,
-    };
-    const store = getMockStore();
-    store.tickets.unshift(record);
-    return { ...record };
-  },
-
-  async update(id, input: UpdateTicketInput) {
-    const store = getMockStore();
-    const ticket = store.tickets.find((item) => item.id === id);
-    if (!ticket) return null;
-    if (input.status) ticket.status = input.status;
-    if (input.reply !== undefined) ticket.reply = input.reply;
-    ticket.updatedAt = new Date().toISOString();
-    return { ...ticket };
-  },
-
-  async remove(id) {
-    const store = getMockStore();
-    const idx = store.tickets.findIndex((ticket) => ticket.id === id);
-    if (idx < 0) return false;
-    store.tickets.splice(idx, 1);
-    return true;
-  },
-};
-
 export const mockProductRepo: ProductRepo = {
   async list() {
     const store = getMockStore();
@@ -451,94 +324,6 @@ export const mockProductRepo: ProductRepo = {
     const index = store.products.findIndex((item) => item.id === id);
     if (index < 0) return false;
     store.products.splice(index, 1);
-    return true;
-  },
-};
-
-export const mockArticleRepo: ArticleRepo = {
-  async list(statusFilter) {
-    const store = getMockStore();
-    const items = statusFilter
-      ? store.articles.filter((article) => article.status === statusFilter)
-      : [...store.articles];
-    return items
-      .sort(
-        (a, b) =>
-          new Date(b.publishedAt ?? b.createdAt).getTime() -
-          new Date(a.publishedAt ?? a.createdAt).getTime()
-      )
-      .map(cloneArticle);
-  },
-
-  async findById(id) {
-    const store = getMockStore();
-    const item = store.articles.find((article) => article.id === id);
-    return item ? cloneArticle(item) : null;
-  },
-
-  async findBySlug(slug) {
-    const store = getMockStore();
-    const target = slug.trim().toLowerCase();
-    const item = store.articles.find(
-      (article) => article.slug.trim().toLowerCase() === target
-    );
-    return item ? cloneArticle(item) : null;
-  },
-
-  async create(input: CreateArticleInput) {
-    const now = new Date().toISOString();
-    const record: ArticleRecord = {
-      id: `art_${crypto.randomUUID()}`,
-      title: input.title,
-      titleZh: input.titleZh ?? null,
-      slug: input.slug,
-      category: input.category,
-      summary: input.summary,
-      summaryZh: input.summaryZh ?? null,
-      content: input.content,
-      contentZh: input.contentZh ?? null,
-      coverImageUrl: input.coverImageUrl ?? null,
-      readTime: input.readTime ?? null,
-      status: input.status ?? "DRAFT",
-      publishedAt: input.status === "PUBLISHED" ? now : null,
-      createdAt: now,
-      updatedAt: now,
-    };
-    const store = getMockStore();
-    store.articles.unshift(record);
-    return cloneArticle(record);
-  },
-
-  async update(id, input: UpdateArticleInput) {
-    const store = getMockStore();
-    const item = store.articles.find((article) => article.id === id);
-    if (!item) return null;
-    if (input.title !== undefined) item.title = input.title;
-    if (input.titleZh !== undefined) item.titleZh = input.titleZh;
-    if (input.slug !== undefined) item.slug = input.slug;
-    if (input.category !== undefined) item.category = input.category;
-    if (input.summary !== undefined) item.summary = input.summary;
-    if (input.summaryZh !== undefined) item.summaryZh = input.summaryZh;
-    if (input.content !== undefined) item.content = input.content;
-    if (input.contentZh !== undefined) item.contentZh = input.contentZh;
-    if ("coverImageUrl" in input) item.coverImageUrl = input.coverImageUrl ?? null;
-    if (input.readTime !== undefined) item.readTime = input.readTime;
-    if (input.status !== undefined) {
-      const wasPublished = item.status === "PUBLISHED";
-      item.status = input.status;
-      if (!wasPublished && input.status === "PUBLISHED" && !item.publishedAt) {
-        item.publishedAt = new Date().toISOString();
-      }
-    }
-    item.updatedAt = new Date().toISOString();
-    return cloneArticle(item);
-  },
-
-  async remove(id) {
-    const store = getMockStore();
-    const index = store.articles.findIndex((article) => article.id === id);
-    if (index < 0) return false;
-    store.articles.splice(index, 1);
     return true;
   },
 };

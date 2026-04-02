@@ -138,63 +138,6 @@ export interface ProductRepo {
   remove(id: string): Promise<boolean>;
 }
 
-export type ArticleStatus = "DRAFT" | "PUBLISHED";
-
-export interface ArticleRecord {
-  id: string;
-  title: string;
-  titleZh: string | null;
-  slug: string;
-  category: string;
-  summary: string;
-  summaryZh: string | null;
-  content: string;
-  contentZh: string | null;
-  coverImageUrl: string | null;
-  readTime: string | null;
-  status: ArticleStatus;
-  publishedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateArticleInput {
-  title: string;
-  titleZh?: string | null;
-  slug: string;
-  category: string;
-  summary: string;
-  summaryZh?: string | null;
-  content: string;
-  contentZh?: string | null;
-  coverImageUrl?: string | null;
-  readTime?: string | null;
-  status?: ArticleStatus;
-}
-
-export interface UpdateArticleInput {
-  title?: string;
-  titleZh?: string | null;
-  slug?: string;
-  category?: string;
-  summary?: string;
-  summaryZh?: string | null;
-  content?: string;
-  contentZh?: string | null;
-  coverImageUrl?: string | null;
-  readTime?: string | null;
-  status?: ArticleStatus;
-}
-
-export interface ArticleRepo {
-  list(statusFilter?: ArticleStatus): Promise<ArticleRecord[]>;
-  findById(id: string): Promise<ArticleRecord | null>;
-  findBySlug(slug: string): Promise<ArticleRecord | null>;
-  create(input: CreateArticleInput): Promise<ArticleRecord>;
-  update(id: string, input: UpdateArticleInput): Promise<ArticleRecord | null>;
-  remove(id: string): Promise<boolean>;
-}
-
 export interface CategoryRecord {
   id: string;
   slug: string;
@@ -247,41 +190,6 @@ export interface PageContentRepo {
     locale: string,
     data: Record<string, string>
   ): Promise<PageContentRecord>;
-}
-
-export type TicketStatus = "PENDING" | "PROCESSING" | "RESOLVED";
-export type TicketType = "BUG" | "FEATURE" | "QUESTION";
-
-export interface TicketRecord {
-  id: string;
-  title: string;
-  description: string;
-  type: TicketType;
-  status: TicketStatus;
-  reply: string | null;
-  screenshots: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateTicketInput {
-  title: string;
-  description: string;
-  type: TicketType;
-  screenshots?: string[];
-}
-
-export interface UpdateTicketInput {
-  status?: TicketStatus;
-  reply?: string | null;
-}
-
-export interface TicketRepo {
-  list(): Promise<TicketRecord[]>;
-  findById(id: string): Promise<TicketRecord | null>;
-  create(input: CreateTicketInput): Promise<TicketRecord>;
-  update(id: string, input: UpdateTicketInput): Promise<TicketRecord | null>;
-  remove(id: string): Promise<boolean>;
 }
 
 export interface SiteSettings {

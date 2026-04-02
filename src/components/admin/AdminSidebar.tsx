@@ -11,8 +11,6 @@ import {
   FileText,
   Settings,
   Cpu,
-  BookOpen,
-  LifeBuoy,
   Menu,
   X,
 } from "lucide-react";
@@ -24,9 +22,7 @@ const NAV_ITEMS = [
   { href: "/admin/products",   label: "产品列表", icon: Package },
   { href: "/admin/inquiries",  label: "询盘管理", icon: MessageSquare },
   { href: "/admin/pages",      label: "页面内容", icon: FileText },
-  { href: "/admin/articles",   label: "行业智库", icon: BookOpen },
   { href: "/admin/settings",   label: "全局设置", icon: Settings },
-  { href: "/admin/tickets",    label: "技术支持", icon: LifeBuoy },
 ];
 
 // ─── 组件 ─────────────────────────────────────────────────────

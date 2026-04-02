@@ -11,16 +11,18 @@ import {
 } from "@/lib/products/catalog";
 import { type SupportedLocale } from "@/lib/i18n/locales";
 
-export function useCatalogProducts() {
-  const [products, setProducts] = useState<CatalogProductCard[]>([]);
-  const [loading, setLoading] = useState(true);
+export function useCatalogProducts(initialProducts?: CatalogProductCard[] | null) {
+  const [products, setProducts] = useState<CatalogProductCard[]>(() => initialProducts ?? []);
+  const [loading, setLoading] = useState(() => initialProducts == null);
   const locale = useLocale() as SupportedLocale;
 
   useEffect(() => {
     let active = true;
 
     const run = async () => {
-      setLoading(true);
+      if (initialProducts == null) {
+        setLoading(true);
+      }
       try {
         const list = await getCatalogProducts(locale);
         if (!active) return;
@@ -35,7 +37,7 @@ export function useCatalogProducts() {
     return () => {
       active = false;
     };
-  }, [locale]);
+  }, [initialProducts, locale]);
 
   return {
     products,

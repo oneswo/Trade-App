@@ -5,7 +5,6 @@ import {
   FieldRow,
   TextInput,
   TextArea,
-  ImageUpload,
   VideoUpload,
   CardBlock,
 } from "../_components";
@@ -15,42 +14,35 @@ export function HomeFields({ zh }: { zh: boolean }) {
     <div className="space-y-12">
 
       <div className="space-y-5">
-        <SectionHeader title="模块一 — 全屏首页大图（Hero）" note="对应首页第一屏视频背景区域" />
-        <div className="grid grid-cols-2 gap-4">
-          <ImageUpload name="hero.posterUrl" label="视频封面图（poster）" hint="视频加载前显示" aspectHint="建议 16:9，JPG / PNG，最大 5MB" />
-          <VideoUpload name="hero.videoUrl" label="背景视频" hint="MP4，最大 80MB" posterFieldName="hero.posterUrl" />
-        </div>
-        <div className="rounded-xl border border-blue-500/30 bg-blue-50 p-4 space-y-1.5">
-          <p className="text-[13px] font-semibold text-blue-700">💡 智能封面提取</p>
-          <p className="text-[12px] text-blue-600/80 leading-relaxed">
-            上传视频后，如果未手动上传封面图，系统会自动提取视频第一帧作为封面，并标记为“自动提取”。您也可以随时手动上传更合适的封面图替换。
-          </p>
-        </div>
-        <FieldRow label="顶部小标签文字">
-          <TextInput name="hero.tag" defaultValue={zh ? "面向国际市场的高端二手工程机械" : "PREMIUM USED HEAVY EQUIPMENT FOR GLOBAL MARKETS"} />
-        </FieldRow>
-        <FieldRow label="主标题 — 普通色部分">
+        <SectionHeader title="首页首屏" note="第一屏标题和 4 个统计数字" />
+        <FieldRow label="主标题上半句">
           <TextInput name="hero.title1" defaultValue={zh ? "铸塑未来的" : "Built to Power"} />
         </FieldRow>
-        <FieldRow label="主标题 — 金色高亮部分">
-          <TextInput name="hero.titleGold" defaultValue={zh ? "重工力量" : "the World's Work"} />
+        <FieldRow label="主标题高亮词">
+          <TextInput name="hero.titleGold" defaultValue={zh ? "重工力量" : "the World's Work."} />
         </FieldRow>
-        <div className="grid grid-cols-2 gap-4">
-          <FieldRow label="按钮 1 文字（黄金主按钮）">
-            <TextInput name="hero.btn1" defaultValue={zh ? "探索核心机械" : "Browse Equipment"} />
-          </FieldRow>
-          <FieldRow label="按钮 2 文字（播放视频按钮）">
-            <TextInput name="hero.btn2" defaultValue={zh ? "播放实景视频" : "Play Video"} />
-          </FieldRow>
+        <div className="space-y-2 rounded-xl border border-black/[0.06] p-4 bg-[#FAFAFA]">
+          <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">四组核心统计数据</span>
+          {[
+            { num: "3000", suffix: "+", zh_l: "全球交付设备", en_l: "Machines Delivered" },
+            { num: "50",   suffix: "+", zh_l: "覆盖国家", en_l: "Countries Served" },
+            { num: "20",   suffix: "+", zh_l: "年行业经验", en_l: "Years Experience" },
+            { num: "100",  suffix: "%", zh_l: "全检率", en_l: "Full Inspection Rate" },
+          ].map((s, i) => (
+            <div key={i} className="grid grid-cols-[80px_1fr] gap-2 items-center">
+              <TextInput name={`hero.stat${i + 1}.num`} defaultValue={s.num} />
+              <TextInput name={`hero.stat${i + 1}.label`} defaultValue={zh ? s.zh_l : s.en_l} />
+            </div>
+          ))}
         </div>
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块二 — 品类画廊轮播" note="对应首页向下滚动第一个卡片轮播" />
-        <FieldRow label="板块大标题">
+        <SectionHeader title="分类展示区" note="分类卡片本身来自「分类管理」，这里只改标题和说明" />
+        <FieldRow label="区块标题">
           <TextInput name="categories.title" defaultValue={zh ? "全矩阵设备覆盖" : "Full-Spectrum Equipment Coverage"} />
         </FieldRow>
-        <FieldRow label="右侧辅助说明文字">
+        <FieldRow label="区块说明">
           <TextArea name="categories.desc" defaultValue={zh ? "无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。" : "Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum."} />
         </FieldRow>
         <FieldRow label="无分类时提示文案">
@@ -68,17 +60,17 @@ export function HomeFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块三 — 严选热销产品网格" note="产品卡片从「产品管理」动态拉取，无需在此维护" />
-        <FieldRow label="板块大标题">
+        <SectionHeader title="热销产品区" note="产品卡片本身来自「产品管理」，这里只改标题和标签" />
+        <FieldRow label="区块标题">
           <TextInput name="hot.title" defaultValue={zh ? "严选热销机皇" : "Top-Rated Machines, Handpicked"} />
         </FieldRow>
-        <FieldRow label="右侧辅助说明文字">
+        <FieldRow label="区块说明">
           <TextArea name="hot.desc" defaultValue={zh ? "这些顶级现货机型经过 100 项全案严苛过滤，代表着本月极低的故障率和极高的投资回报比，是全球大型基建的首选制胜装备。" : "Every unit has passed a rigorous 100-point inspection — the lowest failure rates and highest ROI of the month."} />
         </FieldRow>
-        <FieldRow label="右下角「查看全部」按钮文字">
+        <FieldRow label="查看全部按钮文字">
           <TextInput name="hot.btnText" defaultValue={zh ? "游览所有 300+ 在线设备" : "View All 300+ Listed Machines"} />
         </FieldRow>
-        <FieldRow label="卡片角标：现货状态">
+        <FieldRow label="卡片标签：现货状态">
           <TextInput name="hot.inStockLabel" defaultValue={zh ? "现货就绪" : "In Stock"} />
         </FieldRow>
         <FieldRow label="无产品时提示文案">
@@ -87,42 +79,11 @@ export function HomeFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块四 — 公司实力 & 数字展示（深色双栏）" note="左侧文字 + 数字，右侧视频" />
-        <FieldRow label="左侧主标题 — 第一行">
-          <TextInput name="depth.title1" defaultValue={zh ? "二十载深耕专注" : "Two Decades of Expertise."} />
-        </FieldRow>
-        <FieldRow label="左侧主标题 — 第二行">
-          <TextInput name="depth.title2" defaultValue={zh ? "构筑起坚实底盘。" : "A Foundation You Can Trust."} />
-        </FieldRow>
-        <FieldRow label="左侧描述段落">
-          <TextArea name="depth.desc" rows={4} defaultValue={zh ? "中国机械不仅仅是一家贸易商。我们在全球拥有自建的大型存放仓储与检测翻新基地。所有出海设备均由原厂级资深工程师亲手拆解、保养与极端测试，拒绝铁疙瘩，只发真战力。" : "China Machinery is more than a trading company. We operate our own large-scale warehousing, inspection, and refurbishment facilities. Every machine is disassembled, serviced, and stress-tested by OEM-certified senior engineers."} />
-        </FieldRow>
-        <div className="space-y-2 rounded-xl border border-black/[0.06] p-4 bg-[#FAFAFA]">
-          <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">四组核心数据</span>
-          {[
-            { num: "3000", zh_l: "全球成功交付设备", en_l: "Machines Delivered Globally" },
-            { num: "50",   zh_l: "无缝海运覆盖国家", en_l: "Countries Served by Sea" },
-            { num: "2000", zh_l: "平米超级仓储展区", en_l: "m² Warehousing & Prep Yard" },
-            { num: "100",  zh_l: "全节点拆机复检率", en_l: "Full-Teardown Inspection Rate" },
-          ].map((s, i) => (
-            <div key={i} className="grid grid-cols-[80px_1fr] gap-2 items-center">
-              <TextInput name={`depth.stat.${i}.num`} defaultValue={s.num} />
-              <TextInput name={`depth.stat.${i}.label`} defaultValue={zh ? s.zh_l : s.en_l} />
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <ImageUpload name="depth.posterUrl" label="右侧封面图（播放前显示）" aspectHint="建议 16:9，JPG / PNG" />
-          <VideoUpload name="depth.videoUrl" label="右侧工厂宣传视频" hint="MP4，最大 80MB" posterFieldName="depth.posterUrl" />
-        </div>
-      </div>
-
-      <div className="space-y-5">
-        <SectionHeader title="模块五 — 六大核心服务卡片" note="对应首页六宫格服务图标卡片区" />
-        <FieldRow label="板块主标题">
+        <SectionHeader title="服务卡片区" note="首页中段 6 张服务卡片" />
+        <FieldRow label="区块标题">
           <TextInput name="s5.title" defaultValue={zh ? "世界级的交付与服务标准" : "World-Class Delivery & After-Sales Standards"} />
         </FieldRow>
-        <FieldRow label="板块描述">
+        <FieldRow label="区块说明">
           <TextArea name="s5.desc" defaultValue={zh ? "在跨国重装采购中，物流与售后往往是最大的阻碍。我们将为您彻底铲除这些摩擦力，提供真正的端到端出海服务体系。" : "In cross-border heavy equipment procurement, logistics and after-sales are often the greatest barriers. We eliminate that friction entirely."} />
         </FieldRow>
         {[
@@ -144,11 +105,11 @@ export function HomeFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块六 — 交机实录与动态（4张固定卡片）" note="每张卡片可配置视频、封面图、标签、日期、目的地、标题" />
-        <FieldRow label="板块主标题">
+        <SectionHeader title="交付动态区" note="首页底部 4 张动态卡片" />
+        <FieldRow label="区块标题">
           <TextInput name="news.title" defaultValue={zh ? "交机实录与动态" : "Live Delivery Updates"} />
         </FieldRow>
-        <FieldRow label="右侧描述文字">
+        <FieldRow label="区块说明">
           <TextArea name="news.desc" defaultValue={zh ? "真实发盘、跨国海运、开箱验收。我们为您展示实时的设备全球周转录像与物流快讯，亲眼见证我们的端到端跨国履约与重装交付能力。" : "Real shipments. International ocean freight. On-site unboxing. We share live footage and logistics updates from active global dispatches."} />
         </FieldRow>
 
@@ -175,10 +136,7 @@ export function HomeFields({ zh }: { zh: boolean }) {
           },
         ].map((card, i) => (
           <CardBlock key={i} index={i + 1} label="交付记录卡片">
-            <div className="grid grid-cols-2 gap-4">
-              <ImageUpload name={`delivery.${i}.posterUrl`} label="视频封面图" hint="视频播放前显示" aspectHint="建议 4:3，JPG / PNG" />
-              <VideoUpload name={`delivery.${i}.videoUrl`} label="卡片视频" hint="MP4，最大 80MB" posterFieldName={`delivery.${i}.posterUrl`} />
-            </div>
+            <VideoUpload name={`delivery.${i}.videoUrl`} label="卡片视频" hint="MP4，最大 80MB" />
             <div className="grid grid-cols-3 gap-3">
               <FieldRow label="发货标签">
                 <TextInput name={`delivery.${i}.tag`} defaultValue={card.tag} />

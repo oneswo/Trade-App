@@ -15,26 +15,9 @@ export function AboutFields({ zh }: { zh: boolean }) {
     <div className="space-y-12">
 
       <div className="space-y-5">
-        <SectionHeader title="模块一：Hero 头图区" note="对应关于页顶部的全宽背景与标题区" />
-        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="建议 16:5" />
-        <FieldRow label="顶部小标签">
-          <TextInput name="hero.tag" defaultValue={zh ? "全球工程机械发运枢纽" : "GLOBAL MACHINERY HUB"} />
-        </FieldRow>
-        <FieldRow label="主标题 — 普通色部分">
-          <TextInput name="hero.title1" defaultValue={zh ? "扎根上海，" : "ROOTED IN SH,"} />
-        </FieldRow>
-        <FieldRow label="主标题 — 金色高亮部分">
-          <TextInput name="hero.titleGold" defaultValue={zh ? "驱动全球。" : "DRIVE GLOBAL."} />
-        </FieldRow>
-        <FieldRow label="副标题描述">
-          <TextArea name="hero.desc" defaultValue={zh ? "重塑二手工程机械出海领域的绝对信任标杆，严苛重金整备与出境质检，确保全球买家拿到顶尖实机。" : "Reshaping the absolute trust benchmark in the global used heavy equipment supply chain, ensuring every buyer receives top-tier machines."} />
-        </FieldRow>
-      </div>
-
-      <div className="space-y-5">
-        <SectionHeader title="模块二 — Block A：长三角核心源头底库基地（左图右文）" note="第一组左图右文" />
-        <ImageUpload name="blockA.image" label="左侧图片" aspectHint="建议 4:3" />
-        <FieldRow label="板块标题">
+        <SectionHeader title="仓储基地介绍" note="第一部分：左图右文" />
+        <ImageUpload name="blockA.image" label="配图" aspectHint="建议 4:3" previewAspect="aspect-[4/3]" previewFit="contain" />
+        <FieldRow label="区块标题">
           <TextInput name="blockA.title" defaultValue={zh ? "长三角核心 源头底库基地" : "Core Yangtze Delta Base of Operations"} />
         </FieldRow>
         <FieldRow label="段落 1">
@@ -54,13 +37,13 @@ export function AboutFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块二 — Block B：跨越极限工况的重载交付力（右图左文）" note="第二组右图左文 + 两枚 mini 卡" />
-        <ImageUpload name="blockB.image" label="右侧图片" aspectHint="建议 4:3" />
-        <FieldRow label="板块标题">
+        <SectionHeader title="交付能力介绍" note="第二部分：右图左文 + 2 张小卡片" />
+        <ImageUpload name="blockB.image" label="配图" aspectHint="建议 4:3" previewAspect="aspect-[4/3]" previewFit="contain" />
+        <FieldRow label="区块标题">
           <TextInput name="blockB.title" defaultValue={zh ? "跨越极限工况的 重载交付力" : "Heavy-Duty Delivery Beyond Extreme Conditions"} />
         </FieldRow>
         <FieldRow label="段落 1">
-          <TextArea name="blockB.p1" defaultValue={zh ? "重载机械漂洋过海不是终点，矿山实操才是！我们的海外业务不仅仅是销售单台机器，更是全生命周期的工业护航。" : "Getting heavy machinery across the ocean is only the beginning — mine-site performance is the real test. Our overseas business is full lifecycle industrial support."} />
+          <TextArea name="blockB.p1" defaultValue={zh ? '重载机械漂洋过海不是终点，矿山实操才是！我们的海外业务不仅仅是"卖单机器"，更是全生命周期的工业护航。' : "Getting heavy machinery across the ocean is only the beginning — mine-site performance is the real test. Our overseas business is full lifecycle industrial support."} />
         </FieldRow>
         <FieldRow label="段落 2">
           <TextArea name="blockB.p2" defaultValue={zh ? "至今，我们高密度地将成套编队级工程机械成功投送至印尼镍矿、秘鲁铜矿区、以及肯尼亚基建一线。以严苛的拒售翻新组装机的红线铁律，建立起跨国老客的绝对信任壁垒。" : "We have deployed fleet-scale machinery to Indonesian nickel mines, Peruvian copper zones, and Kenyan infrastructure fronts, building absolute trust through an iron-clad no-rebuilt-machine policy."} />
@@ -78,13 +61,13 @@ export function AboutFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块三：核心成就数字条（4组）" note="四组数字 + 标签" />
+        <SectionHeader title="成就数据区" note="4 组数字和标签" />
         <div className="space-y-2 rounded-xl border border-black/[0.06] p-4 bg-[#FAFAFA]">
           {[
-            { num: "20",   zh_l: "年出海行业深耕",  en_l: "Years in the Industry" },
-            { num: "30",   zh_l: "支特派抢修梯队",  en_l: "Field Engineers Deployed" },
-            { num: "50",   zh_l: "个矿建出海国家",  en_l: "Countries Reached" },
-            { num: "3000", zh_l: "台实体现车交付",  en_l: "Machines Safely Delivered" },
+            { num: "20", zh_l: "年出海行业深耕", en_l: "Years in the Industry" },
+            { num: "30", zh_l: "支特派抢修梯队", en_l: "Field Engineers Deployed" },
+            { num: "50", zh_l: "个矿建出海国家", en_l: "Countries Reached" },
+            { num: "3000", zh_l: "台实体现车交付", en_l: "Machines Safely Delivered" },
           ].map((s, i) => (
             <div key={i} className="grid grid-cols-[80px_1fr] gap-2 items-center">
               <TextInput name={`stats.${i}.num`} defaultValue={s.num} />
@@ -95,25 +78,29 @@ export function AboutFields({ zh }: { zh: boolean }) {
       </div>
 
       <div className="space-y-5">
-        <SectionHeader title="模块四：全球准入资质墙（4张证书卡）" note="证书图 + 中英文名称" />
-        <FieldRow label="板块主标题">
+        <SectionHeader title="资质证书区" note="4 张证书卡：图片、名称、编号" />
+        <FieldRow label="区块标题">
           <TextInput name="certs.title" defaultValue={zh ? "全球通行的重金属底气" : "Our Industry Certifications"} />
         </FieldRow>
-        <FieldRow label="板块描述">
-          <TextArea name="certs.desc" defaultValue={zh ? "我们配备了最苛刻的第三方驻场验机标准与源产地报关资质矩阵，以强悍的官方背书秒杀清关屏障。" : "We continually advance our capabilities, supported by accredited inspection institutions and a globally recognized sales and service network."} />
+        <FieldRow label="区块说明">
+          <TextArea name="certs.desc" defaultValue={zh ? "我们配备了最苛刻的第三方驻场验机标准与源产地报关资质矩阵，以强悍的官方背书秒杀清关屏障。" : "We continually advance our production capabilities and quality control systems, supported by accredited inspection institutions and a globally recognized sales and service network."} />
         </FieldRow>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { zh_n: "重工溯源认证",  en_code: "VERIFIED SUPPLIER" },
-            { zh_n: "欧盟通行准入",  en_code: "CE CONFORMITY" },
-            { zh_n: "国际质控标准",  en_code: "ISO 9001:2015" },
-            { zh_n: "第三方驻场终检", en_code: "SGS INSPECTION" },
-          ].map((c, i) => (
+            { zh_n: "重工溯源认证", en_n: "Verified Supplier", zh_code: "VERIFIED SUPPLIER", en_code: "TRADE ASSURANCE" },
+            { zh_n: "欧盟通行准入", en_n: "CE Conformity", zh_code: "CE CONFORMITY", en_code: "EU MARKET ACCESS" },
+            { zh_n: "国际质控标准", en_n: "ISO 9001:2015", zh_code: "ISO 9001:2015", en_code: "QUALITY MANAGEMENT" },
+            { zh_n: "第三方驻场终检", en_n: "SGS Inspection", zh_code: "SGS INSPECTION", en_code: "THIRD-PARTY VERIFIED" },
+          ].map((cert, i) => (
             <div key={i} className="rounded-xl border border-black/[0.06] p-3 space-y-2 bg-[#FAFAFA]">
-              <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">证书 {i+1}</span>
-              <ImageUpload name={`cert.${i}.image`} label="证书图片" aspectHint="JPG / PNG" />
-              <FieldRow label="中文名称"><TextInput name={`cert.${i}.name`} defaultValue={c.zh_n} /></FieldRow>
-              <FieldRow label="英文代码"><TextInput name={`cert.${i}.code`} defaultValue={c.en_code} /></FieldRow>
+              <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">证书 {i + 1}</span>
+              <ImageUpload name={`cert.${i}.image`} label="证书图片" aspectHint="建议 7:5，JPG / PNG" previewAspect="aspect-[7/5]" previewFit="contain" />
+              <FieldRow label="证书名称">
+                <TextInput name={`cert.${i}.name`} defaultValue={zh ? cert.zh_n : cert.en_n} />
+              </FieldRow>
+              <FieldRow label="证书代码">
+                <TextInput name={`cert.${i}.code`} defaultValue={zh ? cert.zh_code : cert.en_code} />
+              </FieldRow>
             </div>
           ))}
         </div>

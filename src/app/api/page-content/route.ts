@@ -23,7 +23,6 @@ const PAGE_PATH_SUFFIX: Record<ValidPageId, string> = {
   "product-detail": "/products",
   services: "/services",
   about: "/about",
-  insights: "/insights",
   contact: "/contact",
 };
 

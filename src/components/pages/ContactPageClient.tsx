@@ -15,46 +15,12 @@ export default function ContactPageClient({
   const contactEmail = c('info.email', '15156888267@163.com');
   const contactPhone = c('info.phone', '+86 17321077956');
   const contactPhoneForTel = contactPhone.replace(/\s/g, '');
-  const heroBgImage = c('hero.bgImage', '');
 
   return (
     <main className="w-full bg-[#FAFAFA] pt-[72px]">
-      
-      {/* 0. 沉浸式企业愿景大图 (Contact Hero Banner) */}
-      <section className="relative w-full h-[450px] md:h-[500px] flex items-center justify-center bg-[#111111] overflow-hidden">
-         {/* 背景暗纹蒙版与网格 */}
-         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
-         <div className="absolute inset-0 opacity-60 bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]" style={heroBgImage ? { backgroundImage: `url('${heroBgImage}')` } : undefined}></div>
-         <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-[#111111]/10 pointer-events-none"></div>
-         
-         {/* 琥珀色微光 (Radiant Glow) */}
-         <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#D4AF37] opacity-[0.05] blur-[120px] rounded-full pointer-events-none"></div>
-         <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-[#D4AF37] opacity-[0.03] blur-[150px] rounded-full pointer-events-none"></div>
-
-         <div className="relative z-10 flex flex-col items-center px-4 w-full max-w-[1100px] mx-auto text-center mt-4">
-
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-xs font-bold tracking-[0.2em] text-[#D4AF37] mb-8 uppercase">
-              <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span> 
-              {c('hero.tag', isZh ? '全球二手重装直发中心' : 'GLOBAL SALES & DISPATCH CENTER')}
-            </div>
-
-            <h1 className={`hero-title ${isZh ? 'hero-zh' : 'hero-en'}`}>
-              {c('hero.title1', isZh ? '全球联络，' : 'Global Reach, ')}<span className="text-[#D4AF37]">{c('hero.titleGold', isZh ? '极速调度。' : 'Swift Dispatch.')}</span>
-            </h1>
-
-            {/* 副标题 (Height Locked) */}
-            <div className="w-full flex items-center justify-center min-h-[60px] md:min-h-[80px]">
-              <p className="text-gray-400 text-base sm:text-lg md:text-[21px] font-medium opacity-90 max-w-[900px] text-center leading-relaxed">
-                {isZh
-                  ? c('hero.desc', '无论您身处哪一大洲的矿场机位，我们的特派工程师将提供 24 小时跨洋直连，为您敲定源头底价与专属航运配额。')
-                  : c('hero.desc', 'Wherever your mining operation is located, our dedicated engineers provide 24/7 cross-border support to secure factory pricing and exclusive shipping allocations.')}
-              </p>
-            </div>
-         </div>
-      </section>
 
       {/* 1. 总部航点与核心联络网 (Headquarters & Direct Lines) */}
-      <section className="w-full py-16 md:py-32 bg-[#FAFAFA] relative">
+      <section className="w-full py-16 md:py-24 bg-[#FAFAFA] relative">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8 relative z-10">
           <div className="flex flex-col lg:flex-row min-h-[600px] rounded-3xl overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.1)] border border-gray-200">
             
@@ -139,7 +105,7 @@ export default function ContactPageClient({
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[130%] z-20 pointer-events-none flex flex-col items-center">
                  <div className="bg-[#111111] text-white px-6 py-4 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.4)] border border-white/5 flex flex-col items-center relative z-10">
                     <span className="text-[#D4AF37] text-sm font-black tracking-widest mb-1">{c('map.bubbleTitle', isZh ? '中国机械 亚太调度中枢' : 'KXTJ Machinery HQ')}</span>
-                    <span className="text-gray-400 text-[10px] tracking-[0.15em] uppercase">{c('map.bubbleSubtitle', 'Shanghai Global Base')}</span>
+                    <span className="text-gray-400 text-[10px] tracking-[0.15em] uppercase">Shanghai Global Base</span>
                  </div>
                  {/* 向下的指示尖角 */}
                  <div className="w-5 h-5 bg-[#111111] rotate-45 -mt-2.5 border-b border-r border-white/5 shadow-xl"></div>
@@ -184,11 +150,11 @@ export default function ContactPageClient({
 
                   <div className="w-full space-y-4 text-left border-t border-gray-200 pt-6 relative z-10">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{c('team.directLineLabel', isZh ? '专线直驳' : 'Direct Line')}</span>
+                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isZh ? '专线电话' : 'Direct Line'}</span>
                       <a href={`tel:${phone}`} className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">{displayPhone}</a>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{c('team.whatsappLabel', 'WhatsApp')}</span>
+                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">WhatsApp</span>
                       <a href={`https://wa.me/${phone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" className="text-[#111111] font-black hover:text-[#D4AF37] transition-colors">{displayPhone}</a>
                     </div>
                   </div>

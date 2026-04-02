@@ -42,11 +42,17 @@ function writeLs(cacheKey: string, data: Record<string, string>) {
   try { localStorage.setItem(lsKey(cacheKey), JSON.stringify(data)); } catch { /* quota exceeded */ }
 }
 
-export function clearPageContentCache(pageId: string, locale: string) {
+export function clearPageContentCache(pageId: string, locale: string, newData?: Record<string, string>) {
   const cacheKey = `${pageId}:${locale}`;
   memCache.delete(cacheKey);
   try {
-    localStorage.removeItem(lsKey(cacheKey));
+    // 如果提供了新数据，直接更新 localStorage，避免闪烁
+    if (newData) {
+      localStorage.setItem(lsKey(cacheKey), JSON.stringify(newData));
+      memCache.set(cacheKey, newData);
+    } else {
+      localStorage.removeItem(lsKey(cacheKey));
+    }
     localStorage.setItem(INVALIDATION_KEY, invalidatePayload(pageId, locale));
   } catch {
     // ignore storage failures
@@ -66,10 +72,14 @@ export function usePageContent(
   const locale = useLocale();
   const cacheKey = `${pageId}:${locale}`;
 
-  // 初始值只用内存缓存（避免 SSR/hydration 不一致）
-  const [data, setData] = useState<Record<string, string> | null>(
-    () => memCache.get(cacheKey) ?? initialData ?? null
-  );
+  // 有服务端/父组件传入的 initialData 时优先采用，避免同会话内旧的 memCache
+  // 盖住重新保存后的 SSR 内容（例如产品列表 CMS 文案不更新）。
+  const [data, setData] = useState<Record<string, string> | null>(() => {
+    if (initialData) {
+      return { ...initialData };
+    }
+    return memCache.get(cacheKey) ?? null;
+  });
   const [isLoaded, setIsLoaded] = useState(
     () => memCache.has(cacheKey) || !!initialData
   );

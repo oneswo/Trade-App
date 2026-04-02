@@ -12,49 +12,14 @@ export default function AboutPageClient({
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('about', initialContent);
-  const heroBgImage = c('hero.bgImage', '');
   const blockAImage = c('blockA.image', '');
   const blockBImage = c('blockB.image', '');
 
   return (
     <main className="w-full bg-[#FAFAFA] pt-[72px]">
-      {/* 1. 沉浸式企业愿景大图 (Corporate Hero Banner) */}
-      <section className="relative w-full h-[450px] md:h-[500px] flex items-center justify-center bg-[#111111] overflow-hidden">
-         {/* 背景暗纹蒙版与网格 */}
-         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
-         <div className="absolute inset-0 opacity-60 bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]" style={heroBgImage ? { backgroundImage: `url('${heroBgImage}')` } : undefined}></div>
-         <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-[#111111]/10 pointer-events-none"></div>
-         
-         {/* 琥珀色微光 (Radiant Glow) */}
-         <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#D4AF37] opacity-[0.05] blur-[120px] rounded-full pointer-events-none"></div>
-         <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-[#D4AF37] opacity-[0.03] blur-[150px] rounded-full pointer-events-none"></div>
-
-         <div className="relative z-10 flex flex-col items-center px-4 w-full max-w-[1100px] mx-auto text-center mt-4">
-            
-            {/* 顶部分类小提示 */}
-            <div className="flex items-center justify-center gap-3 text-[#D4AF37] text-xs font-bold tracking-[0.2em] uppercase mb-8 border border-[#D4AF37]/20 rounded-full px-5 py-2 bg-[#D4AF37]/5 backdrop-blur-md shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span> 
-              {isZh ? c('hero.tag', '全球工程机械发运枢纽') : c('hero.tag', 'GLOBAL MACHINERY HUB')}
-            </div>
-
-            <h1 className={`hero-title ${isZh ? 'hero-zh' : 'hero-en'}`}>
-              {isZh ? c('hero.title1', '扎根上海，') : c('hero.title1', 'Rooted in Shanghai, ')}<span className="text-[#D4AF37]">{isZh ? c('hero.titleGold', '驱动全球。') : c('hero.titleGold', 'Global Reach.')}</span>
-            </h1>
-
-            {/* 副标题 (Height Locked) */}
-            <div className="w-full flex items-center justify-center min-h-[60px] md:min-h-[80px]">
-              <p className="text-gray-400 text-base sm:text-lg md:text-[21px] font-medium opacity-90 max-w-[900px] text-center leading-relaxed">
-                {isZh
-                  ? c('hero.desc', '重塑二手工程机械出海领域的绝对信任标杆，严苛重金整备与出境质检，确保全球买家拿到顶尖实机。')
-                  : c('hero.desc', 'Reshaping the absolute trust benchmark in the global used heavy equipment supply chain, ensuring every buyer receives top-tier machines.')}
-              </p>
-            </div>
-
-         </div>
-      </section>
 
       {/* 2. 实力档案 (The Scale & Story) */}
-      <section className="w-full py-16 md:py-32 bg-[#FAFAFA] relative overflow-hidden">
+      <section className="w-full py-16 md:py-24 bg-[#FAFAFA] relative overflow-hidden">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8 relative z-10">
           
           <div className="flex flex-col gap-16 md:gap-32">
@@ -188,9 +153,9 @@ export default function AboutPageClient({
                 <div className="w-14 h-14 bg-[#111111] rounded-2xl text-[#D4AF37] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <cert.icon size={24} />
                 </div>
-                <div className="w-full aspect-[4/3] rounded-2xl relative bg-white border border-gray-50 flex items-center justify-center overflow-hidden mb-6">
+                <div className="w-full aspect-[7/5] rounded-2xl relative bg-[#F7F7F8] border border-gray-100 flex items-center justify-center overflow-hidden mb-6 p-4">
                   {c(`cert.${i}.image`, '') ? (
-                    <Image fill unoptimized src={c(`cert.${i}.image`, '')} alt={isZh ? cert.zh_n : cert.en_n} className="object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                    <Image fill unoptimized src={c(`cert.${i}.image`, '')} alt={isZh ? cert.zh_n : cert.en_n} className="object-contain opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 p-3" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-[#111111] text-white/35">
                       <span className="text-[10px] font-bold tracking-[0.18em] uppercase">No Cert</span>

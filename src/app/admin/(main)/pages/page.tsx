@@ -8,7 +8,6 @@ import {
   Package,
   Wrench,
   Info,
-  BookOpen,
   Phone,
   CheckCircle,
   AlertCircle,
@@ -22,7 +21,6 @@ import { HomeFields } from "./_fields/home";
 import { ProductsFields } from "./_fields/products";
 import { ServicesFields } from "./_fields/services";
 import { AboutFields } from "./_fields/about";
-import { InsightsFields } from "./_fields/insights";
 import { ContactFields } from "./_fields/contact";
 import { ProductDetailFields } from "./_fields/product-detail";
 
@@ -39,7 +37,6 @@ const PAGES_LIST = [
   { id: "product-detail", name: "产品详情", slug: "/products/[slug]", icon: Package },
   { id: "services", name: "服务支持", slug: "/services", icon: Wrench },
   { id: "about", name: "关于我们", slug: "/about", icon: Info },
-  { id: "insights", name: "行业智库", slug: "/insights", icon: BookOpen },
   { id: "contact", name: "联系我们", slug: "/contact", icon: Phone },
 ];
 
@@ -50,14 +47,32 @@ type SaveState = "idle" | "saving" | "success" | "error";
 export default function PagesManagementPage() {
   const [activePageId, setActivePageId] = useState("home");
   const [activeLang, setActiveLang] = useState("zh");
+  const [isHydrated, setIsHydrated] = useState(false);
   const [fields, setFields] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
+  /** 初始 true：避免 hydration 后首帧 fields 为空时用 defaultValue 闪一屏，再被接口结果替换 */
+  const [isLoading, setIsLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const sessionUploadedUrlsRef = useRef<Set<string>>(new Set());
   const didInitLoadRef = useRef(false);
+  const pageContentLoadIdRef = useRef(0);
+
+  // 客户端 hydration 后读取 localStorage
+  useEffect(() => {
+    const savedPageId = localStorage.getItem('cms:activePageId');
+    const savedLang = localStorage.getItem('cms:activeLang');
+    if (savedPageId) setActivePageId(savedPageId);
+    if (savedLang) setActiveLang(savedLang);
+    setIsHydrated(true);
+  }, []);
 
   // 切换页面或语言时，从 API 加载已保存内容
   useEffect(() => {
+    if (!isHydrated) return; // 等待 hydration 完成
+
+    // 保存当前选择到 localStorage
+    localStorage.setItem('cms:activePageId', activePageId);
+    localStorage.setItem('cms:activeLang', activeLang);
+
     if (didInitLoadRef.current && sessionUploadedUrlsRef.current.size > 0) {
       const trackedUrls = [...sessionUploadedUrlsRef.current];
       sessionUploadedUrlsRef.current.clear();
@@ -65,16 +80,32 @@ export default function PagesManagementPage() {
     }
     didInitLoadRef.current = true;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 切换页/语言时先进入加载态
+    // 立刻清空表单数据，避免在请求返回前仍显示上一页面/语言的字段（会误用旧值盖住当前 tab 的 defaultValue）
+    const loadId = ++pageContentLoadIdRef.current;
+    setFields({});
     setIsLoading(true);
-    fetch(`/api/page-content?pageId=${activePageId}&locale=${activeLang}`)
+
+    const controller = new AbortController();
+
+    fetch(`/api/page-content?pageId=${activePageId}&locale=${activeLang}`, {
+      signal: controller.signal,
+    })
       .then((r) => r.json())
       .then((res) => {
+        if (loadId !== pageContentLoadIdRef.current) return;
         setFields(res.ok && res.data ? res.data : {});
       })
-      .catch(() => setFields({}))
-      .finally(() => setIsLoading(false));
-  }, [activePageId, activeLang]);
+      .catch((err) => {
+        if (loadId !== pageContentLoadIdRef.current) return;
+        if (err instanceof Error && err.name === "AbortError") return;
+        setFields({});
+      })
+      .finally(() => {
+        if (loadId === pageContentLoadIdRef.current) setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [activePageId, activeLang, isHydrated]);
 
   const get = useCallback(
     (name: string, fallback: string) => fields[name] ?? fallback,
@@ -116,7 +147,7 @@ export default function PagesManagementPage() {
         const trackedUrls = [...sessionUploadedUrlsRef.current];
         sessionUploadedUrlsRef.current.clear();
         await cleanupTrackedMediaUrls(trackedUrls, Object.values(fields));
-        clearPageContentCache(activePageId, activeLang);
+        clearPageContentCache(activePageId, activeLang, fields);
         setSaveState("success");
       } else {
         setSaveState("error");
@@ -142,14 +173,21 @@ export default function PagesManagementPage() {
         return <ServicesFields zh={zh} />;
       case "about":
         return <AboutFields zh={zh} />;
-      case "insights":
-        return <InsightsFields zh={zh} />;
       case "contact":
         return <ContactFields zh={zh} />;
       default:
         return null;
     }
   };
+
+  // Hydration 完成前显示加载状态
+  if (!isHydrated) {
+    return (
+      <div className="h-[calc(100vh-100px)] flex items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-[#111111]/30" />
+      </div>
+    );
+  }
 
   return (
     <Ctx.Provider value={{ get, set, trackUploadedUrl }}>
@@ -257,7 +295,25 @@ export default function PagesManagementPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto">
-              <div className="px-8 py-8 max-w-3xl">{renderFields()}</div>
+              <div className="px-8 py-8 max-w-3xl">
+                {isLoading ? (
+                  <div
+                    className="space-y-6 animate-pulse"
+                    aria-busy="true"
+                    aria-label="加载页面内容"
+                  >
+                    <div className="h-6 w-56 rounded-md bg-black/[0.06]" />
+                    <div className="h-10 w-full rounded-lg bg-black/[0.06]" />
+                    <div className="h-10 w-full rounded-lg bg-black/[0.06]" />
+                    <div className="h-28 w-full rounded-lg bg-black/[0.06]" />
+                    <p className="text-[12px] text-[#111111]/40 pt-2">
+                      正在加载当前语言内容…
+                    </p>
+                  </div>
+                ) : (
+                  renderFields()
+                )}
+              </div>
             </div>
           </section>
         </div>

@@ -4,7 +4,6 @@ import {
   Package,
   MessageSquare,
   Bell,
-  TrendingUp,
   ArrowUpRight,
   Clock,
   ChevronRight,
@@ -81,15 +80,6 @@ export default function DashboardPage() {
       accent: "#f97316",
       badge: stats && stats.unreadInquiries > 0 ? "紧急" : null,
     },
-    {
-      id: "weekly-views",
-      label: "本周浏览量",
-      value: "—",
-      sub: "暂未接入统计",
-      icon: TrendingUp,
-      accent: "#111111",
-      badge: null,
-    },
   ];
 
   const activeInq = stats?.recentInquiries?.find(inq => inq.id === activeInquiryId) || null;
@@ -101,7 +91,7 @@ export default function DashboardPage() {
 
 
       {/* ── 统计卡片 ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {STATS.map(({ id, label, value, sub, icon: Icon, accent, badge }) => (
           <div
             key={id}

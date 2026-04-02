@@ -38,9 +38,9 @@ export default function GlobalFab() {
       <div className="fixed bottom-12 md:bottom-16 right-8 z-[90] flex flex-col gap-4 items-center">
         <button 
           onClick={openInquiryModal}
-          className="relative w-16 h-16 rounded-full bg-[#111111] text-[#D4AF37] shadow-[0_10px_40px_rgba(0,0,0,0.3)] flex items-center justify-center hover:scale-110 transition-transform"
+          className="relative w-16 h-16 rounded-full bg-[#111110] text-[#C8960A] shadow-[0_10px_40px_rgba(0,0,0,0.3)] flex items-center justify-center hover:scale-110 transition-transform"
         >
-          <div className="absolute inset-0 rounded-full border border-[#D4AF37] animate-ping opacity-30"></div>
+          <div className="absolute inset-0 rounded-full border border-[#C8960A] animate-ping opacity-30"></div>
           <MessageSquare size={24} />
         </button>
         {showTop && (

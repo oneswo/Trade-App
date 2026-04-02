@@ -256,94 +256,118 @@ export default function SettingsPage() {
             1. 品牌资产 (Brand Assets)
         ══════════════════════════════════════════ */}
         <section className="rounded-xl border border-black/[0.06] bg-white p-8 shadow-sm">
-          
-          <div className="grid grid-cols-3 gap-6 items-stretch">
-            <div className="flex flex-col">
-              <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase">
-                Logo 图片（全局通用）
-              </label>
-              <FieldHint>→ 导航栏左上角标识，留空变默认</FieldHint>
-              <div className="mt-auto pt-2">
-                <input
-                  type="file"
-                  ref={logoInputRef}
-                  className="hidden"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  onChange={handleLogoUpload}
-                />
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
+            <div className="flex h-full flex-col rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
+              <div>
+                <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase">
+                  Logo 图片（全局通用）
+                </label>
+                <FieldHint>→ 导航栏左上角标识。建议上传透明底横版 Logo，留空则显示默认文字</FieldHint>
+              </div>
+
+              <input
+                type="file"
+                ref={logoInputRef}
+                className="hidden"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleLogoUpload}
+              />
+
+              <div className="mt-2 flex-1 space-y-3">
                 <div
                   onClick={() => !uploadingLogo && logoInputRef.current?.click()}
-                  className={`flex h-[48px] w-full cursor-pointer items-center justify-center rounded-lg border border-dashed transition-colors ${
+                  className={`relative flex min-h-[148px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-dashed transition-colors ${
                     uploadingLogo
                       ? "border-black/10 bg-black/5 cursor-wait"
                       : logoUploadError
                       ? "border-red-300 bg-red-50"
-                      : "border-black/20 bg-[#FAFAFA] hover:border-black/40 hover:bg-white"
+                      : "border-black/15 bg-white hover:border-black/35"
                   }`}
                 >
                   {uploadingLogo ? (
-                    <div className="flex items-center gap-1.5">
-                      <Loader2 size={15} className="animate-spin text-[#111111]/40" />
-                      <span className="text-[12px] font-semibold text-[#111111]/40">上传中...</span>
+                    <div className="flex items-center gap-2">
+                      <Loader2 size={16} className="animate-spin text-[#111111]/40" />
+                      <span className="text-[12px] font-semibold text-[#111111]/45">上传中...</span>
                     </div>
                   ) : settings.logoImageUrl ? (
                     /* eslint-disable-next-line @next/next/no-img-element -- admin preview */
                     <img
                       src={settings.logoImageUrl}
                       alt="Logo 预览"
-                      className="h-full w-full rounded-lg object-contain p-2"
+                      className="h-full w-full object-contain p-4"
                     />
                   ) : (
-                    <div className="flex items-center gap-1.5">
-                      <ImageIcon size={15} className="text-[#111111]/30" />
-                      <span className="text-[12px] font-semibold text-[#111111]/40">点击上传（JPG / PNG / WEBP / GIF）</span>
+                    <div className="flex flex-col items-center gap-2 text-center px-6">
+                      <ImageIcon size={20} className="text-[#111111]/25" />
+                      <span className="text-[12px] font-semibold text-[#111111]/45">
+                        点击上传 Logo
+                      </span>
+                      <span className="text-[11px] text-[#111111]/30">
+                        支持 JPG / PNG / WEBP / GIF
+                      </span>
                     </div>
                   )}
                 </div>
+
                 {logoUploadError && (
-                  <p className="mt-1.5 text-[11px] font-bold text-red-500">{logoUploadError}</p>
+                  <p className="text-[11px] font-bold text-red-500">{logoUploadError}</p>
                 )}
-                {settings.logoImageUrl && !uploadingLogo && !logoUploadError && (
+
+                <div className="flex gap-3">
                   <button
+                    type="button"
+                    onClick={() => !uploadingLogo && logoInputRef.current?.click()}
+                    disabled={uploadingLogo}
+                    className="flex-1 rounded-lg border border-black/10 bg-white px-4 py-2.5 text-[12px] font-bold text-[#111111] transition-colors hover:bg-[#FAFAFA] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {settings.logoImageUrl ? "更换图片" : "上传图片"}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => updateField("logoImageUrl", null)}
-                    className="mt-1.5 text-[11px] text-red-500 hover:text-red-700 transition-colors w-full text-center block"
+                    disabled={!settings.logoImageUrl || uploadingLogo}
+                    className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[12px] font-bold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     移除
                   </button>
-                )}
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1">
-                站点名 (Browser Title)
-                <span className="text-[#D4AF37] ml-1" title="随语言设置变化">🌐</span>
-              </label>
-              <FieldHint>→ 浏览器选项卡窗体顶部的文本</FieldHint>
-              <div className="mt-auto pt-2">
+            <div className="flex h-full flex-col rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
+              <div>
+                <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1">
+                  站点名称（浏览器标题）
+                  <span className="text-[#D4AF37] ml-1" title="随语言设置变化">🌐</span>
+                </label>
+                <FieldHint>→ 浏览器标签页上显示的名称</FieldHint>
+              </div>
+              <div className="mt-2 flex-1">
                 <input
                   type="text"
                   value={settings[langFields.siteName] as string}
                   onChange={(e) => updateField(langFields.siteName, e.target.value)}
                   placeholder={activeTab === "zh" ? "KXTJ 重工机械" : "KXTJ Heavy Machinery"}
-                  className="w-full h-[48px] rounded-lg border border-black/10 bg-[#FAFAFA] px-4 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 focus:bg-white"
+                  className="h-[48px] w-full rounded-lg border border-black/10 bg-white px-4 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1">
-                Logo 文字 (Brand Name)
-                <span className="text-[#D4AF37] ml-1" title="随语言设置变化">🌐</span>
-              </label>
-              <FieldHint>→ 导航栏及网站页脚的品牌文字</FieldHint>
-              <div className="mt-auto pt-2">
+            <div className="flex h-full flex-col rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
+              <div>
+                <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1">
+                  品牌文字（导航 / 页脚）
+                  <span className="text-[#D4AF37] ml-1" title="随语言设置变化">🌐</span>
+                </label>
+                <FieldHint>→ 导航栏和页脚使用的品牌名称</FieldHint>
+              </div>
+              <div className="mt-2 flex-1">
                 <input
                   type="text"
                   value={settings[langFields.logoText] as string}
                   onChange={(e) => updateField(langFields.logoText, e.target.value)}
                   placeholder={activeTab === "zh" ? "中国机械" : "CHINA MACHINERY"}
-                  className="w-full h-[48px] rounded-lg border border-black/10 bg-[#FAFAFA] px-4 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 focus:bg-white"
+                  className="h-[48px] w-full rounded-lg border border-black/10 bg-white px-4 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30"
                 />
               </div>
             </div>
@@ -358,74 +382,75 @@ export default function SettingsPage() {
             <Phone size={17} className="text-[#111111]/40" />
             通讯联络 (Contact Info)
           </h2>
-          
-          <div className="grid grid-cols-2 gap-6 mb-8">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
               <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1.5">
-                <User size={13} /> 联系人姓名 (全局通用)
+                <User size={13} /> 联系人姓名（全局通用）
               </label>
+              <FieldHint>→ 用于页脚、悬浮联系入口等全站统一联系信息</FieldHint>
               <input
                 type="text"
                 value={settings.contactName}
                 onChange={(e) => updateField("contactName", e.target.value)}
                 placeholder="Jack Yin"
-                className="w-full rounded-lg border border-black/10 bg-[#FAFAFA] px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 focus:bg-white"
+                className="w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
               <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1.5">
-                <Phone size={13} /> 联系电话 (全局通用)
+                <Phone size={13} /> 联系电话（全局通用）
               </label>
+              <FieldHint>→ 建议填写带国家区号的号码，例如 `+86 ...`</FieldHint>
               <input
                 type="text"
                 value={settings.contactPhone}
                 onChange={(e) => updateField("contactPhone", e.target.value)}
                 placeholder="+86 17321077956"
-                className="w-full rounded-lg border border-black/10 bg-[#FAFAFA] px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 focus:bg-white"
+                className="w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
               <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1.5">
-                <Mail size={13} /> 邮箱地址 (全局通用)
+                <Mail size={13} /> 邮箱地址（全局通用）
               </label>
+              <FieldHint>→ 用于页脚和联系入口的主邮箱</FieldHint>
               <input
                 type="email"
                 value={settings.contactEmail}
                 onChange={(e) => updateField("contactEmail", e.target.value)}
                 placeholder="sales@company.com"
-                className="w-full rounded-lg border border-black/10 bg-[#FAFAFA] px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 focus:bg-white"
+                className="w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
               <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1.5">
-                <MessageCircle size={13} /> WhatsApp (全局通用)
+                <MessageCircle size={13} /> WhatsApp（全局通用）
               </label>
+              <FieldHint>→ 建议与电话格式统一，方便直接跳转联系</FieldHint>
               <input
                 type="text"
                 value={settings.contactWhatsApp}
                 onChange={(e) => updateField("contactWhatsApp", e.target.value)}
                 placeholder="+86 15375319246"
-                className="w-full rounded-lg border border-black/10 bg-[#FAFAFA] px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 focus:bg-white"
+                className="w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30"
               />
             </div>
-          </div>
 
-          <div className="p-5 rounded-xl border border-black/[0.04] bg-[#FAFAFA]">
-            <div className="space-y-1.5">
+            <div className="xl:col-span-2 rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
               <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1.5">
-                <MapPin size={13} /> 公司地址 
+                <MapPin size={13} /> 公司地址
                 <span className="text-[#D4AF37] ml-1" title="随语言设置变化">🌐</span>
               </label>
-              <FieldHint>→ 前台：页脚「地址」一行，当前录入的语言版会自动显示在对应前台语种中</FieldHint>
+              <FieldHint>→ 前台页脚显示的地址，会随当前语言切换对应版本</FieldHint>
               <textarea
                 rows={2}
                 value={settings[langFields.contactAddress] as string}
                 onChange={(e) => updateField(langFields.contactAddress, e.target.value)}
                 placeholder={activeTab === "zh" ? "中国上海市奉贤区金海路6055号" : "No. 6055, Jinhai Rd, Fengxian District, Shanghai, China"}
-                className="w-full mt-2 rounded-lg border border-black/10 bg-white px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 resize-none"
+                className="w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 resize-none"
               />
             </div>
           </div>
@@ -439,46 +464,48 @@ export default function SettingsPage() {
             <Copyright size={17} className="text-[#111111]/40" />
             版权设置 (Footer Content)
           </h2>
-          
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.1fr] gap-6">
             <div className="space-y-6">
-              <div className="space-y-1.5">
+              <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
                 <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1">
                   版权公司名
                   <span className="text-[#D4AF37] ml-1" title="随语言设置变化">🌐</span>
                 </label>
+                <FieldHint>→ 页脚版权行里显示的公司名称</FieldHint>
                 <input
                   type="text"
                   value={settings[langFields.copyrightText] as string}
                   onChange={(e) => updateField(langFields.copyrightText, e.target.value)}
                   placeholder={activeTab === "zh" ? "中国机械" : "CHINA MACHINERY"}
-                  className="w-full rounded-lg border border-black/10 bg-[#FAFAFA] px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 focus:bg-white"
+                  className="w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
                 <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase">
-                  官方网址 (全局通用)
+                  官方网址（全局通用）
                 </label>
+                <FieldHint>→ 页脚版权行中的官网链接或展示网址</FieldHint>
                 <input
                   type="text"
                   value={settings.copyrightUrl}
                   onChange={(e) => updateField("copyrightUrl", e.target.value)}
                   placeholder="WWW.ONESWO.COM"
-                  className="w-full rounded-lg border border-black/10 bg-[#FAFAFA] px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 focus:bg-white"
+                  className="w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30"
                 />
               </div>
+            </div>
 
-              {/* 沉浸式版权预览 */}
-              <div className="pt-2">
-                <label className="text-[11px] font-bold tracking-[0.1em] text-[#111111]/30 uppercase mb-2 block">前台页脚底部预览渲染</label>
-                <div className="rounded-xl bg-[#111111] px-5 py-4 flex items-center shadow-inner">
-                  <p className="text-[12px] font-bold tracking-widest text-[#FFFFFF]/60 uppercase">
-                    {activeTab === "zh" ? "版权所有" : "Copyright"} © {new Date().getFullYear()}{" "}
-                    {settings[langFields.copyrightText] as string} |{" "}
-                    <span className="text-white hover:underline cursor-pointer">{settings.copyrightUrl}</span>
-                  </p>
-                </div>
+            <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
+              <label className="text-[11px] font-bold tracking-[0.1em] text-[#111111]/30 uppercase mb-3 block">
+                前台页脚预览
+              </label>
+              <div className="flex h-full min-h-[164px] items-center rounded-2xl bg-[#111111] px-5 py-6 shadow-inner">
+                <p className="text-[12px] font-bold tracking-widest text-[#FFFFFF]/60 uppercase leading-relaxed break-all">
+                  {activeTab === "zh" ? "版权所有" : "Copyright"} © {new Date().getFullYear()}{" "}
+                  {settings[langFields.copyrightText] as string} |{" "}
+                  <span className="text-white hover:underline cursor-pointer">{settings.copyrightUrl}</span>
+                </p>
               </div>
             </div>
           </div>
