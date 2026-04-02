@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { Search, Globe, ChevronDown, Home, Package, ShieldCheck, Lightbulb, Info, PhoneCall, X, Factory, Menu } from 'lucide-react';
 import { useSiteSettings, type SiteSettings } from '@/hooks/useSiteSettings';
 import { SUPPORTED_LOCALES, LOCALE_FLAGS, LOCALE_LABELS, isSupportedLocale, type SupportedLocale } from '@/lib/i18n/locales';
+import { openInquiryModal } from '@/lib/inquiries/modal';
 
 export default function Header({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -15,9 +16,6 @@ export default function Header({ initialSettings }: { initialSettings?: SiteSett
   const pathname = usePathname();
   const isZh = locale === 'zh';
   const { settings } = useSiteSettings(initialSettings);
-
-  // 路由变化时关闭移动菜单
-  useEffect(() => { setIsMobileMenuOpen(false); }, [pathname]);
 
   // 获取 Logo 文字
   const logoText = isZh ? settings.logoText : settings.logoTextEn;
@@ -100,7 +98,7 @@ export default function Header({ initialSettings }: { initialSettings?: SiteSett
           </div>
 
           <button
-            onClick={() => window.dispatchEvent(new Event('open-inquiry-modal'))}
+            onClick={openInquiryModal}
             className="hidden md:block bg-[#111111] text-white text-[14px] font-semibold tracking-widest px-6 py-2.5 rounded-full hover:bg-[#D4AF37] hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all duration-300"
           >
             {isZh ? '立即询价' : 'Get a Quote'}
@@ -176,7 +174,7 @@ export default function Header({ initialSettings }: { initialSettings?: SiteSett
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
-                window.dispatchEvent(new Event('open-inquiry-modal'));
+                openInquiryModal();
               }}
               className="w-full bg-[#111111] text-white text-[14px] font-bold tracking-widest py-4 rounded-xl hover:bg-[#D4AF37] transition-all"
             >

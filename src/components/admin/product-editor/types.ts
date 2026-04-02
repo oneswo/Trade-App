@@ -1,3 +1,5 @@
+import type { ProductMediaSlot } from "@/lib/products/media";
+
 export interface CategoryOption {
   slug: string;
   nameZh: string;
@@ -18,6 +20,7 @@ export interface ProductEditorCoreMetrics {
   location: string;
   model: string;
   brand: string;
+  mediaSlots?: ProductMediaSlot[];
 }
 
 export interface ProductEditorSpec {

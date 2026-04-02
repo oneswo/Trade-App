@@ -8,11 +8,14 @@ import {
 import { getPageContentRepo } from "@/lib/data/repository";
 import {
   getPageContentData,
+  collectPageContentMediaUrls,
   pickSharedMediaFields,
+  sanitizePageContentData,
   syncSharedMediaFieldsToAllLocales,
   VALID_PAGE_IDS,
   type ValidPageId,
 } from "@/lib/page-content";
+import { deleteR2Objects, diffR2Urls } from "@/lib/storage/media-storage";
 
 const PAGE_PATH_SUFFIX: Record<ValidPageId, string> = {
   home: "",
@@ -65,8 +68,15 @@ export async function POST(req: Request) {
   }
 
   const repo = getPageContentRepo();
-  const payload = data as Record<string, string>;
+  const payload = sanitizePageContentData(
+    pageId as ValidPageId,
+    data as Record<string, string>
+  );
   const sharedMediaFields = pickSharedMediaFields(payload);
+  const oldRecords = await Promise.all(
+    SUPPORTED_LOCALES.map((targetLocale) => repo.get(pageId as ValidPageId, targetLocale))
+  );
+  const oldUrls = oldRecords.flatMap((record) => collectPageContentMediaUrls(record?.data));
 
   const record = await repo.upsert(pageId, locale, payload);
 
@@ -76,6 +86,17 @@ export async function POST(req: Request) {
       locale,
       sharedMediaFields
     );
+  }
+
+  const nextRecords = await Promise.all(
+    SUPPORTED_LOCALES.map((targetLocale) => repo.get(pageId as ValidPageId, targetLocale))
+  );
+  const nextUrls = nextRecords.flatMap((nextRecord) =>
+    collectPageContentMediaUrls(nextRecord?.data)
+  );
+  const staleUrls = diffR2Urls(oldUrls, nextUrls);
+  if (staleUrls.length > 0) {
+    await deleteR2Objects(staleUrls);
   }
 
   revalidatePath("/api/page-content");

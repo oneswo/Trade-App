@@ -1,16 +1,15 @@
 "use client";
-import React, { useState, useRef, useEffect, type ReactNode } from 'react';
+import React, { useState, useRef, useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import Image from 'next/image';
-import { ArrowRight, ArrowLeft, Settings, ShieldCheck, Globe, Wrench, Factory, PhoneCall, Send, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Settings, ShieldCheck, Globe, Wrench, Factory, PhoneCall, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import NumberTicker from '@/components/ui/number-ticker';
 import AutoCarousel from '@/components/ui/auto-carousel';
-import { useInquirySubmit } from '@/hooks/useInquirySubmit';
 import { useLocale } from 'next-intl';
 import { usePageContent } from '@/hooks/usePageContent';
 import { useCategories } from '@/hooks/useCategories';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useCatalogProducts } from '@/hooks/useProductCatalog';
+import { ProductCardMedia } from '@/components/products/ProductCardMedia';
 
 type PageContentProps = {
   initialContent?: Record<string, string> | null;
@@ -110,7 +109,7 @@ function DeliveryCard({ tag, date, location, title, videoUrl, posterUrl }: {
             </button>
           </>
         ) : posterUrl ? (
-          <Image src={posterUrl} alt={title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" onError={(e) => { e.currentTarget.src = '/hero.png'; }} />
+          <Image src={posterUrl} alt={title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" />
         ) : (
           <div className="w-full h-full bg-[#1a1a1a] flex items-center justify-center">
             <Play size={32} className="text-white/20" />
@@ -132,17 +131,17 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('home', initialContent);
-  const { settings } = useSiteSettings();
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [isFactoryVideoPlaying, setIsFactoryVideoPlaying] = useState(false);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [heroVideoLoaded, setHeroVideoLoaded] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const newsScrollRef = useRef<HTMLDivElement>(null);
-  const { submitState, submitMessage, handleSubmit } = useInquirySubmit({
-    source: "home-page-cta",
-  });
   const { categories: catList, loading: catsLoading } = useCategories();
   const { products: catalogProducts, loading: productsLoading } = useCatalogProducts();
   const heroVideoUrl = c('hero.videoUrl', '');
@@ -157,10 +156,6 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
     }
   }, [heroVideoUrl, heroPosterUrl]);
 
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
-  
   // 优先使用 poster，如果没有则不显示图片（只显示黑色背景）
   const activePoster = heroPosterUrl;
   const activeVideo  = heroVideoUrl;
@@ -310,7 +305,7 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
           <AutoCarousel categories={catList.map((cat) => ({
             name: isZh ? cat.nameZh : cat.nameEn,
             type: cat.slug,
-            img:  cat.imageUrl || '/hero.png',
+            img: cat.imageUrl || null,
           }))} />
         ) : (
           <div className="px-8 pb-16 text-center text-gray-400 text-sm py-20">
@@ -348,7 +343,12 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
             ) : catalogProducts.length > 0 ? catalogProducts.slice(0, 6).map((item, index) => (
               <Link href={item.slug ? `/products/${item.slug}` as `/${string}` : '/products'} key={index} className="group bg-white flex flex-col cursor-pointer hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden pb-8 border border-gray-200">
                 <div className="relative w-full aspect-[4/3] bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
-                  <Image src={item.image || '/hero.png'} alt={item.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" onError={(e) => { e.currentTarget.src = '/hero.png'; }} />
+                  <ProductCardMedia
+                    src={item.coverMediaUrl}
+                    type={item.coverMediaType}
+                    alt={item.title}
+                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
+                  />
                   <div className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-lg z-10 bg-[#D4AF37]">
                     {c('hot.inStockLabel', isZh ? '现货就绪' : 'In Stock')}
                   </div>
@@ -422,7 +422,7 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
           <div className="relative min-h-[400px] lg:min-h-full flex items-center justify-center group overflow-hidden bg-black">
             {isFactoryVideoPlaying ? (
               <video autoPlay controls className="absolute inset-0 w-full h-full object-cover z-20 animate-in fade-in duration-1000">
-                <source src={depthVideoUrl || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'} type="video/mp4" />
+                <source src={depthVideoUrl} type="video/mp4" />
               </video>
             ) : (
               <>
@@ -439,7 +439,9 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
                      className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000"
                    />
                  ) : (
-                   <Image src="/hero.png" alt="KXTJ Global Factory Base" fill unoptimized className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000" />
+                   <div className="absolute inset-0 flex items-center justify-center bg-[#111111] text-white/30">
+                     <Play size={36} />
+                   </div>
                  )}
                  {/* 超酷的左侧黑色渐变滤镜，让两色完美融合 */}
                  <div className="absolute inset-0 bg-gradient-to-r from-[#111111] via-transparent to-transparent z-0"></div>
@@ -528,98 +530,6 @@ export default function HomePageClient({ initialContent, heroBlur }: PageContent
         </div>
       </section>
 
-      {/* =========================================
-          Step 7: 终极收网联络池 (Rapid Inquiry)
-      ============================================= */}
-      <section className="relative w-full py-10 lg:py-16 bg-white overflow-hidden">
-        <div className="absolute inset-0 bg-[#FAFAFA] h-1/2"></div>
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 relative z-10">
-          <FadeUp className="bg-[#111111] p-10 md:p-16 lg:p-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[2rem] md:rounded-[3rem]">
-            <div>
-               <h2 className="text-3xl md:text-4xl xl:text-5xl font-black text-white mb-6 leading-tight whitespace-nowrap overflow-hidden">
-                 {c('cta.title1', isZh ? '未找到心仪的' : "Can't Find the")} <span className="text-[#D4AF37]">{c('cta.titleGold', isZh ? '特定机型？' : 'Right Machine?')}</span>
-               </h2>
-               <p className="text-gray-400 mb-10 leading-relaxed max-w-md">{c('cta.desc', isZh ? '提供您的工况需求和采买预算，我们的海外专属采购代表将在 12 小时内为您在全球自有仓储网络中匹配最佳的替代品方案。' : 'Share your operating requirements and target budget, and our dedicated sourcing representative will identify the best-matched alternatives from our global inventory network within 12 hours.')}</p>
-               <div className="flex flex-col sm:flex-row gap-8 pt-8 border-t border-gray-800">
-                  <div className="flex gap-4">
-                     <div className="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center flex-shrink-0">
-                        <PhoneCall size={20} className="text-[#D4AF37]" />
-                     </div>
-                     <div>
-                       <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{c('cta.directContactLabel', isZh ? '专属直联' : 'Direct Contact')}</p>
-                        <a href={`tel:${c('cta.phone', '+8617321077956').replace(/\s/g,'')}`} className="text-white font-bold tracking-wider hover:text-[#D4AF37] transition-colors block">{c('cta.phone', '+86 1732 107 7956')}</a>
-                     </div>
-                  </div>
-                  <div className="flex gap-4">
-                     <div className="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center flex-shrink-0">
-                        <Globe size={20} className="text-[#D4AF37]" />
-                     </div>
-                     <div>
-                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{c('cta.hqLabel', isZh ? '总部寻址' : 'Headquarters')}</p>
-                        <p className="text-white font-bold tracking-wider">{c('cta.hqAddr', isZh ? '中国上海市青浦区重型机械工业园 88 号' : 'No. 88 Heavy Machinery Park, Qingpu, Shanghai, China')}</p>
-                     </div>
-                  </div>
-               </div>
-             </div>
-            
-            <form className="space-y-6 bg-white p-8 md:p-12 shadow-2xl rounded-3xl" onSubmit={handleSubmit}>
-               <input
-                 type="text"
-                 name="website"
-                 autoComplete="off"
-                 tabIndex={-1}
-                 className="hidden"
-                 aria-hidden="true"
-               />
-               <h3 className="text-2xl font-black text-[#111111] mb-8">{c('cta.formTitle', isZh ? '即刻获取定制报价' : 'Get Your Custom Quote Now')}</h3>
-               <div className="grid grid-cols-1 gap-6">
-                 {/* 精简为最高转化的纯正 3 字段收网节点 */}
-                 <div className="border-b border-gray-300 focus-within:border-[#111111] transition-colors group">
-                   <input name="name" required type="text" placeholder={isZh ? '您的称呼 *' : 'Your Name *'} className="w-full py-3 text-sm focus:outline-none bg-transparent font-medium group-focus-within:placeholder:text-gray-400" />
-                 </div>
-                 <div className="border-b border-gray-300 focus-within:border-[#111111] transition-colors group">
-                   <input name="contact" required type="text" placeholder={isZh ? 'WhatsApp / 邮箱 *' : 'WhatsApp / Email *'} className="w-full py-3 text-sm focus:outline-none bg-transparent font-medium group-focus-within:placeholder:text-gray-400" />
-                 </div>
-                 <div className="border-b border-gray-300 focus-within:border-[#111111] transition-colors group pt-2">
-                   <textarea name="message" required placeholder={c('cta.formPlaceholder', isZh ? '意向机械与特定工况需求 (必填)' : 'Machine of interest & specific operating requirements (required)')} rows={3} className="w-full py-3 text-sm focus:outline-none bg-transparent resize-none font-medium group-focus-within:placeholder:text-gray-400"></textarea>
-                 </div>
-               </div>
-               {submitMessage ? (
-                 <p className={`text-xs font-medium ${submitState === "success" ? "text-green-600" : "text-red-500"}`}>
-                   {submitMessage}
-                 </p>
-               ) : null}
-               <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
-                 <div className="flex items-center gap-3 shrink-0 lg:mr-4">
-                     {settings?.contactWhatsApp && (
-                        <a href={`https://wa.me/${settings.contactWhatsApp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white flex items-center justify-center transition-all duration-300 group" title={c('cta.social.whatsappTitle', 'WhatsApp')}>
-                          <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M11.996 0a11.965 11.965 0 00-10.23 18.238L.044 24l6.012-1.632A11.968 11.968 0 1011.996 0zm6.657 17.244c-.266.75-1.523 1.455-2.107 1.517-.5.061-1.144.15-3.333-.762-2.646-1.096-4.35-3.805-4.48-4.004-.13-.198-1.071-1.423-1.071-2.716 0-1.291.674-1.924.912-2.19.239-.265.518-.33.69-.33.17 0 .343 0 .493.007.158.007.368-.06.574.4.215.474.721 1.777.786 1.909.066.133.111.288.026.467-.085.18-.129.294-.258.438-.13.14-.268.309-.387.433-.13.13-.264.276-.115.539.148.261.662 1.11 1.402 1.874.953.985 1.79 1.285 2.052 1.405.263.12.417.098.572-.078.155-.175.67-1.02.85-1.371.18-.35.358-.291.597-.197.24.093 1.517.714 1.776.843.256.13.43.193.493.302.062.108.062.631-.205 1.38z"/></svg>
-                        </a>
-                     )}
-                     {settings?.socialLinkedin && (
-                        <a href={settings.socialLinkedin} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white flex items-center justify-center transition-all duration-300 group" title={c('cta.social.linkedinTitle', 'LinkedIn')}>
-                          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" className="group-hover:scale-110 transition-transform"><path d="M22.23 0H1.77C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.008zM7.12 20.452H3.558V9h3.562v11.452zm-1.78-13.02c-1.144 0-2.065-.925-2.065-2.064 0-1.139.92-2.064 2.065-2.064 1.14 0 2.064.925 2.064 2.064 0 1.139-.924 2.064-2.064 2.064zm15.11 13.02h-3.553v-5.569c0-1.328-.027-3.037-1.852-3.037-1.854 0-2.136 1.445-2.136 2.939v5.667H9.354V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286z"/></svg>
-                        </a>
-                     )}
-                     {settings?.socialFacebook && (
-                        <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-gray-200 text-gray-400 hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all duration-300 group" title={c('cta.social.facebookTitle', 'Facebook')}>
-                          <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" className="group-hover:scale-110 transition-transform"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                        </a>
-                     )}
-                 </div>
-                 
-                 <button
-                   type="submit"
-                   disabled={submitState === "loading"}
-                   className="flex-1 w-full h-14 rounded-full bg-[#111111] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#D4AF37] hover:text-black transition-colors flex items-center justify-center gap-3 shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
-                 >
-                   {submitState === "loading" ? (isZh ? '提交中...' : 'Submitting...') : c('cta.submitBtn', isZh ? '获取专属定制报价' : 'Get Custom Quote')} <Send size={16} />
-                 </button>
-               </div>
-            </form>
-          </FadeUp>
-        </div>
-      </section>
     </main>
   );
 }

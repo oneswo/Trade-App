@@ -9,10 +9,11 @@ import {
   CheckCircle2, ShieldCheck, Ship,
   ArrowUpRight, Anchor, Target, Factory, ArrowRight
 } from 'lucide-react';
-import { useInquirySubmit } from "@/hooks/useInquirySubmit";
 import { useCatalogProductDetail } from '@/hooks/useProductCatalog';
 import { usePageContent } from '@/hooks/usePageContent';
 import { useLocale } from 'next-intl';
+import { ProductCardMedia } from '@/components/products/ProductCardMedia';
+import { openInquiryModal } from '@/lib/inquiries/modal';
 
 export default function ProductDetailPage() {
   const params = useParams<{ slug: string | string[] }>();
@@ -22,17 +23,7 @@ export default function ProductDetailPage() {
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug || '';
   const { product, relatedProducts, loading } = useCatalogProductDetail(slug);
   const [activeMedia, setActiveMedia] = useState<number>(0); 
-  const { submitState, submitMessage, handleSubmit } = useInquirySubmit({
-    source: "product-detail-cta",
-  });
   const { get: cms } = usePageContent("product-detail");
-
-  const scrollToAnchor = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   if (loading) {
     return (
@@ -61,7 +52,12 @@ export default function ProductDetailPage() {
   const normalizedMediaIndex =
     activeMedia < 0
       ? -1
-      : Math.min(activeMedia, Math.max(product.images.length - 1, 0));
+      : product.images.length === 0
+        ? -1
+        : Math.min(activeMedia, Math.max(product.images.length - 1, 0));
+  const deliveryCard1Image = cms('delivery.card1.image', '');
+  const deliveryCard2Image = cms('delivery.card2.image', '');
+  const deliveryCard3Image = cms('delivery.card3.image', '');
 
   return (
     <main className="w-full bg-[#FAFAFA] min-h-screen pt-[80px] md:pt-[100px] pb-20">
@@ -89,13 +85,12 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-7 order-1 relative w-full aspect-[16/10] bg-gray-100 border border-gray-200 overflow-hidden group cursor-crosshair rounded-2xl">
             {normalizedMediaIndex >= 0 ? (
               <Image
-                src={product.images[normalizedMediaIndex] || product.image || '/images/products/1.jpg'}
+                src={product.images[normalizedMediaIndex]}
                 alt={product.title}
                 fill
                 unoptimized
                 priority
                 className="object-cover group-hover:scale-105 transition-transform duration-[1500ms] ease-out"
-                onError={(e) => { e.currentTarget.src = '/images/products/1.jpg'; }}
               />
             ) : (
               product.videoUrl ? (
@@ -182,7 +177,17 @@ export default function ProductDetailPage() {
                 className={`relative w-full aspect-square border-2 p-[2px] transition-all outline-none group overflow-hidden bg-white rounded-xl ${normalizedMediaIndex === -1 ? 'border-[#111111]' : 'border-transparent hover:border-gray-300'}`}
               >
                 <div className="w-full h-full relative overflow-hidden bg-gray-100 rounded-[8px]">
-                  <Image src={product.images[0] || '/images/products/1.jpg'} alt="Video Thumbnail" fill unoptimized className="object-cover" onError={(e) => { e.currentTarget.src = '/images/products/1.jpg'; }} />
+                  {product.images[0] ? (
+                    <Image
+                      src={product.images[0]}
+                      alt="Video Thumbnail"
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-[#111111]" />
+                  )}
                   
                   {/* 半透明遮罩与播放按钮 */}
                   <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center transition-colors group-hover:bg-black/40 z-10">
@@ -204,7 +209,7 @@ export default function ProductDetailPage() {
                 className={`relative w-full aspect-square border-2 p-[2px] transition-all outline-none group rounded-xl ${normalizedMediaIndex === index ? 'border-[#111111]' : 'border-transparent hover:border-gray-300'}`}
               >
                 <div className="w-full h-full relative overflow-hidden bg-gray-100 rounded-[8px]">
-                  <Image src={img} alt={`Thumbnail ${index + 1}`} fill unoptimized className="object-cover" onError={(e) => { e.currentTarget.src = '/images/products/1.jpg'; }} />
+                  <Image src={img} alt={`Thumbnail ${index + 1}`} fill unoptimized className="object-cover" />
                   {normalizedMediaIndex !== index && <div className="absolute inset-0 bg-white/40 transition-opacity duration-300 group-hover:opacity-0"></div>}
                 </div>
               </button>
@@ -214,7 +219,7 @@ export default function ProductDetailPage() {
           {/* ----- [4] 右下角 (BOTTOM RIGHT) / ROW 2：大号黑金转化按钮 ----- */}
           <div className="lg:col-span-5 order-4 flex items-stretch pt-2 lg:pt-0">
             <button 
-               onClick={() => scrollToAnchor('inquiry-cta')}
+               onClick={openInquiryModal}
                className="w-full h-full bg-[#111111] text-white p-5 xl:p-6 border border-[#111111] relative overflow-hidden group flex items-center justify-between shadow-lg rounded-2xl"
             >
               <div className="absolute top-0 left-0 w-full h-full bg-[#D4AF37] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out z-0"></div>
@@ -295,7 +300,11 @@ export default function ProductDetailPage() {
           {/* Card 1 */}
           <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
             <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
-               <Image src={cms('delivery.card1.image', '/images/products/2.jpg')} alt="Inspection" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               {deliveryCard1Image ? (
+                 <Image src={deliveryCard1Image} alt="Inspection" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               ) : (
+                 <div className="absolute inset-0 bg-[#111111]" />
+               )}
                <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
                  <Target size={56} strokeWidth={1.5} />
                </div>
@@ -311,7 +320,11 @@ export default function ProductDetailPage() {
           {/* Card 2 */}
           <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
             <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
-               <Image src={cms('delivery.card2.image', '/images/products/4.jpg')} alt="Warehouse" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               {deliveryCard2Image ? (
+                 <Image src={deliveryCard2Image} alt="Warehouse" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               ) : (
+                 <div className="absolute inset-0 bg-[#111111]" />
+               )}
                <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
                  <Factory size={56} strokeWidth={1.5} />
                </div>
@@ -327,7 +340,11 @@ export default function ProductDetailPage() {
           {/* Card 3 */}
           <div className="group flex flex-col bg-white border border-gray-200 h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 hover:border-transparent transition-all duration-500">
             <div className="w-full aspect-video bg-neutral-900 relative overflow-hidden">
-               <Image src={cms('delivery.card3.image', '/images/products/5.jpg')} alt="Shipping" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               {deliveryCard3Image ? (
+                 <Image src={deliveryCard3Image} alt="Shipping" fill unoptimized className="object-cover opacity-40 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+               ) : (
+                 <div className="absolute inset-0 bg-[#111111]" />
+               )}
                <div className="absolute inset-0 flex items-center justify-center text-white/50 group-hover:scale-110 group-hover:text-[#D4AF37] transition-all duration-700 z-10">
                  <Anchor size={56} strokeWidth={1.5} />
                </div>
@@ -344,81 +361,6 @@ export default function ProductDetailPage() {
       </section>
       )}
 
-      {/* ======================= 版块 4：压盖级横向全宽黑底金线大表单 (Transverse CTA Form) ======================= */}
-      <section id="inquiry-cta" className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12 mb-24 lg:mb-32 scroll-mt-32">
-        <div className="w-full bg-[#111111] text-white p-8 md:p-12 lg:p-16 xl:p-20 shadow-2xl relative overflow-hidden group flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20 rounded-3xl">
-          
-          <div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37] transform origin-left scale-x-50 group-hover:scale-x-100 transition-transform duration-700 ease-out"></div>
-          
-          <div className="lg:w-[45%] xl:w-1/2">
-            <h2 className="text-3xl md:text-4xl lg:text-[42px] font-black mb-6 tracking-tight leading-[1.15]">
-              拿到这台怪兽的<br/>离岸真实底价
-            </h2>
-            <p className="text-gray-400 text-sm md:text-base leading-relaxed font-medium tracking-wide">
-              请留下您的联系通道以及您的终局目的港。<br/>
-              KXTJ 高阶售前工程师将在 10 分钟内向您直接对口发送 <span className="text-[#D4AF37]">4K机况实测长镜头</span> 与到港 CFR 最终清算清单。
-            </p>
-          </div>
-
-          <div className="lg:w-[50%] xl:w-[45%] w-full">
-            <form className="flex flex-col gap-6 w-full bg-white/5 p-8 border border-white/10 backdrop-blur-sm rounded-2xl" onSubmit={handleSubmit}>
-              <input
-                type="text"
-                name="website"
-                autoComplete="off"
-                tabIndex={-1}
-                className="hidden"
-                aria-hidden="true"
-              />
-              <div className="flex flex-col relative group/input">
-                <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-3 group-focus-within/input:text-[#D4AF37] transition-colors">您的姓名或公司称呼</label>
-                <input 
-                  name="name"
-                  required
-                  type="text" 
-                  placeholder="例如：Ahmed / ABC Construction" 
-                  className="bg-transparent border-b border-gray-600 pb-3 text-white focus:outline-none focus:border-white transition-colors text-base placeholder:text-gray-500" 
-                />
-              </div>
-              <div className="flex flex-col relative group/input mt-4">
-                <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-3 group-focus-within/input:text-[#D4AF37] transition-colors">全球极速通讯链路</label>
-                <input 
-                  name="contact"
-                  required
-                  type="text" 
-                  placeholder="您的联系电话或邮箱" 
-                  className="bg-transparent border-b border-gray-600 pb-3 text-white focus:outline-none focus:border-white transition-colors text-base placeholder:text-gray-500" 
-                />
-              </div>
-              <div className="flex flex-col relative group/input mt-4">
-                <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-3 group-focus-within/input:text-[#D4AF37] transition-colors">具体需求描述</label>
-                <textarea
-                  name="message"
-                  required
-                  rows={3}
-                  placeholder="请写明型号需求、预算范围、目的港等关键信息"
-                  className="bg-transparent border-b border-gray-600 pb-3 text-white focus:outline-none focus:border-white transition-colors text-base placeholder:text-gray-500 resize-none"
-                />
-              </div>
-              {submitMessage ? (
-                <p className={`text-xs font-medium ${submitState === "success" ? "text-green-400" : "text-red-400"}`}>
-                  {submitMessage}
-                </p>
-              ) : null}
-              
-              <button 
-                type="submit"
-                disabled={submitState === "loading"}
-                className="mt-6 w-full bg-[#D4AF37] text-black font-black uppercase tracking-[0.15em] text-xs py-5 hover:bg-white transition-colors flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl"
-              >
-                {submitState === "loading" ? "提交中..." : "解锁验车绝密档案录"} <ArrowUpRight size={18} />
-              </button>
-            </form>
-          </div>
-          
-        </div>
-      </section>
-
       {/* ======================= 版块 5：同级段霸主推荐 (Related Products Array) ======================= */}
       <section className="w-full max-w-[1440px] mx-auto px-4 md:px-8 xl:px-12">
         <h3 className="text-xl md:text-2xl font-black text-[#111111] mb-10 tracking-tight flex items-center gap-4">
@@ -429,7 +371,12 @@ export default function ProductDetailPage() {
           {relatedProducts.map(item => (
             <Link key={item.id} href={`/products/${item.slug}`} className="bg-white border border-gray-200 hover:border-[#111111] transition-colors group flex flex-col relative rounded-2xl overflow-hidden hover:shadow-xl">
               <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
-                 <Image src={item.image || '/images/products/1.jpg'} alt={item.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-[800ms] grayscale group-hover:grayscale-0" onError={(e) => { e.currentTarget.src = '/images/products/1.jpg'; }} />
+                 <ProductCardMedia
+                   src={item.coverMediaUrl}
+                   type={item.coverMediaType}
+                   alt={item.title}
+                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-[800ms] grayscale group-hover:grayscale-0"
+                 />
                  <div className="absolute top-4 left-4 bg-[#111111] text-white px-3 py-1 font-black text-[13px] tracking-widest uppercase rounded-lg">
                    {item.year}
                  </div>

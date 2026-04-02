@@ -60,7 +60,7 @@ export default function InsightDetailPage({ params }: Props) {
       {/* Hero 封面 */}
       {article.coverImageUrl && (
         <div className="relative w-full h-[420px] bg-[#111111] overflow-hidden">
-          <Image src={article.coverImageUrl} alt={title ?? ''} fill unoptimized priority className="object-cover opacity-70" onError={(e) => { e.currentTarget.src = '/images/insights/1.jpg'; }} />
+          <Image src={article.coverImageUrl} alt={title ?? ''} fill unoptimized priority className="object-cover opacity-70" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/50 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 max-w-[800px] mx-auto px-8 pb-12">
             <div className="inline-block bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-[#111111] mb-4">

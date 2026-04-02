@@ -64,14 +64,9 @@ export default function HomeFields({ zh }: { zh: boolean }) {
         <FieldRow label="右下角「查看全部」按钮文字">
           <TextInput name="hot.btnText" defaultValue={zh ? "游览所有 300+ 在线设备" : "View All 300+ Listed Machines"} />
         </FieldRow>
-        <div className="grid grid-cols-2 gap-4">
-          <FieldRow label="卡片角标：现货状态">
-            <TextInput name="hot.inStockLabel" defaultValue={zh ? "现货就绪" : "In Stock"} />
-          </FieldRow>
-          <FieldRow label="CTA 联系标签">
-            <TextInput name="cta.directContactLabel" defaultValue={zh ? "专属直联" : "Direct Contact"} />
-          </FieldRow>
-        </div>
+        <FieldRow label="卡片角标：现货状态">
+          <TextInput name="hot.inStockLabel" defaultValue={zh ? "现货就绪" : "In Stock"} />
+        </FieldRow>
         <FieldRow label="无产品时提示文案">
           <TextInput name="hot.emptyText" defaultValue={zh ? "暂无在售产品，请在后台「产品列表」中添加" : "No products yet. Add them in the admin panel."} />
         </FieldRow>
@@ -190,51 +185,6 @@ export default function HomeFields({ zh }: { zh: boolean }) {
           </CardBlock>
         ))}
       </div>
-
-      <div className="space-y-5">
-        <SectionHeader title="模块七 — 底部黑色询盘表单区（CTA）" note="页面最底部的深色背景询盘卡片" />
-        <FieldRow label="主标题 — 普通色部分">
-          <TextInput name="cta.title1" defaultValue={zh ? "未找到心仪的" : "Can't Find the"} />
-        </FieldRow>
-        <FieldRow label="主标题 — 金色高亮部分">
-          <TextInput name="cta.titleGold" defaultValue={zh ? "特定机型？" : "Right Machine?"} />
-        </FieldRow>
-        <FieldRow label="描述文字">
-          <TextArea name="cta.desc" defaultValue={zh ? "提供您的工况需求和采买预算，我们的海外专属采购代表将在 12 小时内为您在全球自有仓储网络中匹配最佳的替代品方案。" : "Share your requirements and budget, and our sourcing representative will find the best match within 12 hours."} />
-        </FieldRow>
-        <div className="grid grid-cols-2 gap-4">
-          <FieldRow label="联系电话">
-            <TextInput name="cta.phone" defaultValue="+86 1732 107 7956" />
-          </FieldRow>
-          <FieldRow label="总部标签文字">
-            <TextInput name="cta.hqLabel" defaultValue={zh ? "总部寻址" : "Headquarters"} />
-          </FieldRow>
-        </div>
-        <FieldRow label="总部地址">
-          <TextInput name="cta.hqAddr" defaultValue={zh ? "中国上海市青浦区重型机械工业园 88 号" : "No. 88 Heavy Machinery Park, Qingpu, Shanghai, China"} />
-        </FieldRow>
-        <FieldRow label="表单标题文字">
-          <TextInput name="cta.formTitle" defaultValue={zh ? "即刻获取定制报价" : "Get Your Custom Quote Now"} />
-        </FieldRow>
-        <FieldRow label="表单描述框占位文字">
-          <TextInput name="cta.formPlaceholder" defaultValue={zh ? "请描述您的意向机型与工况需求..." : "Describe your machine requirements and operating conditions..."} />
-        </FieldRow>
-        <FieldRow label="表单提交按钮文字">
-          <TextInput name="cta.submitBtn" defaultValue={zh ? "立即委托寻机" : "Commission a Search Now"} />
-        </FieldRow>
-        <div className="grid grid-cols-3 gap-4">
-          <FieldRow label="社交图标标题：WhatsApp">
-            <TextInput name="cta.social.whatsappTitle" defaultValue="WhatsApp" />
-          </FieldRow>
-          <FieldRow label="社交图标标题：LinkedIn">
-            <TextInput name="cta.social.linkedinTitle" defaultValue="LinkedIn" />
-          </FieldRow>
-          <FieldRow label="社交图标标题：Facebook">
-            <TextInput name="cta.social.facebookTitle" defaultValue="Facebook" />
-          </FieldRow>
-        </div>
-      </div>
-
     </div>
   );
 }

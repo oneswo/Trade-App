@@ -1,20 +1,17 @@
 "use client";
 
 import { useRef } from "react";
+import type { ProductMediaSlot } from "@/lib/products/media";
 import {
   Check,
   Image as ImageIcon,
   Plus,
   Trash2,
-  X,
 } from "lucide-react";
 
 // ─── 类型 ────────────────────────────────────────────────────────────────────
 
-export interface MediaSlot {
-  url: string;        // 上传后的公开 URL，空串表示未上传
-  type: "image" | "video" | "";  // 文件类型
-}
+export type MediaSlot = ProductMediaSlot;
 
 export interface SlotUploadState {
   uploading: boolean;

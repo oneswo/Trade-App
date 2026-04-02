@@ -9,9 +9,11 @@ import { createContext, useContext } from "react";
 export const Ctx = createContext<{
   get: (name: string, fallback: string) => string;
   set: (name: string, val: string) => void;
+  trackUploadedUrl: (url: string) => void;
 }>({
   get: (_, fallback) => fallback,
   set: () => {},
+  trackUploadedUrl: () => {},
 });
 
 export function useCtx() {

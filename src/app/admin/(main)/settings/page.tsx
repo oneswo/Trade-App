@@ -6,7 +6,6 @@ import {
   Image as ImageIcon,
   Phone,
   Globe2,
-  Link2,
   Mail,
   MapPin,
   User,
@@ -16,6 +15,7 @@ import {
   Copyright,
 } from "lucide-react";
 import { clearSettingsCache } from "@/hooks/useSiteSettings";
+import { cleanupTrackedMediaUrls } from "@/lib/admin/media-cleanup";
 
 interface SiteSettings {
   siteName: string;
@@ -29,12 +29,6 @@ interface SiteSettings {
   contactWhatsApp: string;
   contactAddress: string;
   contactAddressEn: string;
-  socialX: string;
-  socialInstagram: string;
-  socialFacebook: string;
-  socialYoutube: string;
-  socialTiktok: string;
-  socialLinkedin: string;
   copyrightText: string;
   copyrightTextEn: string;
   copyrightUrl: string;
@@ -84,6 +78,7 @@ export default function SettingsPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const sessionUploadedUrlsRef = useRef<Set<string>>(new Set());
 
   const ERROR_MESSAGES: Record<string, string> = {
     image_too_large: "图片超过 8MB 限制，请压缩后重试",
@@ -99,8 +94,9 @@ export default function SettingsPage() {
     setUploadingLogo(true);
     setLogoUploadError(null);
     try {
-      const { directUpload, UploadError } = await import("@/lib/upload");
+      const { directUpload } = await import("@/lib/upload");
       const result = await directUpload(file, "image");
+      sessionUploadedUrlsRef.current.add(result.url);
       updateField("logoImageUrl", result.url);
       setLogoUploadError(null);
     } catch (err) {
@@ -126,6 +122,19 @@ export default function SettingsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const cleanupPendingSessionUploads = (keepalive?: boolean) => {
+    if (sessionUploadedUrlsRef.current.size === 0) return;
+    const trackedUrls = [...sessionUploadedUrlsRef.current];
+    sessionUploadedUrlsRef.current.clear();
+    void cleanupTrackedMediaUrls(trackedUrls, [], keepalive ? { keepalive: true } : undefined);
+  };
+
+  useEffect(() => {
+    return () => {
+      cleanupPendingSessionUploads(true);
+    };
+  }, []);
+
   const handleSave = async () => {
     if (!settings) return;
     setSaving(true);
@@ -139,6 +148,12 @@ export default function SettingsPage() {
       });
       const result = await res.json();
       if (result.ok) {
+        const trackedUrls = [...sessionUploadedUrlsRef.current];
+        sessionUploadedUrlsRef.current.clear();
+        await cleanupTrackedMediaUrls(
+          trackedUrls,
+          settings.logoImageUrl ? [settings.logoImageUrl] : []
+        );
         clearSettingsCache();
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
@@ -417,15 +432,15 @@ export default function SettingsPage() {
         </section>
 
         {/* ══════════════════════════════════════════
-            3. 版权与社交媒体 (Footer Content)
+            3. 版权设置 (Footer Content)
         ══════════════════════════════════════════ */}
         <section className="rounded-xl border border-black/[0.06] bg-white p-8 shadow-sm">
           <h2 className="text-base font-bold tracking-[0.08em] text-[#111111] uppercase mb-6 flex items-center gap-2">
             <Copyright size={17} className="text-[#111111]/40" />
-            版权与社交设置 (Footer Content)
+            版权设置 (Footer Content)
           </h2>
           
-          <div className="grid grid-cols-2 gap-8">
+          <div className="space-y-6">
             <div className="space-y-6">
               <div className="space-y-1.5">
                 <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1">
@@ -465,39 +480,6 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-3 p-5 rounded-xl border border-black/[0.04] bg-[#FAFAFA]">
-              <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase mb-1 block">
-                社交媒体链接 (全局通用)
-              </label>
-              {[
-                { key: "socialX" as const, label: "X (Twitter)", placeholder: "https://x.com/yourhandle" },
-                { key: "socialInstagram" as const, label: "Instagram", placeholder: "https://instagram.com/yourhandle" },
-                { key: "socialFacebook" as const, label: "Facebook", placeholder: "https://facebook.com/yourpage" },
-                { key: "socialYoutube" as const, label: "YouTube", placeholder: "https://youtube.com/@yourchannel" },
-                { key: "socialTiktok" as const, label: "TikTok", placeholder: "https://tiktok.com/@yourhandle" },
-                { key: "socialLinkedin" as const, label: "LinkedIn", placeholder: "https://linkedin.com/company/yourcompany" },
-              ].map((social) => (
-                <div
-                  key={social.key}
-                  className="grid grid-cols-[100px_1fr] items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2.5 transition-colors focus-within:border-black/30"
-                >
-                  <span className="text-[12px] font-bold tracking-wider text-[#111111]/50 uppercase">
-                    {social.label}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Link2 size={13} className="text-[#111111]/20 shrink-0" />
-                    <input
-                      type="text"
-                      value={settings[social.key]}
-                      onChange={(e) => updateField(social.key, e.target.value)}
-                      placeholder={social.placeholder}
-                      className="w-full bg-transparent text-[13px] text-[#111111] placeholder:text-black/20 outline-none"
-                    />
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </section>

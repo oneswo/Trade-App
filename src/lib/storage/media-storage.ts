@@ -171,16 +171,35 @@ export async function deleteR2Objects(urls: (string | null | undefined)[]): Prom
   });
   const bucket = process.env.R2_BUCKET_NAME!;
 
-  const keys = urls
+  const keys = [...new Set(urls
     .filter(Boolean)
     .map((u) => r2KeyFromUrl(u!))
-    .filter(Boolean) as string[];
+    .filter(Boolean) as string[])];
 
-  await Promise.allSettled(
+  if (keys.length === 0) return;
+
+  const results = await Promise.allSettled(
     keys.map((key) =>
       client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
     )
   );
+
+  const failedKeys = results.flatMap((result, index) =>
+    result.status === "rejected" ? [keys[index]] : []
+  );
+
+  if (failedKeys.length > 0) {
+    console.error("[media-storage] Failed to delete R2 objects:", failedKeys);
+  }
+}
+
+export function diffR2Urls(
+  previousUrls: (string | null | undefined)[],
+  nextUrls: (string | null | undefined)[]
+) {
+  const previous = new Set(previousUrls.filter(Boolean) as string[]);
+  const next = new Set(nextUrls.filter(Boolean) as string[]);
+  return [...previous].filter((url) => !next.has(url));
 }
 
 function isR2Configured() {

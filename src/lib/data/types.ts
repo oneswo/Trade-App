@@ -1,3 +1,5 @@
+import type { ProductMediaSlot } from "@/lib/products/media";
+
 export type InquiryStatus = "PENDING" | "CONTACTED" | "CLOSED";
 
 export interface InquiryRecord {
@@ -75,6 +77,7 @@ export interface ProductRecord {
     location?: string;
     model?: string;
     brand?: string;
+    mediaSlots?: ProductMediaSlot[];
   };
   stockAmount?: number;
   enableTrustCards?: boolean;
@@ -293,12 +296,6 @@ export interface SiteSettings {
   contactWhatsApp: string;
   contactAddress: string;
   contactAddressEn: string;
-  socialX: string;
-  socialInstagram: string;
-  socialFacebook: string;
-  socialYoutube: string;
-  socialTiktok: string;
-  socialLinkedin: string;
   copyrightText: string;
   copyrightTextEn: string;
   copyrightUrl: string;
@@ -324,12 +321,6 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   contactWhatsApp: "+86 13866668888",
   contactAddress: "中国上海市黄浦江边",
   contactAddressEn: "Huangpu River, Shanghai, China",
-  socialX: "",
-  socialInstagram: "",
-  socialFacebook: "",
-  socialYoutube: "",
-  socialTiktok: "",
-  socialLinkedin: "",
   copyrightText: "海沃克斯",
   copyrightTextEn: "CHINA MACHINERY",
   copyrightUrl: "www.heavox.com",

@@ -1,11 +1,11 @@
 'use client';
 import { ChevronDown, Check, ArrowRight, X, SlidersHorizontal, ArrowUpRight, Search } from 'lucide-react';
-import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { useState, useEffect, useMemo, Suspense, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCatalogProducts } from '@/hooks/useProductCatalog';
 import { useCategories } from '@/hooks/useCategories';
+import { ProductCardMedia } from '@/components/products/ProductCardMedia';
 
 import { useLocale } from 'next-intl';
 import { usePageContent } from '@/hooks/usePageContent';
@@ -83,6 +83,7 @@ function ProductsContent({ initialContent }: PageContentProps) {
   const [searchQuery, setSearchQuery] = useState(initQ);
   const [sortOption, setSortOption] = useState('newest');
   const didInitUrlRef = useRef(false);
+  const heroBgImage = c('hero.bgImage', '');
 
   /* ── 动态筛选项：从已加载产品数据中提取 ── */
   const dynamicBrands = useMemo(() => {
@@ -225,7 +226,7 @@ function ProductsContent({ initialContent }: PageContentProps) {
       <section className="relative w-full h-[450px] md:h-[500px] flex items-center justify-center bg-[#111111] overflow-hidden">
          {/* 背景暗纹蒙版与网格 */}
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
-         <div className="absolute inset-0 opacity-60 bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]" style={{ backgroundImage: `url('${c('hero.bgImage', '/images/hero/products.png')}')` }}></div>
+         <div className="absolute inset-0 opacity-60 bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]" style={heroBgImage ? { backgroundImage: `url('${heroBgImage}')` } : undefined}></div>
          <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-[#111111]/10 pointer-events-none"></div>
          
          {/* 琥珀色微光 (Radiant Glow) */}
@@ -420,7 +421,12 @@ function ProductsContent({ initialContent }: PageContentProps) {
                    
                    {/* 图像部分 */}
                    <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
-                    <Image src={product.image || '/images/products/1.jpg'} alt={product.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-[800ms]" onError={(e) => { e.currentTarget.src = '/images/products/1.jpg'; }} />
+                    <ProductCardMedia
+                      src={product.coverMediaUrl}
+                      type={product.coverMediaType}
+                      alt={product.title}
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-[800ms]"
+                    />
                      
                      {/* B2B 核心指标盾牌 */}
                      <div className="absolute top-3 left-3 bg-[#111111] text-white px-2.5 py-1 font-black text-[12px] tracking-[0.12em] uppercase flex items-center rounded-md shadow-md">

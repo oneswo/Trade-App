@@ -8,7 +8,8 @@ import { ImageIcon, Film, Loader2 } from "lucide-react";
 export const CmsCtx = createContext<{
   get: (name: string, fallback: string) => string;
   set: (name: string, val: string) => void;
-}>({ get: (_, f) => f, set: () => {} });
+  trackUploadedUrl: (url: string) => void;
+}>({ get: (_, f) => f, set: () => {}, trackUploadedUrl: () => {} });
 
 // ─── 公共子组件 ───────────────────────────────────────────────────────────────
 
@@ -82,7 +83,7 @@ export function DarkArea({ name, defaultValue = "", rows = 2 }: { name: string; 
 }
 
 export function ImageUpload({ name, label, hint, aspectHint, defaultValue = "" }: { name: string; label: string; hint?: string; aspectHint?: string; defaultValue?: string }) {
-  const { get, set } = useContext(CmsCtx);
+  const { get, set, trackUploadedUrl } = useContext(CmsCtx);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -94,6 +95,7 @@ export function ImageUpload({ name, label, hint, aspectHint, defaultValue = "" }
     try {
       const { directUpload } = await import("@/lib/upload");
       const result = await directUpload(file, "image");
+      trackUploadedUrl(result.url);
       set(name, result.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "上传失败");
@@ -182,7 +184,7 @@ export function ImageUpload({ name, label, hint, aspectHint, defaultValue = "" }
 }
 
 export function VideoUpload({ name, label, hint }: { name: string; label: string; hint?: string }) {
-  const { get, set } = useContext(CmsCtx);
+  const { get, set, trackUploadedUrl } = useContext(CmsCtx);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -194,6 +196,7 @@ export function VideoUpload({ name, label, hint }: { name: string; label: string
     try {
       const { directUpload } = await import("@/lib/upload");
       const result = await directUpload(file, "video");
+      trackUploadedUrl(result.url);
       set(name, result.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "上传失败");

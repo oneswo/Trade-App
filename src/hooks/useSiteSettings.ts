@@ -14,12 +14,6 @@ export interface SiteSettings {
   contactWhatsApp: string;
   contactAddress: string;
   contactAddressEn: string;
-  socialX: string;
-  socialInstagram: string;
-  socialFacebook: string;
-  socialYoutube: string;
-  socialTiktok: string;
-  socialLinkedin: string;
   copyrightText: string;
   copyrightTextEn: string;
   copyrightUrl: string;
@@ -37,12 +31,6 @@ const DEFAULT_SETTINGS: SiteSettings = {
   contactWhatsApp: "+86 13866668888",
   contactAddress: "中国上海市黄浦江边",
   contactAddressEn: "Huangpu River, Shanghai, China",
-  socialX: "",
-  socialInstagram: "",
-  socialFacebook: "",
-  socialYoutube: "",
-  socialTiktok: "",
-  socialLinkedin: "",
   copyrightText: "海沃克斯",
   copyrightTextEn: "CHINA MACHINERY",
   copyrightUrl: "www.heavox.com",
@@ -92,19 +80,20 @@ async function fetchSiteSettings(bustCache = false): Promise<SiteSettings> {
 }
 
 export function useSiteSettings(initialData?: SiteSettings | null) {
-  // 如果服务端传入了 initialData，立即预热全局缓存，避免所有组件首帧闪默认值
-  if (initialData && !cachedSettings) {
-    cachedSettings = initialData;
-    cacheTimestamp = Date.now();
-  }
-
   const [settings, setSettings] = useState<SiteSettings>(() => {
+    if (initialData) return initialData;
     if (cachedSettings && Date.now() - cacheTimestamp < CACHE_TTL) return cachedSettings;
     return initialData ?? DEFAULT_SETTINGS;
   });
   const [loading, setLoading] = useState(
     () => !(cachedSettings && Date.now() - cacheTimestamp < CACHE_TTL) && !initialData
   );
+
+  useEffect(() => {
+    if (!initialData) return;
+    cachedSettings = initialData;
+    cacheTimestamp = Date.now();
+  }, [initialData]);
 
   useEffect(() => {
     if (cachedSettings && Date.now() - cacheTimestamp < CACHE_TTL) {

@@ -16,7 +16,7 @@ export function AboutFields({ zh }: { zh: boolean }) {
 
       <div className="space-y-5">
         <SectionHeader title="模块一：Hero 头图区" note="对应关于页顶部的全宽背景与标题区" />
-        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="对应 /images/hero/about.png，建议 16:5" />
+        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="建议 16:5" />
         <FieldRow label="顶部小标签">
           <TextInput name="hero.tag" defaultValue={zh ? "全球工程机械发运枢纽" : "GLOBAL MACHINERY HUB"} />
         </FieldRow>
@@ -33,7 +33,7 @@ export function AboutFields({ zh }: { zh: boolean }) {
 
       <div className="space-y-5">
         <SectionHeader title="模块二 — Block A：长三角核心源头底库基地（左图右文）" note="第一组左图右文" />
-        <ImageUpload name="blockA.image" label="左侧图片" aspectHint="对应 /images/about/office.jpg，建议 4:3" />
+        <ImageUpload name="blockA.image" label="左侧图片" aspectHint="建议 4:3" />
         <FieldRow label="板块标题">
           <TextInput name="blockA.title" defaultValue={zh ? "长三角核心 源头底库基地" : "Core Yangtze Delta Base of Operations"} />
         </FieldRow>
@@ -55,7 +55,7 @@ export function AboutFields({ zh }: { zh: boolean }) {
 
       <div className="space-y-5">
         <SectionHeader title="模块二 — Block B：跨越极限工况的重载交付力（右图左文）" note="第二组右图左文 + 两枚 mini 卡" />
-        <ImageUpload name="blockB.image" label="右侧图片" aspectHint="对应 /images/about/yard.jpg，建议 4:3" />
+        <ImageUpload name="blockB.image" label="右侧图片" aspectHint="建议 4:3" />
         <FieldRow label="板块标题">
           <TextInput name="blockB.title" defaultValue={zh ? "跨越极限工况的 重载交付力" : "Heavy-Duty Delivery Beyond Extreme Conditions"} />
         </FieldRow>
@@ -118,54 +118,6 @@ export function AboutFields({ zh }: { zh: boolean }) {
           ))}
         </div>
       </div>
-
-      <div className="space-y-5">
-        <SectionHeader title="模块五：底部询单 CTA" note="页面底部询盘表单" />
-        <FieldRow label="主标题 — 普通色部分">
-          <TextInput name="cta.title1" defaultValue={zh ? "期待未来与您" : "Looking Forward to"} />
-        </FieldRow>
-        <FieldRow label="主标题 — 金色高亮部分">
-          <TextInput name="cta.titleGold" defaultValue={zh ? "极度密切联运" : "Working With You"} />
-        </FieldRow>
-        <FieldRow label="描述文字">
-          <TextArea name="cta.desc" defaultValue={zh ? "填写需求型号与目标港口，12小时内获取极致竞争力的 CIF 出海到岸底价。" : "Share your required model and conditions, receive a highly competitive FOB / CIF price within 12 hours."} />
-        </FieldRow>
-        <FieldRow label="表单描述框占位文字">
-          <TextInput name="cta.formPlaceholder" defaultValue={zh ? "请描述您的意向厂矿机械型号与特殊发运需求..." : "Message details (e.g., machine model required or company enquiry) *"} />
-        </FieldRow>
-        <div className="grid grid-cols-2 gap-4">
-          <FieldRow label="姓名输入框标题">
-            <TextInput name="cta.form.nameLabel" defaultValue={zh ? "您的称谓" : "YOUR NAME"} />
-          </FieldRow>
-          <FieldRow label="姓名输入框占位">
-            <TextInput name="cta.form.namePlaceholder" defaultValue={zh ? "您的称呼" : "Your Name"} />
-          </FieldRow>
-          <FieldRow label="联系方式输入框标题">
-            <TextInput name="cta.form.contactLabel" defaultValue={zh ? "联系方式 (WhatsApp / 邮箱)" : "CONTACT (WHATSAPP/EMAIL)"} />
-          </FieldRow>
-          <FieldRow label="联系方式输入框占位">
-            <TextInput name="cta.form.contactPlaceholder" defaultValue={zh ? "联系方式" : "Contact Details"} />
-          </FieldRow>
-          <FieldRow label="需求输入框标题">
-            <TextInput name="cta.form.messageLabel" defaultValue={zh ? "所需机型的极限工况与型号" : "REQUIREMENTS"} />
-          </FieldRow>
-        </div>
-        <FieldRow label="表单提交按钮文字">
-          <TextInput name="cta.submitBtn" defaultValue={zh ? "立即获取 CIF 底价" : "Send Enquiry Now"} />
-        </FieldRow>
-        <div className="grid grid-cols-3 gap-4">
-          <FieldRow label="社交图标标题：WhatsApp">
-            <TextInput name="cta.social.whatsappTitle" defaultValue="WhatsApp" />
-          </FieldRow>
-          <FieldRow label="社交图标标题：LinkedIn">
-            <TextInput name="cta.social.linkedinTitle" defaultValue="LinkedIn" />
-          </FieldRow>
-          <FieldRow label="社交图标标题：Facebook">
-            <TextInput name="cta.social.facebookTitle" defaultValue="Facebook" />
-          </FieldRow>
-        </div>
-      </div>
-
     </div>
   );
 }

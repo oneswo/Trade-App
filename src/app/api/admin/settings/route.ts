@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { getSiteSettingsRepo } from "@/lib/data/repository";
 import { ADMIN_SESSION_COOKIE } from "@/lib/auth/constants";
 import { verifyToken } from "@/lib/auth/session";
+import { deleteR2Objects, diffR2Urls } from "@/lib/storage/media-storage";
 
 async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
@@ -35,7 +36,12 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const repo = getSiteSettingsRepo();
+    const current = await repo.get();
     const settings = await repo.update(body);
+    const staleUrls = diffR2Urls([current.logoImageUrl], [settings.logoImageUrl]);
+    if (staleUrls.length > 0) {
+      await deleteR2Objects(staleUrls);
+    }
     revalidatePath('/api/site-settings');
     revalidatePath('/', 'layout');
     return Response.json({ ok: true, data: settings });

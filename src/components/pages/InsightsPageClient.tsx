@@ -15,6 +15,7 @@ export default function InsightsPageClient({
   const locale = useLocale();
   const isZh = locale === 'zh';
   const { get: c } = usePageContent('insights', initialContent);
+  const heroBgImage = c('hero.bgImage', '');
   
   const [articles, setArticles] = useState<ArticleRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +37,7 @@ export default function InsightsPageClient({
       <section className="relative w-full h-[450px] md:h-[500px] flex items-center justify-center bg-[#111111] overflow-hidden">
          {/* 背景代码极客感网格 */}
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
-         <div className="absolute inset-0 opacity-60 bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]" style={{ backgroundImage: `url('${c('hero.bgImage', '/images/hero/insights.png')}')` }}></div>
+         <div className="absolute inset-0 opacity-60 bg-cover bg-center pointer-events-none scale-105 active:scale-100 transition-transform duration-[10s]" style={heroBgImage ? { backgroundImage: `url('${heroBgImage}')` } : undefined}></div>
          <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-[#111111]/10 pointer-events-none"></div>
          
          {/* 琥珀色微光 (Radiant Glow) */}
@@ -124,7 +125,13 @@ export default function InsightsPageClient({
                 {/* 封面缩略图 */}
                 <div className="relative w-full aspect-[16/11] bg-[#111111] overflow-hidden rounded-t-3xl border-b border-gray-100/50">
                    <div className="absolute inset-0 bg-black/5 z-10 group-hover:bg-transparent transition-colors duration-500"></div>
-                   <Image src={article.coverImageUrl || '/images/insights/1.jpg'} alt={title} fill unoptimized className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 group-hover:-rotate-1 transition-all duration-700 ease-out" onError={(e) => { e.currentTarget.src = '/images/insights/1.jpg'; }} />
+                   {article.coverImageUrl ? (
+                     <Image src={article.coverImageUrl} alt={title} fill unoptimized className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 group-hover:-rotate-1 transition-all duration-700 ease-out" />
+                   ) : (
+                     <div className="absolute inset-0 flex items-center justify-center bg-[#111111] text-white/35">
+                       <span className="text-[11px] font-bold tracking-[0.2em] uppercase">No Cover</span>
+                     </div>
+                   )}
                    
                    {/* 悬浮强圆角类目标签 */}
                    <div className="absolute top-5 left-5 z-20 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.1)] border border-white/50">

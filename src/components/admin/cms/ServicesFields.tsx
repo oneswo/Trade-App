@@ -8,7 +8,7 @@ export default function ServicesFields({ zh }: { zh: boolean }) {
 
       <div className="space-y-5">
         <SectionHeader title="模块一：Hero 头图区" note="对应服务页顶部的全宽背景与标题区" />
-        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="对应 /images/hero/services.png，建议 16:5" />
+        <ImageUpload name="hero.bgImage" label="Hero 背景图片" aspectHint="建议 16:5" />
         <FieldRow label="顶部小标签">
           <TextInput name="hero.tag" defaultValue={zh ? "重资产出海专属服务" : "HEAVY EQUIPMENT EXPORT SERVICES"} />
         </FieldRow>
@@ -72,67 +72,19 @@ export default function ServicesFields({ zh }: { zh: boolean }) {
           <TextInput name="process.title" defaultValue={zh ? "二手重型设备验交与发运标准" : "Used Heavy Equipment Inspection, Acceptance & Dispatch Standards"} />
         </FieldRow>
         {[
-          { zh_t: "二手寻机与严选匹配",     en_t: "Sourcing & Rigorous Machine Selection",            zh_d: "我们在全球各大矿场直接筛选出状态极致优秀的成色一手设备。只挑选底盘扎实、车况原版极品的高回本率神机，从货源源头上彻底扼杀事故车、水淹车和组装车。", en_d: "We source directly from major mining operations worldwide, selecting only first-owner units — eliminating accident-damaged, flood-damaged, and rebuilt units at the source.", img: "process-1.jpg" },
-          { zh_t: "全卸复检与硬核测试",     en_t: "Full Teardown Reinspection & Load Testing",        zh_d: "绝不只做表面功夫。老练的工程师将液压泵彻底暴漏，实机测试怠速动作、极限复合动作，测试黑烟状态并对底盘四轮一带进行全面打分，出具百项检测报告书。",    en_d: "Engineers expose the hydraulic pump for thorough assessment, conduct live load tests, and score the complete undercarriage — producing a 100-item inspection report.", img: "process-2.jpg" },
-          { zh_t: "工业级除垢与焕新喷漆",   en_t: "Industrial Degreasing & Factory-Grade Refinishing", zh_d: "任何设备出港前，均经过高压水流彻底剥离黄油垢与深层硬化泥土，视客户需求进行电脑无色差原厂漆调板翻新。保证每一根接管重获新生，消除隐藏漏油隐患。",    en_d: "Before departure, every machine is high-pressure washed and upon request receives computer-matched OEM paint. All hydraulic fittings are renewed to eliminate hidden leaks.", img: "process-3.jpg" },
-          { zh_t: "在线验交与港口吊装发运", en_t: "Live Remote Acceptance & Port Dispatch",            zh_d: "由客户参与实时视频动态验机。确认无误后，在专属押运专员护送下进行拆解打托装箱，或直接开上港口滚装船甲板进行重型捆扎绑缚，随时云端跟踪飘洋路线。",    en_d: "Clients join a real-time live video acceptance inspection. Once confirmed, units are loaded under escort into containers or onto RO-RO vessels with full vessel tracking.", img: "process-4.jpg" },
+          { zh_t: "二手寻机与严选匹配",     en_t: "Sourcing & Rigorous Machine Selection",            zh_d: "我们在全球各大矿场直接筛选出状态极致优秀的成色一手设备。只挑选底盘扎实、车况原版极品的高回本率神机，从货源源头上彻底扼杀事故车、水淹车和组装车。", en_d: "We source directly from major mining operations worldwide, selecting only first-owner units — eliminating accident-damaged, flood-damaged, and rebuilt units at the source." },
+          { zh_t: "全卸复检与硬核测试",     en_t: "Full Teardown Reinspection & Load Testing",        zh_d: "绝不只做表面功夫。老练的工程师将液压泵彻底暴漏，实机测试怠速动作、极限复合动作，测试黑烟状态并对底盘四轮一带进行全面打分，出具百项检测报告书。",    en_d: "Engineers expose the hydraulic pump for thorough assessment, conduct live load tests, and score the complete undercarriage — producing a 100-item inspection report." },
+          { zh_t: "工业级除垢与焕新喷漆",   en_t: "Industrial Degreasing & Factory-Grade Refinishing", zh_d: "任何设备出港前，均经过高压水流彻底剥离黄油垢与深层硬化泥土，视客户需求进行电脑无色差原厂漆调板翻新。保证每一根接管重获新生，消除隐藏漏油隐患。",    en_d: "Before departure, every machine is high-pressure washed and upon request receives computer-matched OEM paint. All hydraulic fittings are renewed to eliminate hidden leaks." },
+          { zh_t: "在线验交与港口吊装发运", en_t: "Live Remote Acceptance & Port Dispatch",            zh_d: "由客户参与实时视频动态验机。确认无误后，在专属押运专员护送下进行拆解打托装箱，或直接开上港口滚装船甲板进行重型捆扎绑缚，随时云端跟踪飘洋路线。",    en_d: "Clients join a real-time live video acceptance inspection. Once confirmed, units are loaded under escort into containers or onto RO-RO vessels with full vessel tracking." },
         ].map((s, i) => (
           <div key={i} className="rounded-xl border border-black/[0.06] p-4 space-y-3 bg-[#FAFAFA]">
             <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">步骤 0{i+1}</span>
-            <ImageUpload name={`process.${i}.image`} label="步骤图片" aspectHint={`对应 /images/services/${s.img}`} />
+            <ImageUpload name={`process.${i}.image`} label="步骤图片" aspectHint="建议 16:9" />
             <FieldRow label="步骤标题"><TextInput name={`process.${i}.title`} defaultValue={zh ? s.zh_t : s.en_t} /></FieldRow>
             <FieldRow label="步骤描述"><TextArea name={`process.${i}.desc`} rows={3} defaultValue={zh ? s.zh_d : s.en_d} /></FieldRow>
           </div>
         ))}
       </div>
-
-      <div className="space-y-5">
-        <SectionHeader title="模块五：底部询单 CTA" note="页面底部深色表单区" />
-        <FieldRow label="主标题 — 普通色部分">
-          <TextInput name="cta.title1" defaultValue={zh ? "期待未来与您" : "READY TO WORK WITH YOU"} />
-        </FieldRow>
-        <FieldRow label="主标题 — 金色高亮部分">
-          <TextInput name="cta.titleGold" defaultValue={zh ? "极度密切合作" : "CLOSELY"} />
-        </FieldRow>
-        <FieldRow label="描述文字">
-          <TextArea name="cta.desc" defaultValue={zh ? "填写需求型号与目标港口，12小时内获取极致竞争力的 CIF 到岸底价。" : "Provide your requirements and destination port for an extremely competitive CIF quote within 12 hours."} />
-        </FieldRow>
-        <FieldRow label="表单描述框占位文字">
-          <TextInput name="cta.formPlaceholder" defaultValue={zh ? "请描述您的意向机械型号与工况需求..." : "Please describe your machinery requirements..."} />
-        </FieldRow>
-        <div className="grid grid-cols-2 gap-4">
-          <FieldRow label="姓名输入框标题">
-            <TextInput name="cta.form.nameLabel" defaultValue={zh ? "您的称谓" : "YOUR NAME"} />
-          </FieldRow>
-          <FieldRow label="姓名输入框占位">
-            <TextInput name="cta.form.namePlaceholder" defaultValue={zh ? "您的称呼" : "Your Name"} />
-          </FieldRow>
-          <FieldRow label="联系方式输入框标题">
-            <TextInput name="cta.form.contactLabel" defaultValue={zh ? "联系方式 (WhatsApp / 邮箱)" : "CONTACT (WHATSAPP/EMAIL)"} />
-          </FieldRow>
-          <FieldRow label="联系方式输入框占位">
-            <TextInput name="cta.form.contactPlaceholder" defaultValue={zh ? "联系方式" : "Contact Details"} />
-          </FieldRow>
-          <FieldRow label="需求输入框标题">
-            <TextInput name="cta.form.messageLabel" defaultValue={zh ? "工况与型号需求" : "REQUIREMENTS"} />
-          </FieldRow>
-        </div>
-        <FieldRow label="表单提交按钮文字">
-          <TextInput name="cta.submitBtn" defaultValue={zh ? "立即获取 CIF 底价" : "GET CIF PRICE NOW"} />
-        </FieldRow>
-        <div className="grid grid-cols-3 gap-4">
-          <FieldRow label="社交图标标题：WhatsApp">
-            <TextInput name="cta.social.whatsappTitle" defaultValue="WhatsApp" />
-          </FieldRow>
-          <FieldRow label="社交图标标题：LinkedIn">
-            <TextInput name="cta.social.linkedinTitle" defaultValue="LinkedIn" />
-          </FieldRow>
-          <FieldRow label="社交图标标题：Facebook">
-            <TextInput name="cta.social.facebookTitle" defaultValue="Facebook" />
-          </FieldRow>
-        </div>
-      </div>
-
     </div>
   );
 }

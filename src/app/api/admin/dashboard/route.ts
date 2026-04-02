@@ -1,5 +1,6 @@
 import { hasAdminSession } from "@/lib/auth/session";
 import { getInquiryRepo, getProductRepo } from "@/lib/data/repository";
+import { resolveInquiryLabel } from "@/lib/inquiries/presentation";
 
 export async function GET(request: Request) {
   if (!hasAdminSession(request)) {
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
       email: inq.email || "—",
       phone: inq.phone || undefined,
       message: inq.message,
-      product: inq.source || "通用询盘",
+      product: resolveInquiryLabel(inq),
       country: "🌐",
       region: inq.locale?.toUpperCase() || "未知",
       time: timeLabel,

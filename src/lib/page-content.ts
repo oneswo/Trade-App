@@ -13,6 +13,13 @@ export const VALID_PAGE_IDS = [
 
 export type ValidPageId = (typeof VALID_PAGE_IDS)[number];
 
+const OBSOLETE_PAGE_CONTENT_PREFIXES: Partial<Record<ValidPageId, string[]>> = {
+  home: ["cta."],
+  about: ["cta."],
+  services: ["cta."],
+  contact: ["bottomCta."],
+};
+
 export function isSharedMediaField(fieldName: string) {
   return /(?:^|\.)(?:bgImage|image|photo|posterUrl|videoUrl)$/.test(fieldName);
 }
@@ -21,6 +28,31 @@ export function pickSharedMediaFields(data: Record<string, string>) {
   return Object.fromEntries(
     Object.entries(data).filter(
       ([key, value]) => isSharedMediaField(key) && typeof value === "string"
+    )
+  );
+}
+
+export function collectPageContentMediaUrls(data: Record<string, string> | null | undefined) {
+  if (!data) return [];
+  return Object.entries(data)
+    .filter(([key, value]) => isSharedMediaField(key) && typeof value === "string" && value.trim())
+    .map(([, value]) => value.trim());
+}
+
+export function sanitizePageContentData(
+  pageId: ValidPageId,
+  data: Record<string, string> | null | undefined
+) {
+  if (!data) return {};
+
+  const obsoletePrefixes = OBSOLETE_PAGE_CONTENT_PREFIXES[pageId] ?? [];
+  if (obsoletePrefixes.length === 0) {
+    return { ...data };
+  }
+
+  return Object.fromEntries(
+    Object.entries(data).filter(
+      ([key]) => !obsoletePrefixes.some((prefix) => key.startsWith(prefix))
     )
   );
 }
@@ -45,7 +77,7 @@ export async function getPageContentData(
     }
   }
 
-  return mergedData;
+  return sanitizePageContentData(pageId, mergedData);
 }
 
 export async function syncSharedMediaFieldsToAllLocales(

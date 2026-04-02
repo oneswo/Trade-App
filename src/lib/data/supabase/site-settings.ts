@@ -18,12 +18,6 @@ function rowToSiteSettings(r: Record<string, unknown>): SiteSettings {
       (r.contact_address as string) || DEFAULT_SITE_SETTINGS.contactAddress,
     contactAddressEn:
       (r.contact_address_en as string) || DEFAULT_SITE_SETTINGS.contactAddressEn,
-    socialX: (r.social_x as string) || "",
-    socialInstagram: (r.social_instagram as string) || "",
-    socialFacebook: (r.social_facebook as string) || "",
-    socialYoutube: (r.social_youtube as string) || "",
-    socialTiktok: (r.social_tiktok as string) || "",
-    socialLinkedin: (r.social_linkedin as string) || "",
     copyrightText:
       (r.copyright_text as string) || DEFAULT_SITE_SETTINGS.copyrightText,
     copyrightTextEn:
@@ -64,14 +58,6 @@ export const supabaseSiteSettingsRepo: SiteSettingsRepo = {
     if (input.contactAddressEn !== undefined) {
       patch.contact_address_en = input.contactAddressEn;
     }
-    if (input.socialX !== undefined) patch.social_x = input.socialX;
-    if (input.socialInstagram !== undefined) {
-      patch.social_instagram = input.socialInstagram;
-    }
-    if (input.socialFacebook !== undefined) patch.social_facebook = input.socialFacebook;
-    if (input.socialYoutube !== undefined) patch.social_youtube = input.socialYoutube;
-    if (input.socialTiktok !== undefined) patch.social_tiktok = input.socialTiktok;
-    if (input.socialLinkedin !== undefined) patch.social_linkedin = input.socialLinkedin;
     if (input.copyrightText !== undefined) patch.copyright_text = input.copyrightText;
     if (input.copyrightTextEn !== undefined) {
       patch.copyright_text_en = input.copyrightTextEn;

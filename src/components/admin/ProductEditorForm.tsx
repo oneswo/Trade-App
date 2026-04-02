@@ -3,6 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertCircle, Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+  createEmptyProductMediaSlot,
+  buildLegacyProductMediaSlots,
+  decomposeProductMediaSlots,
+  normalizeProductMediaSlots,
+} from "@/lib/products/media";
+import { cleanupTrackedMediaUrls } from "@/lib/admin/media-cleanup";
 import { BasicMetaSection } from "./product-editor/BasicMetaSection";
 import { CoreSpecsSection } from "./product-editor/CoreSpecsSection";
 import {
@@ -20,7 +27,6 @@ import type {
 } from "./product-editor/types";
 
 const SLOT_COUNT = 5;
-const emptySlot = (): MediaSlot => ({ url: "", type: "" });
 const emptyState = (): SlotUploadState => ({
   uploading: false,
   progress: 0,
@@ -67,7 +73,7 @@ export default function ProductEditorForm({
   ]);
   const [description, setDescription] = useState("");
   const [mediaSlots, setMediaSlots] = useState<MediaSlot[]>(
-    () => Array.from({ length: SLOT_COUNT }, emptySlot),
+    () => Array.from({ length: SLOT_COUNT }, createEmptyProductMediaSlot),
   );
   const [slotStates, setSlotStates] = useState<SlotUploadState[]>(
     () => Array.from({ length: SLOT_COUNT }, emptyState),
@@ -76,6 +82,13 @@ export default function ProductEditorForm({
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [showValidationModal, setShowValidationModal] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+  const sessionUploadedUrlsRef = useRef<Set<string>>(new Set());
+  const cleanupPendingSessionUploads = useCallback((keepalive?: boolean) => {
+    if (sessionUploadedUrlsRef.current.size === 0) return;
+    const trackedUrls = [...sessionUploadedUrlsRef.current];
+    sessionUploadedUrlsRef.current.clear();
+    void cleanupTrackedMediaUrls(trackedUrls, [], keepalive ? { keepalive: true } : undefined);
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/categories")
@@ -93,9 +106,6 @@ export default function ProductEditorForm({
 
   const handleSlotUpload = useCallback(async (index: number, file: File) => {
     const kind = file.type.startsWith("video/") ? "video" as const : "image" as const;
-
-    // 获取旧文件 URL（用于上传成功后删除）
-    const oldUrl = mediaSlots[index]?.url;
 
     // 设置上传中状态
     setSlotStates((prev) => {
@@ -116,6 +126,7 @@ export default function ProductEditorForm({
       });
 
       // 上传成功 → 写入 slot
+      sessionUploadedUrlsRef.current.add(result.url);
       setMediaSlots((prev) => {
         const next = [...prev];
         next[index] = { url: result.url, type: kind };
@@ -126,15 +137,6 @@ export default function ProductEditorForm({
         next[index] = { uploading: false, progress: 100, error: "", showSuccess: true };
         return next;
       });
-
-      // 删除旧文件（异步，不阻塞 UI）
-      if (oldUrl && oldUrl.startsWith("http")) {
-        fetch("/api/admin/media/delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ urls: [oldUrl] }),
-        }).catch(console.error);
-      }
 
       // 2 秒后清除成功勾
       setTimeout(() => {
@@ -158,16 +160,13 @@ export default function ProductEditorForm({
         return next;
       });
     }
-  }, [mediaSlots]);
+  }, []);
 
   const handleRemoveSlot = useCallback(async (index: number) => {
-    const currentSlot = mediaSlots[index];
-    const urlToDelete = currentSlot?.url;
-
     // 先清除前端状态
     setMediaSlots((prev) => {
       const next = [...prev];
-      next[index] = emptySlot();
+      next[index] = createEmptyProductMediaSlot();
       return next;
     });
     setSlotStates((prev) => {
@@ -175,33 +174,12 @@ export default function ProductEditorForm({
       next[index] = emptyState();
       return next;
     });
-
-    // 异步删除 R2 文件（不阻塞 UI）
-    if (urlToDelete && urlToDelete.startsWith("http")) {
-      fetch("/api/admin/media/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: [urlToDelete] }),
-      }).catch(console.error);
-    }
-  }, [mediaSlots]);
+  }, []);
 
   // ── 从 slots 派生出提交用的字段 ──────────────────────────────
-
-  const coverImageUrl = mediaSlots[0]?.type !== "video" ? mediaSlots[0]?.url || "" : "";
-  const videoUrl = (() => {
-    // 如果主图是视频，用它
-    if (mediaSlots[0]?.type === "video" && mediaSlots[0]?.url) return mediaSlots[0].url;
-    // 否则找 gallery 里的第一个视频
-    for (let i = 1; i < SLOT_COUNT; i++) {
-      if (mediaSlots[i]?.type === "video" && mediaSlots[i]?.url) return mediaSlots[i].url;
-    }
-    return "";
-  })();
-  const galleryImageUrls = mediaSlots
-    .slice(1)
-    .filter((s) => s.url && s.type !== "video")
-    .map((s) => s.url);
+  const normalizedMediaSlots = normalizeProductMediaSlots(mediaSlots, SLOT_COUNT);
+  const { coverImageUrl, galleryImageUrls, videoUrl } =
+    decomposeProductMediaSlots(normalizedMediaSlots);
 
   useEffect(() => {
     if (!isEdit || !productId) return;
@@ -228,6 +206,7 @@ export default function ProductEditorForm({
               location: product.coreMetrics.location || "",
               model: product.coreMetrics.model || "",
               brand: product.coreMetrics.brand || "",
+              mediaSlots: product.coreMetrics.mediaSlots || [],
             });
           }
           if (product.specs && product.specs.length > 0) {
@@ -236,24 +215,13 @@ export default function ProductEditorForm({
           setDescription(product.description || "");
 
           // 从旧字段还原到 slots
-          const loaded: MediaSlot[] = Array.from({ length: SLOT_COUNT }, emptySlot);
-          if (product.coverImageUrl) {
-            loaded[0] = { url: product.coverImageUrl, type: "image" };
-          }
-          if (product.videoUrl && !product.coverImageUrl) {
-            loaded[0] = { url: product.videoUrl, type: "video" };
-          }
-          const gallery: string[] = product.galleryImageUrls || [];
-          for (let i = 0; i < gallery.length && i < SLOT_COUNT - 1; i++) {
-            loaded[i + 1] = { url: gallery[i], type: "image" };
-          }
-          // 如果主图已经是图片且有视频，把视频放到最后空位
-          if (product.videoUrl && product.coverImageUrl) {
-            const emptyIdx = loaded.findIndex((s) => !s.url);
-            if (emptyIdx !== -1) {
-              loaded[emptyIdx] = { url: product.videoUrl, type: "video" };
-            }
-          }
+          const loaded = product.coreMetrics?.mediaSlots
+            ? normalizeProductMediaSlots(product.coreMetrics.mediaSlots, SLOT_COUNT)
+            : buildLegacyProductMediaSlots({
+                coverImageUrl: product.coverImageUrl,
+                galleryImageUrls: product.galleryImageUrls,
+                videoUrl: product.videoUrl,
+              });
           setMediaSlots(loaded);
         } else {
           setErrorMsg("加载产品数据失败");
@@ -262,6 +230,12 @@ export default function ProductEditorForm({
       .catch(() => setErrorMsg("网络异常，加载失败"))
       .finally(() => setInitialLoading(false));
   }, [isEdit, productId]);
+
+  useEffect(() => {
+    return () => {
+      cleanupPendingSessionUploads(true);
+    };
+  }, [cleanupPendingSessionUploads]);
 
   const handleSubmit = async (statusToSave: "DRAFT" | "PUBLISHED") => {
     // ── 草稿不验证必填项，发布才验证 ──
@@ -306,11 +280,14 @@ export default function ProductEditorForm({
         description,
         stockAmount,
         enableTrustCards,
-        coreMetrics,
+        coreMetrics: {
+          ...coreMetrics,
+          mediaSlots: normalizedMediaSlots,
+        },
         specs: specs.filter((spec) => spec.key.trim() && spec.value.trim()),
-        coverImageUrl: coverImageUrl || null,
+        coverImageUrl,
         galleryImageUrls,
-        videoUrl: videoUrl || null,
+        videoUrl,
         status: statusToSave,
       };
 
@@ -330,6 +307,14 @@ export default function ProductEditorForm({
         return;
       }
 
+      const trackedUrls = [...sessionUploadedUrlsRef.current];
+      sessionUploadedUrlsRef.current.clear();
+      await cleanupTrackedMediaUrls(
+        trackedUrls,
+        normalizedMediaSlots
+          .map((slot) => slot.url)
+          .filter((url): url is string => Boolean(url))
+      );
       router.push("/admin/products");
     } catch {
       setErrorMsg("网络异常，无法连接后台。");

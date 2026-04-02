@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Save,
   Globe,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { SUPPORTED_LOCALES, LOCALE_LABELS } from "@/lib/i18n/locales";
 import { clearPageContentCache } from "@/hooks/usePageContent";
+import { cleanupTrackedMediaUrls } from "@/lib/admin/media-cleanup";
 import { Ctx } from "./_context";
 import { HomeFields } from "./_fields/home";
 import { ProductsFields } from "./_fields/products";
@@ -52,9 +53,18 @@ export default function PagesManagementPage() {
   const [fields, setFields] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const sessionUploadedUrlsRef = useRef<Set<string>>(new Set());
+  const didInitLoadRef = useRef(false);
 
   // 切换页面或语言时，从 API 加载已保存内容
   useEffect(() => {
+    if (didInitLoadRef.current && sessionUploadedUrlsRef.current.size > 0) {
+      const trackedUrls = [...sessionUploadedUrlsRef.current];
+      sessionUploadedUrlsRef.current.clear();
+      void cleanupTrackedMediaUrls(trackedUrls, []);
+    }
+    didInitLoadRef.current = true;
+
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 切换页/语言时先进入加载态
     setIsLoading(true);
     fetch(`/api/page-content?pageId=${activePageId}&locale=${activeLang}`)
@@ -73,6 +83,21 @@ export default function PagesManagementPage() {
   const set = useCallback((name: string, val: string) => {
     setFields((prev) => ({ ...prev, [name]: val }));
   }, []);
+  const trackUploadedUrl = useCallback((url: string) => {
+    sessionUploadedUrlsRef.current.add(url);
+  }, []);
+  const cleanupPendingSessionUploads = useCallback((keepalive?: boolean) => {
+    if (sessionUploadedUrlsRef.current.size === 0) return;
+    const trackedUrls = [...sessionUploadedUrlsRef.current];
+    sessionUploadedUrlsRef.current.clear();
+    void cleanupTrackedMediaUrls(trackedUrls, [], keepalive ? { keepalive: true } : undefined);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      cleanupPendingSessionUploads(true);
+    };
+  }, [cleanupPendingSessionUploads]);
 
   const handleSave = async () => {
     setSaveState("saving");
@@ -88,6 +113,9 @@ export default function PagesManagementPage() {
       });
       const json = await res.json();
       if (json.ok) {
+        const trackedUrls = [...sessionUploadedUrlsRef.current];
+        sessionUploadedUrlsRef.current.clear();
+        await cleanupTrackedMediaUrls(trackedUrls, Object.values(fields));
         clearPageContentCache(activePageId, activeLang);
         setSaveState("success");
       } else {
@@ -124,7 +152,7 @@ export default function PagesManagementPage() {
   };
 
   return (
-    <Ctx.Provider value={{ get, set }}>
+    <Ctx.Provider value={{ get, set, trackUploadedUrl }}>
       <div className="h-[calc(100vh-100px)] flex flex-col">
         <div className="flex-1 min-h-0 grid grid-cols-[220px_1fr] gap-6">
           <section className="flex flex-col rounded-xl border border-black/[0.06] bg-white shadow-sm overflow-hidden">

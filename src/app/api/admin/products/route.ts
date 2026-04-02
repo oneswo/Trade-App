@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { hasAdminSession } from "@/lib/auth/session";
 import { getProductRepo, type ProductRecord } from "@/lib/data/repository";
+import { PRODUCT_MEDIA_SLOT_COUNT } from "@/lib/products/media";
 
 const STATUS_ENUM = z.enum(["DRAFT", "PUBLISHED"]);
 
@@ -29,6 +30,15 @@ const coreMetricsSchema = z.object({
   location: z.string().optional(),
   model: z.string().optional(),
   brand: z.string().optional(),
+  mediaSlots: z
+    .array(
+      z.object({
+        url: z.string().trim().max(500).default(""),
+        type: z.enum(["image", "video", ""]).default(""),
+      })
+    )
+    .max(PRODUCT_MEDIA_SLOT_COUNT)
+    .optional(),
 });
 
 const createProductSchema = z.object({

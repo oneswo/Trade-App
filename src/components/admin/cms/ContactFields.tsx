@@ -88,10 +88,10 @@ export default function ContactFields({ zh }: { zh: boolean }) {
           <TextInput name="team.whatsappLabel" defaultValue="WhatsApp" />
         </FieldRow>
         {[
-          { nameZh: "尹世兵", nameEn: "Steven Yin", zh_title: "亚太区执行董事", en_title: "APAC Executive Director", defaultPhoto: "/images/avatars/yin.png", defaultPhone: "+8615156888267" },
-          { nameZh: "尹洪峰", nameEn: "Frank Yin", zh_title: "拉非高级代办", en_title: "LATAM & Africa Lead", defaultPhoto: "/images/avatars/hong.png", defaultPhone: "+8619159103568" },
-          { nameZh: "安娜·李", nameEn: "Anna Li", zh_title: "欧亚中东总监", en_title: "EU & MENA Director", defaultPhoto: "/images/avatars/anna.png", defaultPhone: "+8617321077956" },
-          { nameZh: "安妮", nameEn: "Annie", zh_title: "泛西非大区专员", en_title: "West Africa Specialist", defaultPhoto: "/images/avatars/annie.png", defaultPhone: "+8617317763969" },
+          { nameZh: "尹世兵", nameEn: "Steven Yin", zh_title: "亚太区执行董事", en_title: "APAC Executive Director", defaultPhoto: "", defaultPhone: "+8615156888267" },
+          { nameZh: "尹洪峰", nameEn: "Frank Yin", zh_title: "拉非高级代办", en_title: "LATAM & Africa Lead", defaultPhoto: "", defaultPhone: "+8619159103568" },
+          { nameZh: "安娜·李", nameEn: "Anna Li", zh_title: "欧亚中东总监", en_title: "EU & MENA Director", defaultPhoto: "", defaultPhone: "+8617321077956" },
+          { nameZh: "安妮", nameEn: "Annie", zh_title: "泛西非大区专员", en_title: "West Africa Specialist", defaultPhoto: "", defaultPhone: "+8617317763969" },
         ].map((m, i) => (
           <div key={i} className="rounded-xl border border-black/[0.06] p-4 space-y-3 bg-[#FAFAFA]">
             <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">成员 {i+1}</span>
@@ -105,52 +105,6 @@ export default function ContactFields({ zh }: { zh: boolean }) {
             </div>
           </div>
         ))}
-      </div>
-      <div className="space-y-5">
-        <SectionHeader title="模块四：底部询单 CTA（P0）" note="联系页底部深色表单区（标题、说明、表单文案）" />
-        <FieldRow label="主标题 — 普通色部分">
-          <TextInput name="bottomCta.title1" defaultValue={zh ? "即刻开启您的" : "Start Your"} />
-        </FieldRow>
-        <FieldRow label="主标题 — 金色高亮部分">
-          <TextInput name="bottomCta.titleGold" defaultValue={zh ? "重装之行" : "Heavy Equipment Journey"} />
-        </FieldRow>
-        <FieldRow label="描述文案">
-          <TextArea name="bottomCta.desc" defaultValue={zh ? "只需在联系表格中留下您的电子件或电话，我们即可向您发送各大厂牌机皇底价和私密库存表。" : "Simply leave your email or phone number, and we will send you the best prices on top brands and exclusive inventory lists."} />
-        </FieldRow>
-        <div className="grid grid-cols-2 gap-4">
-          <FieldRow label="姓名输入框标题">
-            <TextInput name="bottomCta.form.nameLabel" defaultValue={zh ? "您的称谓" : "YOUR NAME"} />
-          </FieldRow>
-          <FieldRow label="姓名输入框占位">
-            <TextInput name="bottomCta.form.namePlaceholder" defaultValue={zh ? "您的姓名 *" : "Full Name *"} />
-          </FieldRow>
-          <FieldRow label="联系方式输入框标题">
-            <TextInput name="bottomCta.form.contactLabel" defaultValue={zh ? "联系方式 (WhatsApp / 邮箱)" : "CONTACT (WHATSAPP/EMAIL)"} />
-          </FieldRow>
-          <FieldRow label="联系方式输入框占位">
-            <TextInput name="bottomCta.form.contactPlaceholder" defaultValue={zh ? "电子邮箱或 WhatsApp *" : "Email or WhatsApp *"} />
-          </FieldRow>
-          <FieldRow label="需求输入框标题">
-            <TextInput name="bottomCta.form.messageLabel" defaultValue={zh ? "所需机型的极限工况与型号" : "REQUIREMENTS"} />
-          </FieldRow>
-          <FieldRow label="需求输入框占位">
-            <TextInput name="bottomCta.form.messagePlaceholder" defaultValue={zh ? "您需要哪些型号的重装机械报价? (例如: 需要三一 36C 挖掘机发往西非) *" : "Which models do you need quotes for? (e.g. SANY 36C excavator to West Africa) *"} />
-          </FieldRow>
-        </div>
-        <FieldRow label="提交按钮文案">
-          <TextInput name="bottomCta.submitBtn" defaultValue={zh ? "立即获取 CIF 底价" : "GET CIF PRICE NOW"} />
-        </FieldRow>
-        <div className="grid grid-cols-3 gap-4">
-          <FieldRow label="社交图标标题：WhatsApp">
-            <TextInput name="bottomCta.social.whatsappTitle" defaultValue="WhatsApp" />
-          </FieldRow>
-          <FieldRow label="社交图标标题：LinkedIn">
-            <TextInput name="bottomCta.social.linkedinTitle" defaultValue="LinkedIn" />
-          </FieldRow>
-          <FieldRow label="社交图标标题：Facebook">
-            <TextInput name="bottomCta.social.facebookTitle" defaultValue="Facebook" />
-          </FieldRow>
-        </div>
       </div>
     </div>
   );

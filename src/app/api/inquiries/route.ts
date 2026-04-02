@@ -65,6 +65,23 @@ function isRateLimited(clientKey: string) {
 
 export async function POST(request: Request) {
   try {
+    const raw = await request.json();
+    const website =
+      typeof raw === "object" &&
+      raw !== null &&
+      typeof (raw as { website?: unknown }).website === "string"
+        ? (raw as { website: string }).website.trim()
+        : "";
+
+    if (website.length > 0) {
+      return Response.json({
+        ok: true,
+        data: {
+          skipped: true,
+        },
+      });
+    }
+
     const clientKey = getClientKey(request);
     if (isRateLimited(clientKey)) {
       return Response.json(
@@ -76,7 +93,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const raw = await request.json();
     const parsed = inquirySchema.safeParse(raw);
 
     if (!parsed.success) {
@@ -91,15 +107,6 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
-    if (data.website && data.website.length > 0) {
-      return Response.json({
-        ok: true,
-        data: {
-          skipped: true,
-        },
-      });
-    }
-
     const { email, phone } = parseContact(data.contact);
     const repo = getInquiryRepo();
 

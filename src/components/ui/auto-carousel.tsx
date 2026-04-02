@@ -7,7 +7,7 @@ import { Link } from "@/i18n/routing";
 interface Category {
   name: string;
   type: string;
-  img: string;
+  img: string | null;
 }
 
 export default function AutoCarousel({ categories }: { categories: Category[] }) {
@@ -67,7 +67,13 @@ export default function AutoCarousel({ categories }: { categories: Category[] })
          {categories.map((cat, i) => (
            <Link href={`/products?category=${cat.type}`} key={i} className="shrink-0 w-[280px] md:w-[350px] snap-start cursor-pointer flex flex-col items-center group/card">
               <div className="relative w-full aspect-[4/3] bg-gray-50 rounded-2xl overflow-hidden mb-6 shadow-sm group-hover/card:shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-500 border border-gray-200">
-                <Image src={cat.img} alt={cat.name} fill unoptimized className="object-cover group-hover/card:scale-110 transition-transform duration-700 ease-out" priority={i < 2} />
+                {cat.img ? (
+                  <Image src={cat.img} alt={cat.name} fill unoptimized className="object-cover group-hover/card:scale-110 transition-transform duration-700 ease-out" priority={i < 2} />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#111111] text-white/40">
+                    <span className="text-[11px] font-bold tracking-[0.2em] uppercase">No Media</span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/10 transition-colors duration-500"></div>
                 <div className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center opacity-0 translate-y-4 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-300 shadow-md">
                    <ArrowRight size={16} className="text-[#111111]" />

@@ -2,6 +2,11 @@ import { z } from "zod";
 import { hasAdminSession } from "@/lib/auth/session";
 import { getProductRepo } from "@/lib/data/repository";
 import { deleteR2Objects } from "@/lib/storage/media-storage";
+import { PRODUCT_MEDIA_SLOT_COUNT } from "@/lib/products/media";
+import {
+  buildLegacyProductMediaSlots,
+  normalizeProductMediaSlots,
+} from "@/lib/products/media";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -34,6 +39,15 @@ const coreMetricsSchema = z.object({
   location: z.string().optional(),
   model: z.string().optional(),
   brand: z.string().optional(),
+  mediaSlots: z
+    .array(
+      z.object({
+        url: z.string().trim().max(500).default(""),
+        type: z.enum(["image", "video", ""]).default(""),
+      })
+    )
+    .max(PRODUCT_MEDIA_SLOT_COUNT)
+    .optional(),
 });
 
 const updateProductSchema = z.object({
@@ -79,15 +93,27 @@ function normalizeMediaList(urls: string[]) {
 }
 
 function collectMediaRefs(input: {
+  coreMetrics?: {
+    mediaSlots?: Array<{ url?: string; type?: "image" | "video" | "" }>;
+  };
   coverImageUrl: string | null;
   videoUrl: string | null;
   galleryImageUrls: string[];
 }) {
   const refs = new Set<string>();
-  if (input.coverImageUrl) refs.add(input.coverImageUrl);
-  if (input.videoUrl) refs.add(input.videoUrl);
-  for (const url of input.galleryImageUrls) {
-    if (url) refs.add(url);
+  const slots =
+    input.coreMetrics?.mediaSlots && input.coreMetrics.mediaSlots.length > 0
+      ? normalizeProductMediaSlots(input.coreMetrics.mediaSlots)
+      : buildLegacyProductMediaSlots({
+          coverImageUrl: input.coverImageUrl,
+          videoUrl: input.videoUrl,
+          galleryImageUrls: input.galleryImageUrls,
+        });
+
+  for (const slot of slots) {
+    if (slot.url) {
+      refs.add(slot.url);
+    }
   }
   return refs;
 }
@@ -167,6 +193,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const oldRefs = collectMediaRefs({
+      coreMetrics: current.coreMetrics,
       coverImageUrl: current.coverImageUrl,
       videoUrl: current.videoUrl,
       galleryImageUrls: current.galleryImageUrls,
@@ -179,6 +206,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const nextRefs = collectMediaRefs({
+      coreMetrics: updated.coreMetrics,
       coverImageUrl: updated.coverImageUrl,
       videoUrl: updated.videoUrl,
       galleryImageUrls: updated.galleryImageUrls,
@@ -217,9 +245,12 @@ export async function DELETE(request: Request, context: RouteContext) {
 
   // 同步清理 R2 文件（若已配置 R2）
   await deleteR2Objects([
-    product.coverImageUrl,
-    product.videoUrl,
-    ...product.galleryImageUrls,
+    ...collectMediaRefs({
+      coreMetrics: product.coreMetrics,
+      coverImageUrl: product.coverImageUrl,
+      videoUrl: product.videoUrl,
+      galleryImageUrls: product.galleryImageUrls,
+    }),
   ]);
 
   return Response.json({ ok: true });

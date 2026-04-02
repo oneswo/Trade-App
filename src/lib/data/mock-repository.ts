@@ -68,7 +68,7 @@ function createInitialStore(): MockStore {
         summaryZh: "从查验回转马达到审查底盘件盲区，这篇详尽的出海提货指南将帮你避免损失数万美金的暗坑。",
         content: "Full article content goes here.",
         contentZh: "完整文章内容。",
-        coverImageUrl: "/images/insights/1.jpg",
+        coverImageUrl: null,
         readTime: "8 MIN READ",
         status: "PUBLISHED",
         publishedAt: new Date("2026-10-24").toISOString(),
@@ -85,7 +85,7 @@ function createInitialStore(): MockStore {
         summaryZh: "资深工程师亲自拆解沃尔沃 EC210D 的冷却系统，带您掌握核心液压部件的长效存活指标。",
         content: "Full article content goes here.",
         contentZh: "完整文章内容。",
-        coverImageUrl: "/images/insights/2.jpg",
+        coverImageUrl: null,
         readTime: "5 MIN READ",
         status: "PUBLISHED",
         publishedAt: new Date("2026-09-18").toISOString(),
@@ -138,8 +138,8 @@ function createInitialStore(): MockStore {
           { key: "Operating Weight", value: "36,000 kg" },
           { key: "Engine Power", value: "212 kW" },
         ],
-        coverImageUrl: "/images/products/1.jpg",
-        galleryImageUrls: ["/images/products/1.jpg", "/images/products/2.jpg"],
+        coverImageUrl: null,
+        galleryImageUrls: [],
         videoUrl: null,
         status: "PUBLISHED",
         createdAt: new Date("2026-03-20T08:00:00.000Z").toISOString(),
@@ -156,8 +156,8 @@ function createInitialStore(): MockStore {
           { key: "Operating Weight", value: "22,000 kg" },
           { key: "Engine Power", value: "124 kW" },
         ],
-        coverImageUrl: "/images/products/3.jpg",
-        galleryImageUrls: ["/images/products/3.jpg"],
+        coverImageUrl: null,
+        galleryImageUrls: [],
         videoUrl: null,
         status: "DRAFT",
         createdAt: new Date("2026-03-22T09:30:00.000Z").toISOString(),
@@ -196,7 +196,12 @@ function cloneProduct(record: ProductRecord): ProductRecord {
     ...record,
     specs: record.specs.map((spec) => ({ ...spec })),
     galleryImageUrls: [...record.galleryImageUrls],
-    coreMetrics: record.coreMetrics ? { ...record.coreMetrics } : undefined,
+    coreMetrics: record.coreMetrics
+      ? {
+          ...record.coreMetrics,
+          mediaSlots: record.coreMetrics.mediaSlots?.map((slot) => ({ ...slot })),
+        }
+      : undefined,
   };
 }
 

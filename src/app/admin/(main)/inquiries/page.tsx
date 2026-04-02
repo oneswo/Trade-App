@@ -8,6 +8,7 @@ import InquiryDrawer, { InquiryData } from "@/components/admin/InquiryDrawer";
 import type { InquiryRecord } from "@/lib/data/repository";
 import { readClientCache, writeClientCache } from "@/lib/cache/client-cache";
 import { fetchJson, isAbortLikeError } from "@/lib/http/client";
+import { resolveInquiryLabel } from "@/lib/inquiries/presentation";
 
 const STATUS_MAP: Record<string, { label: string; color: string; bgColor: string }> = {
   PENDING: { label: "待处理", color: "text-orange-600", bgColor: "bg-orange-50 border-orange-200" },
@@ -27,28 +28,8 @@ function formatTime(iso: string) {
   });
 }
 
-const SOURCE_LABELS: Record<string, string> = {
-  "home-page-cta": "首页询盘",
-  "product-detail-cta": "产品详情页",
-  "about-page-cta": "关于我们页",
-  "services-page-cta": "服务页面",
-  "contact-page-form": "联系页面",
-  "contact-page-cta": "联系页面",
-  "global-fab": "悬浮窗询盘",
-};
 const INQUIRIES_CACHE_KEY = "admin:inquiries:list";
 const INQUIRIES_CACHE_TTL_MS = 20 * 1000;
-
-function formatSource(record: InquiryRecord): string {
-  if (record.source) {
-    const label = SOURCE_LABELS[record.source];
-    if (label) return label;
-    if (record.pagePath) return record.pagePath;
-    return record.source;
-  }
-  if (record.pagePath) return record.pagePath;
-  return "通用询盘";
-}
 
 function toInquiryData(record: InquiryRecord): InquiryData {
   const localeRegion = record.locale ? record.locale.toUpperCase() : "GLOBAL";
@@ -57,8 +38,7 @@ function toInquiryData(record: InquiryRecord): InquiryData {
     name: record.name,
     email: record.email ?? "未提供邮箱",
     phone: record.phone ?? undefined,
-    product: formatSource(record),
-    productId: null,
+    product: resolveInquiryLabel(record),
     country: "🌐",
     region: localeRegion,
     time: formatTime(record.createdAt),
@@ -96,16 +76,16 @@ export default function InquiriesPage() {
       setLoading(false);
     }
     try {
-      const result = await fetchJson<{
+      const inquiryResult = await fetchJson<{
         ok: boolean;
         data: InquiryRecord[];
       }>("/api/inquiries", {
         signal: controller.signal,
       });
 
-      if (result.ok) {
-        setRecords(result.data);
-        writeClientCache(INQUIRIES_CACHE_KEY, result.data);
+      if (inquiryResult.ok) {
+        setRecords(inquiryResult.data);
+        writeClientCache(INQUIRIES_CACHE_KEY, inquiryResult.data);
       }
     } catch (error) {
       if (isAbortLikeError(error)) return;
@@ -151,7 +131,10 @@ export default function InquiriesPage() {
     }
   }, [debouncedSearchQuery, selectedStatus, pathname, router, searchParams]);
 
-  const inquiries = useMemo(() => records.map(toInquiryData), [records]);
+  const inquiries = useMemo(
+    () => records.map(toInquiryData),
+    [records]
+  );
 
   const filteredInquiries = useMemo(() => {
     const keyword = debouncedSearchQuery.trim().toLowerCase();
@@ -388,4 +371,3 @@ export default function InquiriesPage() {
     </div>
   );
 }
-

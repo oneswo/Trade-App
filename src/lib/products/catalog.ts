@@ -1,4 +1,11 @@
 import { DEFAULT_LOCALE, type SupportedLocale } from "@/lib/i18n/locales";
+import {
+  buildLegacyProductMediaSlots,
+  getOrderedProductImages,
+  getProductPrimaryMedia,
+  normalizeProductMediaSlots,
+  type ProductMediaKind,
+} from "@/lib/products/media";
 
 export interface ProductSpecItem {
   label: string;
@@ -17,7 +24,9 @@ export interface CatalogProductCard {
   location: string;
   category: string;
   categorySlug: string;
-  image: string;
+  image: string | null;
+  coverMediaUrl: string | null;
+  coverMediaType: ProductMediaKind | null;
 }
 
 export interface CatalogProductDetail extends CatalogProductCard {
@@ -48,9 +57,14 @@ interface ApiProductListItem {
     location?: string;
     model?: string;
     brand?: string;
+    mediaSlots?: Array<{
+      url?: string;
+      type?: "image" | "video" | "";
+    }>;
   };
   stockAmount?: number;
   coverImageUrl: string | null;
+  videoUrl: string | null;
   createdAt: string;
 }
 
@@ -61,8 +75,6 @@ interface ApiProductDetailItem extends ApiProductListItem {
   videoUrl: string | null;
   enableTrustCards?: boolean;
 }
-
-const FALLBACK_IMAGE = "/images/products/1.jpg";
 
 const BRAND_ZH: Record<string, string> = {
   CAT: "卡特",
@@ -189,14 +201,27 @@ function localizeSpecValue(value: string, locale: SupportedLocale) {
     .replace("广州", "Guangzhou");
 }
 
-function sanitizeImage(url: string | null | undefined) {
-  if (!url) return FALLBACK_IMAGE;
-  return url;
+function resolveProductMedia(item: ApiProductDetailItem | ApiProductListItem) {
+  const slots =
+    item.coreMetrics?.mediaSlots && item.coreMetrics.mediaSlots.length > 0
+      ? normalizeProductMediaSlots(item.coreMetrics.mediaSlots)
+      : buildLegacyProductMediaSlots({
+          coverImageUrl: item.coverImageUrl,
+          galleryImageUrls:
+            "galleryImageUrls" in item ? item.galleryImageUrls || [] : [],
+          videoUrl: item.videoUrl,
+        });
+
+  return {
+    primary: getProductPrimaryMedia(slots),
+    images: getOrderedProductImages(slots),
+  };
 }
 
 function toApiCard(item: ApiProductListItem, locale: SupportedLocale): CatalogProductCard {
   const year = item.coreMetrics?.year || String(new Date(item.createdAt).getFullYear() || "--");
   const title = locale === "zh" ? (item.nameZh || item.name) : (item.nameEn || item.name);
+  const { primary, images } = resolveProductMedia(item);
   
   return {
     id: item.id,
@@ -210,16 +235,16 @@ function toApiCard(item: ApiProductListItem, locale: SupportedLocale): CatalogPr
     location: localizeLocation(item.coreMetrics?.location || "Shanghai", locale),
     category: localizeCategory(item.category || "Excavator", locale),
     categorySlug: (item.category || "").trim().toLowerCase(),
-    image: sanitizeImage(item.coverImageUrl),
+    image: images[0] ?? null,
+    coverMediaUrl: primary?.url ?? null,
+    coverMediaType: primary?.type ?? null,
   };
 }
 
 function toApiDetail(item: ApiProductDetailItem, locale: SupportedLocale): CatalogProductDetail {
   const card = toApiCard(item, locale);
   const specs = Array.isArray(item.specs) ? item.specs : [];
-  const images = [item.coverImageUrl, ...(item.galleryImageUrls || [])].filter(
-    (value): value is string => Boolean(value)
-  );
+  const { images } = resolveProductMedia(item);
 
   const summary = locale === "zh" ? (item.summaryZh || item.summary) : (item.summaryEn || item.summary);
   // Optional: add descriptionZh to DB if needed, fallback to description for now
@@ -239,7 +264,7 @@ function toApiDetail(item: ApiProductDetailItem, locale: SupportedLocale): Catal
     ...card,
     summary: summary || "",
     description,
-    images: images.length > 0 ? images : [FALLBACK_IMAGE],
+    images,
     videoUrl: item.videoUrl || null,
     stockAmount: item.stockAmount,
     enableTrustCards: item.enableTrustCards ?? true,
