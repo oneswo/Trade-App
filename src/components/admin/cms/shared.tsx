@@ -92,22 +92,11 @@ export function ImageUpload({ name, label, hint, aspectHint, defaultValue = "" }
     setUploading(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("kind", "image");
-      if (currentUrl) formData.append("oldUrl", currentUrl);
-      const res = await fetch("/api/admin/uploads", {
-        method: "POST",
-        body: formData,
-      });
-      const json = await res.json();
-      if (json.ok && json.data?.url) {
-        set(name, json.data.url);
-      } else {
-        setError(json.error || "上传失败");
-      }
-    } catch {
-      setError("网络错误");
+      const { directUpload } = await import("@/lib/upload");
+      const result = await directUpload(file, "image");
+      set(name, result.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "上传失败");
     } finally {
       setUploading(false);
     }
@@ -203,19 +192,11 @@ export function VideoUpload({ name, label, hint }: { name: string; label: string
     setUploading(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("kind", "video");
-      if (currentUrl) formData.append("oldUrl", currentUrl);
-      const res = await fetch("/api/admin/uploads", { method: "POST", body: formData });
-      const json = await res.json();
-      if (json.ok && json.data?.url) {
-        set(name, json.data.url);
-      } else {
-        setError(json.error || "上传失败");
-      }
-    } catch {
-      setError("网络错误");
+      const { directUpload } = await import("@/lib/upload");
+      const result = await directUpload(file, "video");
+      set(name, result.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "上传失败");
     } finally {
       setUploading(false);
     }

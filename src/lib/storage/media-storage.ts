@@ -196,3 +196,73 @@ export function getMediaStorage(): MediaStorage {
   if (isR2Configured()) return new R2MediaStorage();
   return localMediaStorage;
 }
+
+// ─── Presigned URL 直传 ──────────────────────────────────────────────
+// 前端直传 R2，绕过 Vercel 函数体积限制
+
+export interface PresignedUploadResult {
+  uploadUrl: string;
+  publicUrl: string;
+}
+
+export async function createPresignedUploadUrl(
+  fileName: string,
+  fileType: string,
+  kind: MediaKind,
+): Promise<PresignedUploadResult> {
+  if (!isR2Configured()) {
+    throw new Error("R2 is not configured");
+  }
+
+  const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3") as typeof import("@aws-sdk/client-s3");
+  const { getSignedUrl } = require("@aws-sdk/s3-request-presigner") as typeof import("@aws-sdk/s3-request-presigner");
+
+  const client = new S3Client({
+    region: "auto",
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    },
+  });
+
+  const ext = extFromFileName(fileName, fileType, kind);
+  const day = new Date().toISOString().slice(0, 10).replaceAll("-", "");
+  const key = path.posix.join(
+    getStorageEnvPrefix(),
+    "uploads",
+    kind,
+    day,
+    `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`,
+  );
+
+  const command = new PutObjectCommand({
+    Bucket: process.env.R2_BUCKET_NAME!,
+    Key: key,
+    ContentType: fileType || "application/octet-stream",
+  });
+
+  const uploadUrl = await getSignedUrl(client, command, { expiresIn: 600 });
+  const publicBase = (process.env.R2_PUBLIC_URL ?? "").replace(/\/$/, "");
+  const publicUrl = `${publicBase}/${key}`;
+
+  return { uploadUrl, publicUrl };
+}
+
+/** 从文件名 + MIME 推断扩展名（与 getFileExt 类似但接收原始字符串） */
+function extFromFileName(fileName: string, mimeType: string, kind: MediaKind): string {
+  const mimeToExt: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/quicktime": "mov",
+  };
+  const byMime = mimeToExt[mimeType];
+  if (byMime) return byMime;
+  const ext = fileName.split(".").pop()?.toLowerCase();
+  if (ext) return ext;
+  return kind === "image" ? "jpg" : "mp4";
+}

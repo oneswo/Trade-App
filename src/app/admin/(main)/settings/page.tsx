@@ -99,23 +99,18 @@ export default function SettingsPage() {
     setUploadingLogo(true);
     setLogoUploadError(null);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("kind", "image");
-      const res = await fetch("/api/admin/uploads", { method: "POST", body: fd });
-      const result = await res.json();
-      if (!res.ok || !result.ok) {
-        const msg = ERROR_MESSAGES[result.error] ?? `上传失败 (${result.error ?? res.status})`;
-        setLogoUploadError(msg);
-        return;
-      }
-      if (result.data?.url) {
-        updateField("logoImageUrl", result.data.url);
-        setLogoUploadError(null);
-      }
+      const { directUpload, UploadError } = await import("@/lib/upload");
+      const result = await directUpload(file, "image");
+      updateField("logoImageUrl", result.url);
+      setLogoUploadError(null);
     } catch (err) {
-      console.error(err);
-      setLogoUploadError("网络异常，请检查网络后重试");
+      if (err instanceof (await import("@/lib/upload")).UploadError) {
+        const msg = ERROR_MESSAGES[err.code] ?? `上传失败 (${err.code})`;
+        setLogoUploadError(msg);
+      } else {
+        console.error(err);
+        setLogoUploadError("网络异常，请检查网络后重试");
+      }
     } finally {
       setUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = "";

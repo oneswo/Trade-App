@@ -72,22 +72,17 @@ export default function TicketsPage() {
   const handleSlotUpload = async (file: File, slotIndex: number) => {
     setUploadingSlot(slotIndex);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("kind", "image");
-      const res = await fetch("/api/admin/uploads", { method: "POST", body: formData });
-      const json = await res.json();
-      if (json.ok && json.data?.url) {
-        setScreenshots(prev => {
-          const next = [...prev];
-          if (slotIndex < next.length) {
-            next[slotIndex] = json.data.url;
-          } else {
-            next.push(json.data.url);
-          }
-          return next;
-        });
-      }
+      const { directUpload } = await import("@/lib/upload");
+      const result = await directUpload(file, "image");
+      setScreenshots(prev => {
+        const next = [...prev];
+        if (slotIndex < next.length) {
+          next[slotIndex] = result.url;
+        } else {
+          next.push(result.url);
+        }
+        return next;
+      });
     } catch (e) { console.error(e); }
     finally {
       setUploadingSlot(null);

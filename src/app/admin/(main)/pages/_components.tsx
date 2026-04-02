@@ -154,23 +154,12 @@ export function ImageUpload({
     setUploading(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("kind", "image");
-      if (currentUrl) formData.append("oldUrl", currentUrl);
-      const res = await fetch("/api/admin/uploads", {
-        method: "POST",
-        body: formData,
-      });
-      const json = await res.json();
-      if (json.ok && json.data?.url) {
-        set(name, json.data.url);
-        set(`${name}_auto`, ''); // 手动上传时清除自动标记
-      } else {
-        setError(json.error || "上传失败");
-      }
-    } catch {
-      setError("网络错误");
+      const { directUpload } = await import("@/lib/upload");
+      const result = await directUpload(file, "image");
+      set(name, result.url);
+      set(`${name}_auto`, ''); // 手动上传时清除自动标记
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "上传失败");
     } finally {
       setUploading(false);
     }
@@ -298,11 +287,11 @@ export function VideoUpload({
       const video = document.createElement('video');
       video.crossOrigin = 'anonymous';
       video.preload = 'metadata';
-      
+
       video.onloadeddata = () => {
         video.currentTime = 0.1; // 跳到 0.1 秒，避免黑帧
       };
-      
+
       video.onseeked = () => {
         try {
           const canvas = document.createElement('canvas');
@@ -314,19 +303,10 @@ export function VideoUpload({
             canvas.toBlob((blob) => {
               if (blob) {
                 const file = new File([blob], 'video-frame.jpg', { type: 'image/jpeg' });
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('kind', 'image');
-                
-                fetch('/api/admin/uploads', {
-                  method: 'POST',
-                  body: formData,
-                }).then(res => res.json()).then(json => {
-                  if (json.ok && json.data?.url) {
-                    resolve(json.data.url);
-                  } else {
-                    resolve(null);
-                  }
+                import("@/lib/upload").then(({ directUpload }) =>
+                  directUpload(file, "image")
+                ).then((result) => {
+                  resolve(result.url);
                 }).catch(() => resolve(null));
               } else {
                 resolve(null);
@@ -339,7 +319,7 @@ export function VideoUpload({
           resolve(null);
         }
       };
-      
+
       video.onerror = () => resolve(null);
       video.src = videoUrl;
     });
@@ -349,33 +329,25 @@ export function VideoUpload({
     setUploading(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("kind", "video");
-      if (currentUrl) formData.append("oldUrl", currentUrl);
-      const res = await fetch("/api/admin/uploads", { method: "POST", body: formData });
-      const json = await res.json();
-      if (json.ok && json.data?.url) {
-        set(name, json.data.url);
-        
-        // 如果指定了封面字段，且封面字段为空，自动提取第一帧
-        if (posterFieldName) {
-          const currentPoster = get(posterFieldName, "");
-          if (!currentPoster) {
-            setExtractingFrame(true);
-            const frameUrl = await extractFirstFrame(json.data.url);
-            setExtractingFrame(false);
-            if (frameUrl) {
-              set(posterFieldName, frameUrl);
-              set(`${posterFieldName}_auto`, 'true'); // 标记为自动提取
-            }
+      const { directUpload } = await import("@/lib/upload");
+      const result = await directUpload(file, "video");
+      set(name, result.url);
+
+      // 如果指定了封面字段，且封面字段为空，自动提取第一帧
+      if (posterFieldName) {
+        const currentPoster = get(posterFieldName, "");
+        if (!currentPoster) {
+          setExtractingFrame(true);
+          const frameUrl = await extractFirstFrame(result.url);
+          setExtractingFrame(false);
+          if (frameUrl) {
+            set(posterFieldName, frameUrl);
+            set(`${posterFieldName}_auto`, 'true'); // 标记为自动提取
           }
         }
-      } else {
-        setError(json.error || "上传失败");
       }
-    } catch {
-      setError("网络错误");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "上传失败");
     } finally {
       setUploading(false);
     }

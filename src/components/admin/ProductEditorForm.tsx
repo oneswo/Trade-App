@@ -81,26 +81,10 @@ export default function ProductEditorForm({
     setErrorMsg("");
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("kind", type === "video" ? "video" : "image");
-
-      const res = await fetch("/api/admin/uploads", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        setErrorMsg(data.error || "上传失败");
-        return;
-      }
-
-      const url = data.data?.url ?? "";
-      if (!url) {
-        setErrorMsg("上传成功但未返回文件地址");
-        return;
-      }
+      const { directUpload } = await import("@/lib/upload");
+      const kind = type === "video" ? "video" as const : "image" as const;
+      const result = await directUpload(file, kind);
+      const url = result.url;
 
       if (type === "cover") {
         setCoverImageUrl(url);
@@ -109,8 +93,8 @@ export default function ProductEditorForm({
       } else if (type === "video") {
         setVideoUrl(url);
       }
-    } catch {
-      setErrorMsg("网络异常，上传失败");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "网络异常，上传失败");
     } finally {
       setUploading(false);
       e.target.value = "";

@@ -93,17 +93,9 @@ export default function ArticleEditorForm({
     setUploadingCover(true);
     setMessage("");
     try {
-      const body = new FormData();
-      body.append("kind", "image");
-      body.append("file", file);
-      if (coverImageUrl) body.append("oldUrl", coverImageUrl);
-      const res = await fetch("/api/admin/uploads", { method: "POST", body });
-      const json = (await res.json()) as { ok?: boolean; data?: { url: string } };
-      if (!res.ok || !json.ok || !json.data?.url) {
-        setMessage("封面上传失败。");
-        return;
-      }
-      setCoverImageUrl(json.data.url);
+      const { directUpload } = await import("@/lib/upload");
+      const result = await directUpload(file, "image");
+      setCoverImageUrl(result.url);
       setMessage("封面上传成功。");
     } catch {
       setMessage("封面上传失败。");

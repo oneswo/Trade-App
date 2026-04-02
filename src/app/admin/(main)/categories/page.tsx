@@ -24,16 +24,11 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
     setUploading(true);
     setError(null);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("kind", "image");
-      if (value) fd.append("oldUrl", value);
-      const res = await fetch("/api/admin/uploads", { method: "POST", body: fd });
-      const json = await res.json();
-      if (json.ok && json.data?.url) onChange(json.data.url);
-      else setError(json.error || "上传失败");
-    } catch {
-      setError("网络错误");
+      const { directUpload } = await import("@/lib/upload");
+      const result = await directUpload(file, "image");
+      onChange(result.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "上传失败");
     } finally {
       setUploading(false);
     }
