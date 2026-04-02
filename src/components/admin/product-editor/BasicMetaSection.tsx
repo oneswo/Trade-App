@@ -35,7 +35,7 @@ export function BasicMetaSection({
       <div className="flex flex-col gap-6 flex-1">
         <div className="space-y-2">
           <label className="text-[11px] font-semibold tracking-widest text-[#111111]/40 uppercase">
-            主标题 ({lang.toUpperCase()})
+            主标题 ({lang.toUpperCase()}) <span className="text-red-500">*</span>
           </label>
           <textarea
             rows={2}
@@ -58,7 +58,7 @@ export function BasicMetaSection({
         <div className="grid grid-cols-1 gap-4">
           <div className="space-y-2">
             <label className="text-[11px] font-semibold tracking-widest text-[#111111]/40 uppercase">
-              品牌分类级 (Brand Category)
+              品牌分类级 (Brand Category) <span className="text-red-500">*</span>
             </label>
             <select
               value={category}

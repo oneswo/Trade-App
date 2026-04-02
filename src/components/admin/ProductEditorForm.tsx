@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AlertCircle, Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BasicMetaSection } from "./product-editor/BasicMetaSection";
 import { CoreSpecsSection } from "./product-editor/CoreSpecsSection";
-import { MediaGallerySection } from "./product-editor/MediaGallerySection";
+import {
+  MediaGallerySection,
+  type MediaSlot,
+  type SlotUploadState,
+} from "./product-editor/MediaGallerySection";
 import { ProductEditorHeader } from "./product-editor/ProductEditorHeader";
 import { TechSpecsSection } from "./product-editor/TechSpecsSection";
 import type {
@@ -14,6 +18,15 @@ import type {
   ProductEditorCoreMetrics,
   ProductEditorSpec,
 } from "./product-editor/types";
+
+const SLOT_COUNT = 5;
+const emptySlot = (): MediaSlot => ({ url: "", type: "" });
+const emptyState = (): SlotUploadState => ({
+  uploading: false,
+  progress: 0,
+  error: "",
+  showSuccess: false,
+});
 
 export default function ProductEditorForm({
   productId,
@@ -53,10 +66,16 @@ export default function ProductEditorForm({
     { key: "Max Digging Depth (挖掘深度)", value: "6,650 mm" },
   ]);
   const [description, setDescription] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [coverImageUrl, setCoverImageUrl] = useState("");
-  const [galleryImageUrls, setGalleryImageUrls] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const [mediaSlots, setMediaSlots] = useState<MediaSlot[]>(
+    () => Array.from({ length: SLOT_COUNT }, emptySlot),
+  );
+  const [slotStates, setSlotStates] = useState<SlotUploadState[]>(
+    () => Array.from({ length: SLOT_COUNT }, emptyState),
+  );
+  const [selectedSlot, setSelectedSlot] = useState(0);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/admin/categories")
@@ -70,40 +89,119 @@ export default function ProductEditorForm({
       .catch(console.error);
   }, []);
 
-  const handleUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: "cover" | "gallery" | "video"
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // ── Slot 上传 ──────────────────────────────────────────────────
 
-    setUploading(true);
-    setErrorMsg("");
+  const handleSlotUpload = useCallback(async (index: number, file: File) => {
+    const kind = file.type.startsWith("video/") ? "video" as const : "image" as const;
+
+    // 获取旧文件 URL（用于上传成功后删除）
+    const oldUrl = mediaSlots[index]?.url;
+
+    // 设置上传中状态
+    setSlotStates((prev) => {
+      const next = [...prev];
+      next[index] = { uploading: true, progress: 0, error: "", showSuccess: false };
+      return next;
+    });
+    setSelectedSlot(index);
 
     try {
-      const { directUpload } = await import("@/lib/upload");
-      const kind = type === "video" ? "video" as const : "image" as const;
-      const result = await directUpload(file, kind);
-      const url = result.url;
+      const { directUploadWithProgress } = await import("@/lib/upload");
+      const result = await directUploadWithProgress(file, kind, (percent) => {
+        setSlotStates((prev) => {
+          const next = [...prev];
+          next[index] = { ...next[index], progress: percent };
+          return next;
+        });
+      });
 
-      if (type === "cover") {
-        setCoverImageUrl(url);
-      } else if (type === "gallery") {
-        setGalleryImageUrls([...galleryImageUrls, url]);
-      } else if (type === "video") {
-        setVideoUrl(url);
+      // 上传成功 → 写入 slot
+      setMediaSlots((prev) => {
+        const next = [...prev];
+        next[index] = { url: result.url, type: kind };
+        return next;
+      });
+      setSlotStates((prev) => {
+        const next = [...prev];
+        next[index] = { uploading: false, progress: 100, error: "", showSuccess: true };
+        return next;
+      });
+
+      // 删除旧文件（异步，不阻塞 UI）
+      if (oldUrl && oldUrl.startsWith("http")) {
+        fetch("/api/admin/media/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls: [oldUrl] }),
+        }).catch(console.error);
       }
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "网络异常，上传失败");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
-  };
 
-  const removeGalleryImage = (index: number) => {
-    setGalleryImageUrls(galleryImageUrls.filter((_, i) => i !== index));
-  };
+      // 2 秒后清除成功勾
+      setTimeout(() => {
+        setSlotStates((prev) => {
+          const next = [...prev];
+          if (next[index]?.showSuccess) {
+            next[index] = { ...next[index], showSuccess: false };
+          }
+          return next;
+        });
+      }, 2000);
+    } catch (err) {
+      setSlotStates((prev) => {
+        const next = [...prev];
+        next[index] = {
+          uploading: false,
+          progress: 0,
+          error: err instanceof Error ? err.message : "上传失败",
+          showSuccess: false,
+        };
+        return next;
+      });
+    }
+  }, [mediaSlots]);
+
+  const handleRemoveSlot = useCallback(async (index: number) => {
+    const currentSlot = mediaSlots[index];
+    const urlToDelete = currentSlot?.url;
+
+    // 先清除前端状态
+    setMediaSlots((prev) => {
+      const next = [...prev];
+      next[index] = emptySlot();
+      return next;
+    });
+    setSlotStates((prev) => {
+      const next = [...prev];
+      next[index] = emptyState();
+      return next;
+    });
+
+    // 异步删除 R2 文件（不阻塞 UI）
+    if (urlToDelete && urlToDelete.startsWith("http")) {
+      fetch("/api/admin/media/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ urls: [urlToDelete] }),
+      }).catch(console.error);
+    }
+  }, [mediaSlots]);
+
+  // ── 从 slots 派生出提交用的字段 ──────────────────────────────
+
+  const coverImageUrl = mediaSlots[0]?.type !== "video" ? mediaSlots[0]?.url || "" : "";
+  const videoUrl = (() => {
+    // 如果主图是视频，用它
+    if (mediaSlots[0]?.type === "video" && mediaSlots[0]?.url) return mediaSlots[0].url;
+    // 否则找 gallery 里的第一个视频
+    for (let i = 1; i < SLOT_COUNT; i++) {
+      if (mediaSlots[i]?.type === "video" && mediaSlots[i]?.url) return mediaSlots[i].url;
+    }
+    return "";
+  })();
+  const galleryImageUrls = mediaSlots
+    .slice(1)
+    .filter((s) => s.url && s.type !== "video")
+    .map((s) => s.url);
 
   useEffect(() => {
     if (!isEdit || !productId) return;
@@ -136,9 +234,27 @@ export default function ProductEditorForm({
             setSpecs(product.specs);
           }
           setDescription(product.description || "");
-          setCoverImageUrl(product.coverImageUrl || "");
-          setGalleryImageUrls(product.galleryImageUrls || []);
-          setVideoUrl(product.videoUrl || "");
+
+          // 从旧字段还原到 slots
+          const loaded: MediaSlot[] = Array.from({ length: SLOT_COUNT }, emptySlot);
+          if (product.coverImageUrl) {
+            loaded[0] = { url: product.coverImageUrl, type: "image" };
+          }
+          if (product.videoUrl && !product.coverImageUrl) {
+            loaded[0] = { url: product.videoUrl, type: "video" };
+          }
+          const gallery: string[] = product.galleryImageUrls || [];
+          for (let i = 0; i < gallery.length && i < SLOT_COUNT - 1; i++) {
+            loaded[i + 1] = { url: gallery[i], type: "image" };
+          }
+          // 如果主图已经是图片且有视频，把视频放到最后空位
+          if (product.videoUrl && product.coverImageUrl) {
+            const emptyIdx = loaded.findIndex((s) => !s.url);
+            if (emptyIdx !== -1) {
+              loaded[emptyIdx] = { url: product.videoUrl, type: "video" };
+            }
+          }
+          setMediaSlots(loaded);
         } else {
           setErrorMsg("加载产品数据失败");
         }
@@ -148,11 +264,33 @@ export default function ProductEditorForm({
   }, [isEdit, productId]);
 
   const handleSubmit = async (statusToSave: "DRAFT" | "PUBLISHED") => {
-    if (!content.nameZh && !content.nameEn) {
-      setErrorMsg("请至少填写一个语言的主标题。");
-      return;
+    // ── 草稿不验证必填项，发布才验证 ──
+    if (statusToSave === "PUBLISHED") {
+      const errors: { field: string; message: string }[] = [];
+
+      if (!content.nameZh && !content.nameEn) {
+        errors.push({ field: "field-basic", message: "请至少填写一个语言的主标题" });
+      } else {
+        // 检查主标题最小长度（后端要求至少2个字符）
+        const mainName = content.nameZh || content.nameEn;
+        if (mainName.trim().length < 2) {
+          errors.push({ field: "field-basic", message: "主标题至少需要 2 个字符" });
+        }
+      }
+      if (!category.trim()) {
+        errors.push({ field: "field-basic", message: "请选择产品分类" });
+      }
+
+      if (errors.length > 0) {
+        setValidationErrors(errors.map((e) => e.message));
+        setShowValidationModal(true);
+        setErrorMsg("");
+        return;
+      }
     }
 
+    setValidationErrors([]);
+    setShowValidationModal(false);
     setSavingStatus(statusToSave);
     setErrorMsg("");
 
@@ -220,7 +358,44 @@ export default function ProductEditorForm({
   }
 
   return (
-    <div className="space-y-6 pb-20">
+    <div ref={formRef} className="space-y-6 pb-20">
+      {/* 居中验证弹窗 */}
+      {showValidationModal && validationErrors.length > 0 && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md p-6 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertCircle size={20} />
+                <span className="font-bold text-[15px]">发布失败</span>
+              </div>
+              <button
+                onClick={() => setShowValidationModal(false)}
+                className="p-1 hover:bg-black/5 rounded-lg transition-colors"
+              >
+                <X size={18} className="text-[#111111]/40" />
+              </button>
+            </div>
+            <div className="text-[13px] text-[#111111]/70 mb-4">
+              以下必填项未填写：
+            </div>
+            <ul className="space-y-2 mb-6">
+              {validationErrors.map((msg) => (
+                <li key={msg} className="flex items-center gap-2 text-[13px] text-red-600">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                  {msg}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => setShowValidationModal(false)}
+              className="w-full py-2.5 bg-[#111111] text-white text-[13px] font-semibold rounded-lg hover:bg-black/80 transition-colors"
+            >
+              我知道了
+            </button>
+          </div>
+        </div>
+      )}
+
       {errorMsg && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
           <AlertCircle size={16} /> {errorMsg}
@@ -238,20 +413,20 @@ export default function ProductEditorForm({
 
       <main className="flex flex-col gap-6">
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
-          <div className="xl:col-span-7 flex flex-col">
+          <div id="field-media" className="xl:col-span-7 flex flex-col">
             <MediaGallerySection
               stockAmount={stockAmount}
               onStockAmountChange={setStockAmount}
-              videoUrl={videoUrl}
-              coverImageUrl={coverImageUrl}
-              galleryImageUrls={galleryImageUrls}
-              uploading={uploading}
-              onUpload={handleUpload}
-              onRemoveGalleryImage={removeGalleryImage}
+              slots={mediaSlots}
+              slotStates={slotStates}
+              selectedSlot={selectedSlot}
+              onSelectSlot={setSelectedSlot}
+              onUploadSlot={handleSlotUpload}
+              onRemoveSlot={handleRemoveSlot}
             />
           </div>
 
-          <div className="xl:col-span-5 flex flex-col">
+          <div id="field-basic" className="xl:col-span-5 flex flex-col">
             <BasicMetaSection
               lang={lang}
               content={content}
