@@ -10,13 +10,9 @@ import {
 import type { ProductEditorCoreMetrics } from "./types";
 
 export function CoreSpecsSection({
-  enableTrustCards,
-  onToggleTrustCards,
   coreMetrics,
   onCoreMetricsChange,
 }: {
-  enableTrustCards: boolean;
-  onToggleTrustCards: () => void;
   coreMetrics: ProductEditorCoreMetrics;
   onCoreMetricsChange: (metrics: ProductEditorCoreMetrics) => void;
 }) {
@@ -27,25 +23,6 @@ export function CoreSpecsSection({
           <Activity size={16} className="text-[#D4AF37]" />
           首屏前置核心指标 (Core Specifications)
         </h2>
-
-        <div className="flex items-center gap-3">
-          <span className="text-[12px] font-semibold text-gray-400">
-            开启安全背书卡片 (销售闭环)
-          </span>
-          <button
-            type="button"
-            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ${
-              enableTrustCards ? "bg-[#25D366]" : "bg-white/20"
-            }`}
-            onClick={onToggleTrustCards}
-          >
-            <span
-              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition ${
-                enableTrustCards ? "translate-x-4" : "translate-x-0"
-              }`}
-            />
-          </button>
-        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">

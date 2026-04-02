@@ -57,6 +57,9 @@ export function ContactFields({ zh }: { zh: boolean }) {
         <FieldRow label="地图气泡标题">
           <TextInput name="map.bubbleTitle" defaultValue={zh ? "中国机械 亚太调度中枢" : "KXTJ Machinery HQ"} />
         </FieldRow>
+        <FieldRow label="地图气泡副标题">
+          <TextInput name="map.bubbleSubtitle" defaultValue={zh ? "上海全球基地" : "Shanghai Global Base"} />
+        </FieldRow>
       </div>
       <div className="space-y-5">
         <SectionHeader title="团队联系人" note="4 位区域联系人卡片" />

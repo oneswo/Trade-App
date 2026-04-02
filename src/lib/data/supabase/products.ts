@@ -21,7 +21,6 @@ function rowToProduct(r: Record<string, unknown>): ProductRecord {
     specs: (r.specs ?? []) as { key: string; value: string }[],
     coreMetrics: (r.core_metrics ?? undefined) as ProductRecord["coreMetrics"],
     stockAmount: (r.stock_amount ?? undefined) as number | undefined,
-    enableTrustCards: (r.enable_trust_cards ?? true) as boolean,
     coverImageUrl: (r.cover_image_url ?? null) as string | null,
     galleryImageUrls: (r.gallery_image_urls ?? []) as string[],
     videoUrl: (r.video_url ?? null) as string | null,
@@ -84,7 +83,6 @@ export const supabaseProductRepo: ProductRepo = {
         specs: input.specs ?? [],
         core_metrics: input.coreMetrics ?? null,
         stock_amount: input.stockAmount ?? null,
-        enable_trust_cards: input.enableTrustCards ?? true,
         cover_image_url: input.coverImageUrl ?? null,
         gallery_image_urls: input.galleryImageUrls ?? [],
         video_url: input.videoUrl ?? null,
@@ -113,9 +111,6 @@ export const supabaseProductRepo: ProductRepo = {
     if (input.specs !== undefined) patch.specs = input.specs;
     if (input.coreMetrics !== undefined) patch.core_metrics = input.coreMetrics;
     if (input.stockAmount !== undefined) patch.stock_amount = input.stockAmount;
-    if (input.enableTrustCards !== undefined) {
-      patch.enable_trust_cards = input.enableTrustCards;
-    }
     if (input.galleryImageUrls !== undefined) {
       patch.gallery_image_urls = input.galleryImageUrls;
     }

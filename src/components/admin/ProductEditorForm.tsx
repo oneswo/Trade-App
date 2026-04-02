@@ -48,7 +48,6 @@ export default function ProductEditorForm({
     "IDLE"
   );
   const [errorMsg, setErrorMsg] = useState("");
-  const [enableTrustCards, setEnableTrustCards] = useState(true);
   const [stockAmount, setStockAmount] = useState<number>(3);
   const [category, setCategory] = useState("");
   const [content, setContent] = useState<ProductEditorContent>({
@@ -190,7 +189,6 @@ export default function ProductEditorForm({
         if (data.ok && data.data) {
           const product = data.data;
           setCategory(product.category);
-          setEnableTrustCards(product.enableTrustCards ?? true);
           setStockAmount(product.stockAmount ?? 3);
           setContent({
             nameZh: product.nameZh || "",
@@ -279,7 +277,6 @@ export default function ProductEditorForm({
         summaryEn: content.summaryEn,
         description,
         stockAmount,
-        enableTrustCards,
         coreMetrics: {
           ...coreMetrics,
           mediaSlots: normalizedMediaSlots,
@@ -329,9 +326,9 @@ export default function ProductEditorForm({
   };
 
   const updateSpec = (index: number, field: "key" | "value", value: string) => {
-    const nextSpecs = [...specs];
-    nextSpecs[index][field] = value;
-    setSpecs(nextSpecs);
+    setSpecs(specs.map((spec, i) =>
+      i === index ? { ...spec, [field]: value } : spec
+    ));
   };
 
   if (initialLoading) {
@@ -426,8 +423,6 @@ export default function ProductEditorForm({
         </div>
 
         <CoreSpecsSection
-          enableTrustCards={enableTrustCards}
-          onToggleTrustCards={() => setEnableTrustCards(!enableTrustCards)}
           coreMetrics={coreMetrics}
           onCoreMetricsChange={setCoreMetrics}
         />

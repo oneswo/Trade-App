@@ -63,7 +63,6 @@ const updateProductSchema = z.object({
   specs: z.array(specSchema).max(50).optional(),
   coreMetrics: coreMetricsSchema.optional(),
   stockAmount: z.number().nonnegative().optional(),
-  enableTrustCards: z.boolean().optional(),
   coverImageUrl: mediaUrlSchema.nullable().optional(),
   galleryImageUrls: z.array(mediaUrlSchema).max(20).optional(),
   videoUrl: mediaUrlSchema.nullable().optional(),

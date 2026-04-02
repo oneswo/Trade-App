@@ -80,7 +80,6 @@ export interface ProductRecord {
     mediaSlots?: ProductMediaSlot[];
   };
   stockAmount?: number;
-  enableTrustCards?: boolean;
   coverImageUrl: string | null;
   galleryImageUrls: string[];
   videoUrl: string | null;
@@ -102,7 +101,6 @@ export interface CreateProductInput {
   specs: ProductSpec[];
   coreMetrics?: ProductRecord["coreMetrics"];
   stockAmount?: number;
-  enableTrustCards?: boolean;
   coverImageUrl?: string | null;
   galleryImageUrls?: string[];
   videoUrl?: string | null;
@@ -122,7 +120,6 @@ export interface UpdateProductInput {
   specs?: ProductSpec[];
   coreMetrics?: ProductRecord["coreMetrics"];
   stockAmount?: number;
-  enableTrustCards?: boolean;
   coverImageUrl?: string | null;
   galleryImageUrls?: string[];
   videoUrl?: string | null;

@@ -64,7 +64,7 @@ export default function Footer({ initialSettings }: { initialSettings?: SiteSett
             <h4 className="text-[15px] font-bold text-white mb-8 tracking-widest uppercase">{isZh ? '快速链接' : 'Quick Links'}</h4>
             <ul className="flex flex-col gap-4 text-[15px] text-[#9A9A94] font-medium">
               <li><Link href="/" className="hover:text-[#C8960A] transition-colors">{isZh ? '主页' : 'Home'}</Link></li>
-              <li><Link href="/products" className="hover:text-[#C8960A] transition-colors">{isZh ? '找设备' : 'Equipment'}</Link></li>
+              <li><Link href="/products" className="hover:text-[#C8960A] transition-colors">{isZh ? '找设备' : 'Products'}</Link></li>
               <li>
                 <Link href={"/contact#sales-team" as `/${string}`} className="hover:text-[#C8960A] transition-colors">
                   {isZh ? '联系销售代表' : 'Contact Sales'}

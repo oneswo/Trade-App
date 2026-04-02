@@ -105,7 +105,9 @@ export default function ContactPageClient({
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[130%] z-20 pointer-events-none flex flex-col items-center">
                  <div className="bg-[#111111] text-white px-6 py-4 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.4)] border border-white/5 flex flex-col items-center relative z-10">
                     <span className="text-[#D4AF37] text-sm font-black tracking-widest mb-1">{c('map.bubbleTitle', isZh ? '中国机械 亚太调度中枢' : 'KXTJ Machinery HQ')}</span>
-                    <span className="text-gray-400 text-[10px] tracking-[0.15em] uppercase">Shanghai Global Base</span>
+                    <span className="text-gray-400 text-[10px] tracking-[0.15em] uppercase">
+                      {c('map.bubbleSubtitle', isZh ? '上海全球基地' : 'Shanghai Global Base')}
+                    </span>
                  </div>
                  {/* 向下的指示尖角 */}
                  <div className="w-5 h-5 bg-[#111111] rotate-45 -mt-2.5 border-b border-r border-white/5 shadow-xl"></div>

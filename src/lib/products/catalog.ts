@@ -38,7 +38,6 @@ export interface CatalogProductDetail extends CatalogProductCard {
   coreSpecs: ProductSpecItem[];
   detailedSpecs: ProductSpecItem[];
   stockAmount?: number;
-  enableTrustCards?: boolean;
 }
 
 interface ApiProductListItem {
@@ -74,7 +73,6 @@ interface ApiProductDetailItem extends ApiProductListItem {
   specs: Array<{ key: string; value: string }>;
   galleryImageUrls: string[];
   videoUrl: string | null;
-  enableTrustCards?: boolean;
 }
 
 type ProductListSource = ApiProductListItem | ProductRecord;
@@ -271,7 +269,6 @@ export function toCatalogProductDetail(item: ProductDetailSource, locale: Suppor
     images,
     videoUrl: item.videoUrl || null,
     stockAmount: item.stockAmount,
-    enableTrustCards: item.enableTrustCards ?? true,
     coreSpecs: coreSpecs.length > 0 ? coreSpecs : [
       { label: localizeSpecLabel("Category", locale), value: card.category },
       { label: localizeSpecLabel("Brand", locale), value: card.brand },
@@ -280,7 +277,7 @@ export function toCatalogProductDetail(item: ProductDetailSource, locale: Suppor
     ],
     detailedSpecs: specs.length > 0
       ? specs.map((spec) => ({
-          label: localizeSpecLabel(spec.key, locale),
+          label: spec.key,
           value: localizeSpecValue(spec.value, locale),
         }))
       : [

@@ -269,7 +269,6 @@ export const mockProductRepo: ProductRepo = {
       specs: input.specs.map((spec) => ({ ...spec })),
       coreMetrics: input.coreMetrics ? { ...input.coreMetrics } : undefined,
       stockAmount: input.stockAmount,
-      enableTrustCards: input.enableTrustCards,
       coverImageUrl: input.coverImageUrl ?? null,
       galleryImageUrls: [...(input.galleryImageUrls ?? [])],
       videoUrl: input.videoUrl ?? null,
@@ -300,9 +299,6 @@ export const mockProductRepo: ProductRepo = {
       product.coreMetrics = input.coreMetrics ? { ...input.coreMetrics } : undefined;
     }
     if (typeof input.stockAmount === "number") product.stockAmount = input.stockAmount;
-    if (typeof input.enableTrustCards === "boolean") {
-      product.enableTrustCards = input.enableTrustCards;
-    }
     if (Array.isArray(input.galleryImageUrls)) {
       product.galleryImageUrls = [...input.galleryImageUrls];
     }
