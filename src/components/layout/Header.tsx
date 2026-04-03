@@ -245,14 +245,6 @@ export default function Header({ initialSettings }: { initialSettings?: SiteSett
             ref={langRef}
             className="relative bg-white rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.2)] animate-in fade-in slide-in-from-bottom-2 duration-150"
           >
-          {/* 关闭按钮 */}
-          <button 
-            onClick={() => setIsLangOpen(false)} 
-            className="absolute -top-3 -right-3 w-8 h-8 bg-white border border-[#EDECEA] hover:border-[#111110] hover:bg-[#111110] hover:text-white text-[#888780] rounded-full flex items-center justify-center transition-all shadow-md z-10"
-          >
-            <X size={14} strokeWidth={2.5} />
-          </button>
-
           {/* 内容区 */}
           <div className="px-6 pt-5 pb-6">
             {/* 标题 */}

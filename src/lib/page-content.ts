@@ -48,8 +48,8 @@ const OBSOLETE_PAGE_CONTENT_PREFIXES: Partial<Record<ValidPageId, string[]>> = {
   about: ["cta.", "hero."],
   /** 与前台 ServicesPageClient 对齐：移除未使用的 Hero 字段 */
   services: ["cta.", "hero."],
-  /** 与前台 ContactPageClient 对齐：移除未使用的 Hero 字段 */
-  contact: ["bottomCta.", "hero.", "team.directLineLabel", "team.whatsappLabel"],
+  /** 与前台 ContactPageClient 对齐：移除未使用的旧 Hero / 地图字段 */
+  contact: ["bottomCta.", "hero.", "map.", "team.directLineLabel", "team.whatsappLabel"],
 };
 
 export function isSharedMediaField(fieldName: string) {

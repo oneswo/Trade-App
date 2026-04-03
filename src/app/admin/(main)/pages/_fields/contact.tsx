@@ -6,13 +6,14 @@ import {
   TextInput,
   TextArea,
   ImageUpload,
+  VideoUpload,
 } from "../_components";
 
 export function ContactFields({ zh }: { zh: boolean }) {
   return (
     <div className="space-y-12">
       <div className="space-y-5">
-        <SectionHeader title="总部联络信息" note="左侧信息栏 + 地图气泡" />
+        <SectionHeader title="总部联络信息" note="左侧信息栏 + 公司介绍视频" />
         <FieldRow label="主标题">
           <TextInput name="info.hqTitle" defaultValue={zh ? "全域出海调度中心" : "Global Dispatch Center"} />
         </FieldRow>
@@ -54,12 +55,11 @@ export function ContactFields({ zh }: { zh: boolean }) {
         <FieldRow label="营业时间">
           <TextInput name="info.hours" defaultValue={zh ? "周一至周六 09:00 - 18:00 (UTC+8)，紧急询盘 24小时响应" : "Mon–Sat 09:00–18:00 UTC+8, emergency inquiries answered 24/7"} />
         </FieldRow>
-        <FieldRow label="地图气泡标题">
-          <TextInput name="map.bubbleTitle" defaultValue={zh ? "中国机械 亚太调度中枢" : "KXTJ Machinery HQ"} />
-        </FieldRow>
-        <FieldRow label="地图气泡副标题">
-          <TextInput name="map.bubbleSubtitle" defaultValue={zh ? "上海全球基地" : "Shanghai Global Base"} />
-        </FieldRow>
+        <VideoUpload
+          name="media.videoUrl"
+          label="公司介绍视频"
+          hint="上传后前台会替换原地图模块；MP4 / WebM / MOV，最大 80MB"
+        />
       </div>
       <div className="space-y-5">
         <SectionHeader title="团队联系人" note="4 位区域联系人卡片" />

@@ -1,6 +1,7 @@
 'use client';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { MapPin, Mail, Clock, HeadphonesIcon } from 'lucide-react';
+import { MapPin, Mail, Clock, HeadphonesIcon, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { usePageContent } from '@/hooks/usePageContent';
 
@@ -15,6 +16,54 @@ export default function ContactPageClient({
   const contactEmail = c('info.email', '15156888267@163.com');
   const contactPhone = c('info.phone', '+86 17321077956');
   const contactPhoneForTel = contactPhone.replace(/\s/g, '');
+  const companyVideoUrl = c('media.videoUrl', '');
+  const [playing, setPlaying] = useState(true);
+  const [muted, setMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !companyVideoUrl) return;
+
+    const playPromise = video.play();
+    if (playPromise) {
+      playPromise
+        .then(() => setPlaying(true))
+        .catch(() => setPlaying(false));
+    }
+  }, [companyVideoUrl]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = muted;
+  }, [muted]);
+
+  const togglePlay = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      try {
+        await video.play();
+        setPlaying(true);
+      } catch {
+        setPlaying(false);
+      }
+      return;
+    }
+
+    video.pause();
+    setPlaying(false);
+  };
+
+  const toggleMuted = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const nextMuted = !muted;
+    video.muted = nextMuted;
+    setMuted(nextMuted);
+  };
 
   return (
     <main className="w-full bg-[#FAFAFA] pt-[72px]">
@@ -86,32 +135,62 @@ export default function ContactPageClient({
               </div>
             </div>
 
-            {/* Right: 实景真实交互地图 (锁定上海宏观视角以避开丑陋原生弹窗，加上自定悬浮气泡) */}
-            <div className="w-full lg:w-[55%] relative group min-h-[400px] lg:min-h-full bg-gray-100 overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none group-hover:opacity-0 transition-opacity duration-500 bg-black/5 z-10"></div>
-              
-              <iframe 
-                src="https://maps.google.com/maps?q=上海市&t=&z=10&ie=UTF8&iwloc=near&output=embed&hl=zh-CN" 
-                width="100%" 
-                height="100%" 
-                style={{ border: 0, position: 'absolute', top: 0, left: 0 }} 
-                allowFullScreen 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
-                className="w-full h-full grayscale-[40%] contrast-[110%] group-hover:grayscale-0 transition-all duration-[1500ms] pointer-events-none"
-              ></iframe>
-
-              {/* 中央自定义高端定位气泡 (替代谷歌原生白框的纯净展现) */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[130%] z-20 pointer-events-none flex flex-col items-center">
-                 <div className="bg-[#111111] text-white px-6 py-4 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.4)] border border-white/5 flex flex-col items-center relative z-10">
-                    <span className="text-[#D4AF37] text-sm font-black tracking-widest mb-1">{c('map.bubbleTitle', isZh ? '中国机械 亚太调度中枢' : 'KXTJ Machinery HQ')}</span>
-                    <span className="text-gray-400 text-[10px] tracking-[0.15em] uppercase">
-                      {c('map.bubbleSubtitle', isZh ? '上海全球基地' : 'Shanghai Global Base')}
+            {/* Right: 公司介绍视频 */}
+            <div className="w-full lg:w-[55%] relative min-h-[400px] lg:min-h-full bg-[#0B0B0B] overflow-hidden">
+              {companyVideoUrl ? (
+                <>
+                  <video
+                    ref={videoRef}
+                    src={companyVideoUrl}
+                    autoPlay
+                    muted={muted}
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className="absolute inset-0 h-full w-full object-cover"
+                    aria-label={isZh ? '公司介绍视频' : 'Company introduction video'}
+                    onPlay={() => setPlaying(true)}
+                    onPause={() => setPlaying(false)}
+                  >
+                    {isZh ? '当前浏览器不支持视频播放。' : 'Your browser does not support video playback.'}
+                  </video>
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 to-transparent" />
+                  <div className="absolute bottom-5 right-5 z-10 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={togglePlay}
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
+                      aria-label={playing ? (isZh ? '暂停视频' : 'Pause video') : (isZh ? '播放视频' : 'Play video')}
+                    >
+                      {playing ? <Pause size={18} className="fill-white" /> : <Play size={18} className="fill-white ml-0.5" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={toggleMuted}
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
+                      aria-label={muted ? (isZh ? '开启声音' : 'Unmute video') : (isZh ? '静音视频' : 'Mute video')}
+                    >
+                      {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.18),_transparent_45%),linear-gradient(180deg,_#151515_0%,_#090909_100%)] px-8 text-center">
+                  <div className="max-w-md">
+                    <span className="mb-4 inline-flex rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37]">
+                      {isZh ? 'Company Video' : 'Company Video'}
                     </span>
-                 </div>
-                 {/* 向下的指示尖角 */}
-                 <div className="w-5 h-5 bg-[#111111] rotate-45 -mt-2.5 border-b border-r border-white/5 shadow-xl"></div>
-              </div>
+                    <h3 className="mb-3 text-3xl font-black tracking-tight text-white">
+                      {isZh ? '企业介绍视频待上传' : 'Company Video Coming Soon'}
+                    </h3>
+                    <p className="text-sm font-medium leading-relaxed text-gray-400">
+                      {isZh
+                        ? '后台上传公司介绍视频后，这里会自动替换为最新内容。'
+                        : 'Upload a company introduction video in the CMS and it will appear here automatically.'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>
