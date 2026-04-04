@@ -148,17 +148,18 @@
 /* 首页 Hero 标题 - Bebas Neue 超大字体 */
 .hero-title-home {
   font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
-  font-size: clamp(72px, 10vw, 130px);
-  line-height: 0.9;
+  font-size: clamp(32px, 9vw, 130px);
+  line-height: 1;
   letter-spacing: 0.01em;
-  color: #111110;
+  color: inherit;
   text-align: center;
 }
 .hero-title-home.hero-gold {
   color: #C8960A;
 }
 .hero-title-home.hero-zh {
-  font-size: clamp(48px, 8vw, 100px);
+  font-size: clamp(28px, 8vw, 100px);
+  line-height: 1.1;
 }
 
 /* 通用内页 Hero 标题 */

@@ -6,6 +6,7 @@ import {
   TextInput,
   TextArea,
   VideoUpload,
+  ImageUpload,
   CardBlock,
 } from "../_components";
 
@@ -14,13 +15,21 @@ export function HomeFields({ zh }: { zh: boolean }) {
     <div className="space-y-12">
 
       <div className="space-y-5">
-        <SectionHeader title="首页首屏" note="第一屏标题和 4 个统计数字" />
+        <SectionHeader title="首页首屏" note="第一屏标题、背景图和 4 个统计数字" />
         <FieldRow label="主标题上半句">
           <TextInput name="hero.title1" defaultValue={zh ? "铸塑未来的" : "Built to Power"} />
         </FieldRow>
         <FieldRow label="主标题高亮词">
           <TextInput name="hero.titleGold" defaultValue={zh ? "重工力量" : "the World's Work."} />
         </FieldRow>
+        <ImageUpload
+          name="hero.bgImage"
+          label="首屏背景图"
+          hint="建议尺寸 1920×840，JPG / PNG / WebP"
+          aspectHint="推荐比例 16:7 的宽幅横图"
+          previewAspect="h-48"
+          previewFit="cover"
+        />
         <div className="space-y-2 rounded-xl border border-black/[0.06] p-4 bg-[#FAFAFA]">
           <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">四组核心统计数据</span>
           {[

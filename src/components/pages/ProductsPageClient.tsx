@@ -119,37 +119,37 @@ function ProductsContent({ initialContent, initialProducts, initialCategories }:
         <section className="w-full">
 
           {/* Utility Bar */}
-          <div className="w-full mb-8 bg-white rounded-2xl border border-[#EDECEA] shadow-[0_8px_30px_rgba(0,0,0,0.04)] px-5 py-4 transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center min-w-fit pr-1">
+          <div className="w-full mb-8 bg-white rounded-2xl border border-[#EDECEA] shadow-[0_8px_30px_rgba(0,0,0,0.04)] px-3 py-3 sm:px-5 sm:py-4 transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+              <div className="hidden sm:flex items-center min-w-fit pr-1">
                 <h3 className="font-bold text-[13px] text-[#111111] uppercase tracking-[0.04em] border-l-4 border-[#111111] pl-3 flex items-center">
                   {cms('filter.sidebarTitle', isZh ? '筛选器' : 'Filters')}
                 </h3>
               </div>
 
-              <div className="ml-auto flex flex-wrap items-center justify-end gap-3 xl:gap-4">
+              <div className="w-full sm:ml-auto sm:w-auto grid grid-cols-3 sm:flex sm:flex-wrap items-center justify-end gap-2 sm:gap-3 xl:gap-4">
                 {dynamicBrands.length > 0 && (
-                  <div className="relative min-w-[160px]">
+                  <div className="relative min-w-0 sm:min-w-[160px]">
                     <select
                       value={selectedBrand}
                       onChange={(e) => setSelectedBrand(e.target.value)}
-                      className="h-11 w-full appearance-none rounded-xl border border-[#EDECEA] bg-[#F6F4F0] px-4 pr-10 text-[13px] font-semibold text-[#111111] focus:outline-none"
+                      className="h-9 sm:h-11 w-full appearance-none rounded-lg sm:rounded-xl border border-[#EDECEA] bg-[#F6F4F0] px-2 pr-7 sm:px-4 sm:pr-10 text-[11px] sm:text-[13px] font-semibold text-[#111111] focus:outline-none"
                     >
                       <option value="">{cms('filter.brandTitle', isZh ? '品牌' : 'Brands')}</option>
                       {dynamicBrands.map((brand) => (
                         <option key={brand} value={brand}>{brand}</option>
                       ))}
                     </select>
-                    <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#111111]" />
+                    <ChevronDown size={14} className="pointer-events-none absolute right-1.5 sm:right-3 top-1/2 -translate-y-1/2 text-[#111111] sm:[&]:w-4 sm:[&]:h-4" />
                   </div>
                 )}
 
                 {catList.length > 0 && (
-                  <div className="relative min-w-[170px]">
+                  <div className="relative min-w-0 sm:min-w-[170px]">
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="h-11 w-full appearance-none rounded-xl border border-[#EDECEA] bg-[#F6F4F0] px-4 pr-10 text-[13px] font-semibold text-[#111111] focus:outline-none"
+                      className="h-9 sm:h-11 w-full appearance-none rounded-lg sm:rounded-xl border border-[#EDECEA] bg-[#F6F4F0] px-2 pr-7 sm:px-4 sm:pr-10 text-[11px] sm:text-[13px] font-semibold text-[#111111] focus:outline-none"
                     >
                       <option value="">{cms('filter.categoryTitle', isZh ? '分类' : 'Categories')}</option>
                       {catList.map((cat) => (
@@ -158,23 +158,23 @@ function ProductsContent({ initialContent, initialProducts, initialCategories }:
                         </option>
                       ))}
                     </select>
-                    <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#111111]" />
+                    <ChevronDown size={14} className="pointer-events-none absolute right-1.5 sm:right-3 top-1/2 -translate-y-1/2 text-[#111111] sm:[&]:w-4 sm:[&]:h-4" />
                   </div>
                 )}
 
                 {dynamicYears.length > 0 && (
-                  <div className="relative min-w-[170px]">
+                  <div className="relative min-w-0 sm:min-w-[170px]">
                     <select
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(e.target.value)}
-                      className="h-11 w-full appearance-none rounded-xl border border-[#EDECEA] bg-[#F6F4F0] px-4 pr-10 text-[13px] font-semibold text-[#111111] focus:outline-none"
+                      className="h-9 sm:h-11 w-full appearance-none rounded-lg sm:rounded-xl border border-[#EDECEA] bg-[#F6F4F0] px-2 pr-7 sm:px-4 sm:pr-10 text-[11px] sm:text-[13px] font-semibold text-[#111111] focus:outline-none"
                     >
                       <option value="">{cms('filter.yearTitle', isZh ? '年份' : 'Year')}</option>
                       {dynamicYears.map((year) => (
                         <option key={year} value={year}>{year}</option>
                       ))}
                     </select>
-                    <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#111111]" />
+                    <ChevronDown size={14} className="pointer-events-none absolute right-1.5 sm:right-3 top-1/2 -translate-y-1/2 text-[#111111] sm:[&]:w-4 sm:[&]:h-4" />
                   </div>
                 )}
               </div>
@@ -182,7 +182,7 @@ function ProductsContent({ initialContent, initialProducts, initialCategories }:
           </div>
 
           {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
             {loading ? (
               <div className="col-span-full rounded border border-gray-200 bg-white px-6 py-10 text-sm text-gray-500">
                 {cms('filter.loadingText', isZh ? '正在加载产品数据...' : 'Loading products...')}
@@ -203,31 +203,31 @@ function ProductsContent({ initialContent, initialProducts, initialCategories }:
                     className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-[800ms]"
                   />
 
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 border border-white rounded-md flex items-center gap-2 shadow-md">
-                    <span className="w-1.5 h-1.5 bg-[#25D366] rounded-full animate-pulse"></span>
-                    <span className="text-[#111111] font-bold text-[10px] tracking-[0.12em] uppercase">{cms('card.statusLabel', isZh ? '现货状态' : 'Available')}</span>
+                  <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 backdrop-blur-md px-1.5 md:px-2.5 py-0.5 md:py-1 border border-white rounded-md flex items-center gap-1 md:gap-2 shadow-md">
+                    <span className="w-1 h-1 md:w-1.5 md:h-1.5 bg-[#25D366] rounded-full animate-pulse"></span>
+                    <span className="text-[#111111] font-bold text-[8px] md:text-[10px] tracking-[0.12em] uppercase">{cms('card.statusLabel', isZh ? '现货状态' : 'Available')}</span>
                   </div>
                 </div>
 
                 {/* 详单文案区 */}
-                <div className="p-5 pb-4 flex-1 flex flex-col relative z-20 bg-white">
+                <div className="p-3 pb-3 md:p-5 md:pb-4 flex-1 flex flex-col relative z-20 bg-white">
 
-                  <div className="flex items-center justify-between mb-2.5 text-[12px] font-bold uppercase tracking-[0.08em]">
-                    <span className="rounded-md bg-[#F6F4F0] px-2.5 py-1 text-[#8E949F]">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 md:mb-2.5 gap-1.5 sm:gap-0 font-bold uppercase tracking-[0.08em]">
+                    <span className="rounded-md bg-[#F6F4F0] px-1.5 py-0.5 md:px-2.5 md:py-1 text-[#8E949F] text-[9px] md:text-[12px]">
                       {product.brand}
                     </span>
-                    <span className="rounded-md bg-[#F6F4F0] px-2.5 py-1 text-[#9CA3AF]">
+                    <span className="rounded-md bg-[#F6F4F0] px-1.5 py-0.5 md:px-2.5 md:py-1 text-[#9CA3AF] text-[9px] md:text-[12px]">
                       {product.category}
                     </span>
                   </div>
 
-                  <h2 className="text-[34px] font-black text-[#C8A12A] leading-none mb-2.5 group-hover:text-[#B8921E] transition-colors">{product.title}</h2>
+                  <h2 className="text-[14px] leading-snug md:text-[34px] font-black text-[#C8A12A] md:leading-none mb-2 md:mb-2.5 group-hover:text-[#B8921E] transition-colors">{product.title}</h2>
 
                 </div>
 
                 {/* 稳定常显 CTA，避免悬浮突兀 */}
-                <Link href={`/products/${product.slug}`} className="w-full bg-[#111111] text-white flex items-center justify-center gap-2 py-4 font-bold text-xs uppercase tracking-[0.2em] transition-colors duration-200 hover:bg-[#C8A12A] hover:text-[#111111]">
-                  {cms('card.viewDetailsBtn', isZh ? '查阅详尽机况' : 'VIEW DETAILS')} <ArrowUpRight size={16} className="text-[#D4AF37]" />
+                <Link href={`/products/${product.slug}`} className="w-full bg-[#111111] text-white flex items-center justify-center gap-1.5 md:gap-2 py-2.5 md:py-4 font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] transition-colors duration-200 hover:bg-[#C8A12A] hover:text-[#111111]">
+                  {cms('card.viewDetailsBtn', isZh ? '查阅详尽机况' : 'VIEW DETAILS')} <ArrowUpRight size={14} className="text-[#D4AF37] md:w-4 md:h-4" />
                 </Link>
 
               </div>

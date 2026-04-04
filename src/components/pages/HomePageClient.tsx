@@ -151,57 +151,79 @@ export default function HomePageClient({ initialContent }: PageContentProps) {
   return (
     <main className="w-full flex-1">
       {/* =========================================
-          Step 1: 英雄区 (Reference Design — Light BG)
+          Step 1: 英雄区 — 全屏背景图 + 文字叠加
       ============================================= */}
-      <section className="bg-[#F9F8F5]">
-        <div className="min-h-[calc(100vh-64px)] flex flex-col justify-center items-center px-6 sm:px-[60px] py-20 max-w-[1100px] mx-auto">
+      {(() => {
+        const hasBg = !!c('hero.bgImage', '');
+        return (
+          <section className={`relative overflow-hidden ${hasBg ? 'bg-[#0a0a0a] text-white' : 'bg-[#F9F8F5] text-[#111110]'}`}>
+            {/* ── 背景图层 ── */}
+            {hasBg && (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={c('hero.bgImage', '')}
+                  alt=""
+                  aria-hidden="true"
+                  className="hero-fade-1 absolute inset-0 w-full h-full object-cover opacity-50"
+                />
+                {/* 多层渐变遮罩：保证文字可读性 + 底部与下一 section 自然过渡 */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F9F8F5] to-transparent" />
+              </>
+            )}
 
-          {/* 两行大标题 */}
-          <div className="hero-fade-2 hero-title-home mb-3">
-            {c('hero.title1', isZh ? '铸塑未来的' : 'Built to Power')}
-          </div>
-          <div className={`hero-fade-2 hero-title-home hero-gold ${isZh ? 'hero-zh' : ''} mb-16`}>
-            {c('hero.titleGold', isZh ? '重工力量' : "the World's Work.")}
-          </div>
+            {/* ── 内容层 ── */}
+            <div className="relative z-10 min-h-[calc(100vh-64px)] flex flex-col justify-center items-center px-6 sm:px-[60px] py-12 md:py-20 max-w-[1100px] mx-auto">
 
-          {/* 分隔线 */}
-          <div className="hero-fade-4 w-full h-px bg-[#D8D6CF] mb-12" />
-
-          {/* 4列统计 */}
-          <div className="hero-fade-5 w-full grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0">
-            {[
-              { numKey: 'hero.stat1.num', numDefault: '3000', suffix: '+', labelKey: 'hero.stat1.label', labelZh: '全球交付设备', labelEn: 'Machines Delivered' },
-              { numKey: 'hero.stat2.num', numDefault: '50',   suffix: '+', labelKey: 'hero.stat2.label', labelZh: '覆盖国家', labelEn: 'Countries Served' },
-              { numKey: 'hero.stat3.num', numDefault: '20',   suffix: '+', labelKey: 'hero.stat3.label', labelZh: '年行业经验', labelEn: 'Years Experience' },
-              { numKey: 'hero.stat4.num', numDefault: '100',  suffix: '%', labelKey: 'hero.stat4.label', labelZh: '全检率', labelEn: 'Full Inspection Rate' },
-            ].map((stat, i) => (
-              <div key={i} className={`${i > 0 ? 'md:pl-10 md:border-l md:border-[#D8D6CF]' : ''} ${i < 3 ? 'md:pr-10' : ''}`}>
-                <div className="flex items-baseline gap-0.5" style={{ fontFamily: "var(--font-bebas), 'Bebas Neue', sans-serif" }}>
-                  <span className="text-[clamp(40px,5vw,60px)] leading-none text-[#111110] tracking-[0.02em]">
-                    <NumberTicker value={parseInt(c(stat.numKey, stat.numDefault)) || parseInt(stat.numDefault)} />
-                  </span>
-                  <span className="text-[clamp(28px,3.5vw,42px)] text-[#C8960A]" style={{ fontFamily: "var(--font-bebas), 'Bebas Neue', sans-serif" }}>
-                    {stat.suffix}
-                  </span>
-                </div>
-                <div className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#888780] mt-2.5 leading-snug">
-                  {c(stat.labelKey, isZh ? stat.labelZh : stat.labelEn)}
-                </div>
+              {/* 两行大标题 */}
+              <div className={`hero-fade-2 hero-title-home mb-3 ${hasBg ? 'text-white' : ''}`}>
+                {c('hero.title1', isZh ? '铸塑未来的' : 'Built to Power')}
               </div>
-            ))}
-          </div>
+              <div className={`hero-fade-2 hero-title-home hero-gold ${isZh ? 'hero-zh' : ''} mb-16`}>
+                {c('hero.titleGold', isZh ? '重工力量' : "the World's Work.")}
+              </div>
 
-        </div>
-      </section>
+              {/* 分隔线 */}
+              <div className={`hero-fade-4 w-full h-px mb-12 ${hasBg ? 'bg-white/20' : 'bg-[#D8D6CF]'}`} />
+
+              {/* 4列统计 */}
+              <div className="hero-fade-5 w-full grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-4 md:gap-y-0 md:gap-x-0">
+                {[
+                  { numKey: 'hero.stat1.num', numDefault: '3000', suffix: '+', labelKey: 'hero.stat1.label', labelZh: '全球交付设备', labelEn: 'Machines Delivered' },
+                  { numKey: 'hero.stat2.num', numDefault: '50',   suffix: '+', labelKey: 'hero.stat2.label', labelZh: '覆盖国家', labelEn: 'Countries Served' },
+                  { numKey: 'hero.stat3.num', numDefault: '20',   suffix: '+', labelKey: 'hero.stat3.label', labelZh: '年行业经验', labelEn: 'Years Experience' },
+                  { numKey: 'hero.stat4.num', numDefault: '100',  suffix: '%', labelKey: 'hero.stat4.label', labelZh: '全检率', labelEn: 'Full Inspection Rate' },
+                ].map((stat, i) => (
+                  <div key={i} className={`${i > 0 ? `md:pl-10 md:border-l ${hasBg ? 'md:border-white/15' : 'md:border-[#D8D6CF]'}` : ''} ${i < 3 ? 'md:pr-10' : ''} flex flex-col items-center text-center md:items-start md:text-left`}>
+                    <div className="flex items-baseline justify-center md:justify-start gap-0.5" style={{ fontFamily: "var(--font-bebas), 'Bebas Neue', sans-serif" }}>
+                      <span className={`text-4xl md:text-[clamp(40px,5vw,60px)] leading-none tracking-[0.02em] ${hasBg ? 'text-white' : 'text-[#111110]'}`}>
+                        <NumberTicker value={parseInt(c(stat.numKey, stat.numDefault)) || parseInt(stat.numDefault)} />
+                      </span>
+                      <span className="text-2xl md:text-[clamp(28px,3.5vw,42px)] text-[#C8960A]" style={{ fontFamily: "var(--font-bebas), 'Bebas Neue', sans-serif" }}>
+                        {stat.suffix}
+                      </span>
+                    </div>
+                    <div className={`text-[11px] font-semibold tracking-[0.14em] uppercase mt-2.5 leading-snug w-full ${hasBg ? 'text-white/50' : 'text-[#888780]'}`}>
+                      {c(stat.labelKey, isZh ? stat.labelZh : stat.labelEn)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          </section>
+        );
+      })()}
 
       {/* =========================================
           Step 2: 极速匹配品类画廊 (Auto Carousel)
       ============================================= */}
-      <section id="categories" className="w-full pt-28 pb-0 bg-[#FAFAF8] overflow-hidden relative border-t border-[#EDECEA]">
+      <section id="categories" className="w-full pt-16 md:pt-28 pb-0 bg-[#FAFAF8] overflow-hidden relative border-t border-[#EDECEA]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
-          <FadeUp className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-12 gap-6 lg:gap-12">
+          <FadeUp className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-8 md:mb-12 gap-4 md:gap-6 lg:gap-12">
             <div className={`lg:flex-1 ${isZh ? 'max-w-4xl' : 'max-w-md xl:max-w-lg'}`}>
-              <h2 className={`font-black tracking-tighter text-[#111110] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('categories.title', isZh ? '全矩阵设备覆盖' : 'Full-Spectrum Equipment Coverage')}</h2>
+              <h2 className={`font-black tracking-tight text-[#111110] text-balance ${isZh ? 'text-[2rem] leading-tight md:text-5xl xl:text-6xl md:tracking-tighter' : 'text-[2rem] leading-tight md:text-4xl lg:text-[2.75rem] md:tracking-tighter'}`}>{c('categories.title', isZh ? '全矩阵设备覆盖' : 'Full-Spectrum Equipment Coverage')}</h2>
             </div>
             <div className="border-l-4 border-[#C8960A] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
               <p className="text-[#888780] text-sm leading-relaxed font-medium">{c('categories.desc', isZh ? '无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。' : 'Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum.')}</p>
@@ -232,67 +254,69 @@ export default function HomePageClient({ initialContent }: PageContentProps) {
       {/* =========================================
           Step 3: 严选热销机械 (6-Grid Featured)
       ============================================= */}
-      <section className="w-full py-16 md:py-32 bg-[#F9F8F5] border-t border-[#EDECEA]">
+      <section className="w-full py-12 md:py-32 bg-[#F9F8F5] border-t border-[#EDECEA]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
-          <FadeUp className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-16 gap-6 lg:gap-12">
+          <FadeUp className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-8 md:mb-16 gap-4 md:gap-6 lg:gap-12">
             <div className={`lg:flex-1 ${isZh ? 'max-w-4xl' : 'max-w-md xl:max-w-lg'}`}>
-              <h2 className={`font-black tracking-tighter text-[#111110] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('hot.title', isZh ? '严选热销机皇' : 'Top-Rated Machines, Handpicked')}</h2>
+              <h2 className={`font-black tracking-tight text-[#111110] text-balance ${isZh ? 'text-[2rem] leading-tight md:text-5xl xl:text-6xl md:tracking-tighter' : 'text-[2rem] leading-tight md:text-4xl lg:text-[2.75rem] md:tracking-tighter'}`}>{c('hot.title', isZh ? '严选热销机皇' : 'Top-Rated Machines, Handpicked')}</h2>
             </div>
             <div className="border-l-4 border-[#C8960A] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
               <p className="text-[#888780] text-sm leading-relaxed font-medium">{c('hot.desc', isZh ? '这些顶级现货机型经过 100 项全案严苛过滤，代表着本月极低的故障率和极高的投资回报比，是全球大型基建的首选制胜装备。' : 'Every unit has passed a rigorous 100-point inspection — the lowest failure rates and highest ROI of the month.')}</p>
             </div>
           </FadeUp>
 
-          <FadeUp delay={150} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <FadeUp delay={150} className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
             {/* loading 时显示骨架，加载完显示真实产品，无产品时提示 */}
             {productsLoading ? (
               Array.from({length: 6}).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-200">
+                <div key={i} className="bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-200">
                   <div className="w-full aspect-[4/3] bg-gray-100 animate-pulse" />
-                  <div className="px-8 mt-6 pb-8 space-y-3">
+                  <div className="px-4 mt-4 pb-5 sm:px-6 sm:mt-5 md:px-8 md:mt-6 md:pb-8 space-y-3">
                     <div className="h-3 bg-gray-100 rounded animate-pulse w-24" />
                     <div className="h-6 bg-gray-100 rounded animate-pulse w-3/4" />
                   </div>
                 </div>
               ))
             ) : catalogProducts.length > 0 ? catalogProducts.slice(0, 6).map((item, index) => (
-              <Link href={item.slug ? `/products/${item.slug}` as `/${string}` : '/products'} key={index} className="group bg-[#FFFFFF] flex flex-col cursor-pointer hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden pb-8 border border-[#D8D6CF]">
-                <div className="relative w-full aspect-[4/3] bg-[#F6F4F0] rounded-t-2xl overflow-hidden">
+              <Link href={item.slug ? `/products/${item.slug}` as `/${string}` : '/products'} key={index} className="group bg-[#FFFFFF] flex flex-col cursor-pointer hover:shadow-2xl transition-all duration-500 rounded-xl sm:rounded-2xl overflow-hidden pb-4 sm:pb-6 md:pb-8 border border-[#D8D6CF] active:bg-[#FAFAF8]">
+                <div className="relative w-full aspect-[4/3] bg-[#F6F4F0] rounded-t-xl sm:rounded-t-2xl overflow-hidden">
                   <ProductCardMedia
                     src={item.coverMediaUrl}
                     type={item.coverMediaType}
                     alt={item.title}
                     className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
                   />
-                  <div className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-lg z-10 bg-[#C8960A]">
+                  <div className="absolute top-2 left-2 sm:top-4 sm:left-4 text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-3 sm:py-1.5 uppercase tracking-widest shadow-lg z-10 bg-[#C8960A] origin-top-left scale-90 sm:scale-100">
                     {c('hot.inStockLabel', isZh ? '现货就绪' : 'In Stock')}
                   </div>
                 </div>
-                <div className="px-8 mt-6">
-                  <span className="text-xs font-bold text-[#888780] uppercase tracking-widest block mb-1">
+                <div className="px-3 pt-3 sm:px-6 sm:pt-5 md:px-8 md:pt-6 min-w-0 flex flex-col flex-1">
+                  <span className="block text-[10px] sm:text-xs font-bold text-[#888780] uppercase tracking-widest mb-1">
                     {item.brand}
                   </span>
-                  <div className="flex items-center justify-between group-hover:text-[#C8960A] transition-colors">
-                    <h4 className="text-2xl font-black text-[#111110] leading-tight text-inherit">
+                  <div className="flex flex-row items-center justify-between gap-1 sm:items-start sm:gap-4 group-hover:text-[#C8960A] transition-colors flex-1">
+                    <h4 className="text-[13px] sm:text-xl md:text-2xl font-black text-[#111110] leading-snug sm:leading-tight text-inherit min-w-0 flex-1 line-clamp-2">
                       {item.title}
                     </h4>
-                    <div className="w-10 h-10 rounded-full bg-[#F6F4F0] flex items-center justify-center flex-shrink-0 group-hover:bg-[#111110] group-hover:text-white transition-all transform group-hover:translate-x-1 border border-[#D8D6CF]">
-                      <ArrowRight size={18} className="text-[#888780] group-hover:text-[#C8960A] transition-colors" />
+                    <div className="hidden sm:block shrink-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#F6F4F0] flex items-center justify-center group-hover:bg-[#111110] group-hover:text-white transition-all transform group-hover:translate-x-1 border border-[#D8D6CF]" aria-hidden>
+                        <ArrowRight size={16} className="text-[#888780] group-hover:text-[#C8960A] transition-colors" />
+                      </div>
                     </div>
                   </div>
                 </div>
               </Link>
             )) : (
-              <div className="col-span-3 text-center text-[#888780] text-sm py-20">
+              <div className="col-span-full text-center text-[#888780] text-sm py-16 md:py-20">
                 {c('hot.emptyText', isZh ? '暂无在售产品，请在后台「产品列表」中添加' : 'No products yet. Add them in the admin panel.')}
               </div>
             )}
           </FadeUp>
 
-          <FadeUp delay={300} className="mt-16 text-center">
-            <Link href="/products" className="h-14 px-10 rounded-full bg-[#111110] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#C8960A] hover:text-white transition-all shadow-xl inline-flex items-center justify-center gap-3 group">
+          <FadeUp delay={300} className="mt-6 sm:mt-10 md:mt-16 text-center">
+            <Link href="/products" className="h-10 sm:h-12 md:h-14 px-6 sm:px-8 md:px-10 rounded-full bg-[#111110] text-white text-[11px] sm:text-xs md:text-[13px] font-bold tracking-[0.2em] hover:bg-[#C8960A] hover:text-white transition-all shadow-xl inline-flex items-center justify-center gap-3 group">
               {c('hot.btnText', isZh ? '游览所有 300+ 在线设备' : 'View All 300+ Listed Machines')}
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform md:w-4 md:h-4" />
             </Link>
           </FadeUp>
         </div>
@@ -301,14 +325,14 @@ export default function HomePageClient({ initialContent }: PageContentProps) {
       {/* =========================================
           Step 4: 打消出海痛点 (Core Services)
       ============================================= */}
-      <section className="w-full py-16 md:py-32 bg-[#FAFAF8]">
+      <section className="w-full py-12 md:py-32 bg-[#FAFAF8]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
-          <FadeUp className="text-center mb-24">
-            <h2 className="text-5xl font-black tracking-tighter text-[#111110] mb-4">{c('s5.title', isZh ? '世界级的交付与服务标准' : 'World-Class Delivery & After-Sales Standards')}</h2>
-            <p className="text-[#888780] max-w-2xl mx-auto">{c('s5.desc', isZh ? '在跨国重装采购中，物流与售后往往是最大的阻碍。我们将为您彻底铲除这些摩擦力，提供真正的端到端出海服务体系。' : 'In cross-border heavy equipment procurement, logistics and after-sales are often the greatest barriers. We eliminate that friction entirely.')}</p>
+          <FadeUp className="text-center mb-12 md:mb-24 px-2 sm:px-0">
+            <h2 className="text-[2rem] leading-tight md:text-5xl font-black tracking-tight md:tracking-tighter text-[#111110] mb-4 md:mb-6">{c('s5.title', isZh ? '世界级的交付与服务标准' : 'World-Class Delivery & After-Sales Standards')}</h2>
+            <p className="text-[#888780] max-w-2xl mx-auto text-sm md:text-base mt-2 md:mt-0">{c('s5.desc', isZh ? '在跨国重装采购中，物流与售后往往是最大的阻碍。我们将为您彻底铲除这些摩擦力，提供真正的端到端出海服务体系。' : 'In cross-border heavy equipment procurement, logistics and after-sales are often the greatest barriers. We eliminate that friction entirely.')}</p>
           </FadeUp>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8 mb-12 md:mb-20">
             {[
               { icon: ShieldCheck, title: c('s5.card.0.title', isZh ? "100项隐患全排查" : "100-Point Pre-Export Inspection"), desc: c('s5.card.0.desc', isZh ? "从发动机、液压主泵到外观履带，严格执行原厂级全案检测体系，出具全流程权威视频报告。" : "From the engine and hydraulic main pump to undercarriage, every unit undergoes a factory-grade inspection with video report.") },
               { icon: Factory, title: c('s5.card.1.title', isZh ? "全自管翻新与喷漆" : "In-House Overhaul & Refinishing"), desc: c('s5.card.1.desc', isZh ? "我们在国内拥有一流的数控机床与原厂喷漆房阵列，支持机器的动力总成大修与原厂化翻新装配。" : "Our facility houses CNC machinery and OEM-standard paint booths for full powertrain overhauls and factory-grade refinishing.") },
@@ -317,18 +341,20 @@ export default function HomePageClient({ initialContent }: PageContentProps) {
               { icon: PhoneCall, title: c('s5.card.4.title', isZh ? "7×24 终身技术指导" : "24/7 Lifetime Technical Support"), desc: c('s5.card.4.desc', isZh ? "拥有双语专家护航的紧急技术支援小队，提供无延迟的长途排错、图纸指引与跨国连线辅导。" : "Our bilingual technical team provides zero-delay remote diagnostics and live cross-border troubleshooting 24/7.") },
               { icon: Globe, title: c('s5.card.5.title', isZh ? "跨洋海运零盲区清关" : "Door-to-Port Shipping & Customs"), desc: c('s5.card.5.desc', isZh ? "凭借深耕非洲、南美的高能航运合作伙伴，打磨出包税清关、滚装直航一体化的极简提货路线。" : "Backed by partners across Africa and South America, we provide all-inclusive customs clearance and RO-RO shipping.") }
             ].map((feature, i) => (
-              <FadeUp key={i} delay={i * 100} className="flex flex-col items-center text-center p-8 bg-[#F6F4F0] border border-[#D8D6CF] rounded-3xl hover:border-[#111110] transition-colors duration-500 shadow-sm hover:shadow-xl group">
-                <div className="w-20 h-20 bg-[#FFFFFF] rounded-full flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 group-hover:bg-[#C8960A] transition-all duration-500">
-                  <feature.icon strokeWidth={1.5} size={32} className="text-[#C8960A] group-hover:text-white transition-colors" />
+              <FadeUp key={i} delay={i * 100} className="flex flex-col items-center text-center p-4 md:p-8 gap-2 md:gap-0 bg-[#F6F4F0] border border-[#D8D6CF] rounded-xl sm:rounded-2xl md:rounded-3xl hover:border-[#111110] transition-colors duration-500 shadow-sm hover:shadow-xl group">
+                <div className="w-12 h-12 md:w-20 md:h-20 shrink-0 bg-[#FFFFFF] rounded-full flex items-center justify-center md:mb-8 shadow-sm group-hover:scale-110 group-hover:bg-[#C8960A] transition-all duration-500">
+                  <feature.icon strokeWidth={1.5} size={24} className="w-6 h-6 md:w-8 md:h-8 text-[#C8960A] group-hover:text-white transition-colors" />
                 </div>
-                <h5 className="text-xl font-black text-[#111110] mb-4">{feature.title}</h5>
-                <p className="text-sm text-[#888780] leading-relaxed">{feature.desc}</p>
+                <div>
+                  <h5 className="text-[13px] sm:text-base md:text-xl font-black text-[#111110] mb-1.5 md:mb-4 leading-tight md:leading-snug">{feature.title}</h5>
+                  <p className="hidden md:block text-[13px] sm:text-sm text-[#888780] leading-relaxed">{feature.desc}</p>
+                </div>
               </FadeUp>
             ))}
           </div>
           
           <div className="text-center">
-             <Link href="/services" className="h-16 px-12 rounded-full bg-[#111110] text-white text-[13px] font-bold tracking-[0.2em] hover:bg-[#C8960A] hover:text-[#111110] transition-all shadow-xl inline-flex items-center gap-4">
+             <Link href="/services" className="h-12 md:h-16 px-8 md:px-12 rounded-full bg-[#111110] text-white text-xs md:text-[13px] font-bold tracking-[0.2em] hover:bg-[#C8960A] hover:text-[#111110] transition-all shadow-xl inline-flex items-center gap-4">
                  {c('s5.btnText', isZh ? '探索完整增值出海体系' : 'Explore Our Full Export Service Suite')}
                  <ArrowRight size={16} />
              </Link>
@@ -339,11 +365,11 @@ export default function HomePageClient({ initialContent }: PageContentProps) {
       {/* =========================================
           Step 6: 最新出海动态瀑布流 (Latest Delivery) 🌟NEW🌟
       ============================================= */}
-      <section className="w-full py-16 md:py-32 bg-[#F9F8F5] border-t border-[#EDECEA]">
+      <section className="w-full py-12 md:py-32 bg-[#F9F8F5] border-t border-[#EDECEA]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
-          <FadeUp className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-16 gap-6 lg:gap-12">
+          <FadeUp className="flex flex-col lg:flex-row lg:justify-between lg:items-end mb-8 md:mb-16 gap-4 md:gap-6 lg:gap-12">
             <div className={`lg:flex-1 ${isZh ? 'max-w-4xl' : 'max-w-[360px] md:max-w-md xl:max-w-lg'}`}>
-              <h2 className={`font-black tracking-tighter text-[#111110] text-balance ${isZh ? 'text-5xl md:text-6xl' : 'text-4xl lg:text-[2.75rem] leading-tight'}`}>{c('news.title', isZh ? '交机实录与动态' : 'Live Delivery Updates')}</h2>
+              <h2 className={`font-black tracking-tight text-[#111110] text-balance ${isZh ? 'text-[2rem] leading-tight md:text-5xl xl:text-6xl md:tracking-tighter' : 'text-[2rem] leading-tight md:text-4xl lg:text-[2.75rem] md:tracking-tighter'}`}>{c('news.title', isZh ? '交机实录与动态' : 'Live Delivery Updates')}</h2>
             </div>
             <div className="border-l-4 border-[#C8960A] pl-6 hidden lg:block shrink-0 lg:w-[380px]">
               <p className="text-[#888780] text-sm leading-relaxed font-medium">{c('news.desc', isZh ? '真实发盘、跨国海运、开箱验收。我们为您展示实时的设备全球周转录像与物流快讯，亲眼见证我们的端到端跨国履约与重装交付能力。' : 'Real shipments. International ocean freight. On-site unboxing. We share live footage and logistics updates from active global dispatches.')}</p>
@@ -351,14 +377,14 @@ export default function HomePageClient({ initialContent }: PageContentProps) {
           </FadeUp>
           
           <div className="relative w-full group/news">
-            <div ref={newsScrollRef} className="flex overflow-x-auto gap-8 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div ref={newsScrollRef} className="flex overflow-x-auto gap-4 sm:gap-6 md:gap-8 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {deliveryCards.map((card, i) => (
                 <DeliveryCard key={i} {...card} />
               ))}
             </div>
             
-            {/* 左右精准拨动的按钮控件 */}
-            <div className="flex items-center justify-center gap-6 mt-4 md:mt-12">
+            {/* 左右精准拨动的按钮控件 (仅在大于屏幕断点时出现) */}
+            <div className="hidden md:flex items-center justify-center gap-6 mt-4 md:mt-12">
                <button onClick={() => scrollNews('left')} className="w-12 h-12 rounded-full border border-[#D8D6CF] flex items-center justify-center text-[#111110] bg-[#FFFFFF] hover:bg-[#111110] hover:text-white transition-all shadow-sm hover:shadow-lg hover:-translate-x-1">
                  <ArrowLeft size={18}/>
                </button>
