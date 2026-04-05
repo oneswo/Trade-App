@@ -8,6 +8,7 @@ import { createContext, useContext } from "react";
 
 export const Ctx = createContext<{
   get: (name: string, fallback: string) => string;
+  has: (name: string) => boolean;
   set: (name: string, val: string) => void;
   trackUploadedUrl: (url: string) => void;
   // 翻译相关
@@ -15,6 +16,7 @@ export const Ctx = createContext<{
   allFields: Record<string, string>; // 所有字段值(用于读取对应中文)
 }>({
   get: (_, fallback) => fallback,
+  has: () => false,
   set: () => {},
   trackUploadedUrl: () => {},
   isZh: true,

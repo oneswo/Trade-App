@@ -56,6 +56,31 @@ export type ProductStatus = "DRAFT" | "PUBLISHED";
 export interface ProductSpec {
   key: string;
   value: string;
+  keyZh?: string;
+  keyEn?: string;
+  valueZh?: string;
+  valueEn?: string;
+}
+
+export interface ProductMetricValues {
+  year?: string;
+  hours?: string;
+  tonnage?: string;
+  location?: string;
+  model?: string;
+  brand?: string;
+}
+
+export interface ProductMetricI18n {
+  zh?: ProductMetricValues;
+  en?: ProductMetricValues;
+  descriptionZh?: string;
+  descriptionEn?: string;
+}
+
+export interface ProductCoreMetrics extends ProductMetricValues {
+  mediaSlots?: ProductMediaSlot[];
+  i18n?: ProductMetricI18n;
 }
 
 export interface ProductRecord {
@@ -70,15 +95,7 @@ export interface ProductRecord {
   summaryEn?: string;
   description: string;
   specs: ProductSpec[];
-  coreMetrics?: {
-    year?: string;
-    hours?: string;
-    tonnage?: string;
-    location?: string;
-    model?: string;
-    brand?: string;
-    mediaSlots?: ProductMediaSlot[];
-  };
+  coreMetrics?: ProductCoreMetrics;
   stockAmount?: number;
   coverImageUrl: string | null;
   galleryImageUrls: string[];
@@ -99,7 +116,7 @@ export interface CreateProductInput {
   summaryEn?: string;
   description: string;
   specs: ProductSpec[];
-  coreMetrics?: ProductRecord["coreMetrics"];
+  coreMetrics?: ProductCoreMetrics;
   stockAmount?: number;
   coverImageUrl?: string | null;
   galleryImageUrls?: string[];
@@ -118,7 +135,7 @@ export interface UpdateProductInput {
   summaryEn?: string;
   description?: string;
   specs?: ProductSpec[];
-  coreMetrics?: ProductRecord["coreMetrics"];
+  coreMetrics?: ProductCoreMetrics;
   stockAmount?: number;
   coverImageUrl?: string | null;
   galleryImageUrls?: string[];

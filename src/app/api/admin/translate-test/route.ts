@@ -3,6 +3,27 @@ import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE } from "@/lib/auth/constants";
 import { verifyToken } from "@/lib/auth/session";
 
+function getTranslationTestErrorMessage(error: unknown) {
+  if (!(error instanceof Error)) {
+    return "连接失败，请稍后重试";
+  }
+
+  if (error.name === "TimeoutError" || error.message.toLowerCase().includes("timeout")) {
+    return "连接超时,请检查网络和 API 地址";
+  }
+
+  if (
+    error.message.includes("fetch failed") ||
+    error.message.includes("ENOTFOUND") ||
+    error.message.includes("ECONNREFUSED") ||
+    error.message.toLowerCase().includes("network")
+  ) {
+    return "网络错误,请检查翻译服务配置或网络连接";
+  }
+
+  return error.message || "连接失败，请稍后重试";
+}
+
 async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value ?? "";
@@ -97,18 +118,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Translation API test failed:', error);
-    
-    if (error instanceof Error) {
-      if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
-        return NextResponse.json(
-          { ok: false, error: '连接超时,请检查网络和 API 地址' },
-          { status: 200 }
-        );
-      }
-    }
 
     return NextResponse.json(
-      { ok: false, error: '网络错误,请检查网络连接' },
+      { ok: false, error: getTranslationTestErrorMessage(error) },
       { status: 200 }
     );
   }

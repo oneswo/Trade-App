@@ -126,6 +126,17 @@ function cloneProduct(record: ProductRecord): ProductRecord {
     coreMetrics: record.coreMetrics
       ? {
           ...record.coreMetrics,
+          i18n: record.coreMetrics.i18n
+            ? {
+                ...record.coreMetrics.i18n,
+                zh: record.coreMetrics.i18n.zh
+                  ? { ...record.coreMetrics.i18n.zh }
+                  : undefined,
+                en: record.coreMetrics.i18n.en
+                  ? { ...record.coreMetrics.i18n.en }
+                  : undefined,
+              }
+            : undefined,
           mediaSlots: record.coreMetrics.mediaSlots?.map((slot) => ({ ...slot })),
         }
       : undefined,

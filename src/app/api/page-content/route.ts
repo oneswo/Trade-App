@@ -1,14 +1,23 @@
 import { revalidatePath } from "next/cache";
 import { hasAdminSession } from "@/lib/auth/session";
 import {
-  DEFAULT_LOCALE,
   isSupportedLocale,
   SUPPORTED_LOCALES,
 } from "@/lib/i18n/locales";
 import { getPageContentRepo } from "@/lib/data/repository";
 import {
-  getPageContentData,
+  markTranslationFieldsAsManual,
+  readPageContentTranslationMeta,
+  releaseTranslationFields,
+  resolveTranslationTargets,
+  stripInternalPageContentFields,
+  writePageContentTranslationMeta,
+} from "@/lib/admin/page-content-translation";
+import { queuePageContentTranslationJob } from "@/lib/admin/page-content-translation-jobs";
+import {
   collectPageContentMediaUrls,
+  getFrontendPaths,
+  getPageContentData,
   pickSharedMediaFields,
   sanitizePageContentData,
   syncSharedMediaFieldsToAllLocales,
@@ -16,25 +25,6 @@ import {
   type ValidPageId,
 } from "@/lib/page-content";
 import { deleteR2Objects, diffR2Urls } from "@/lib/storage/media-storage";
-
-const PAGE_PATH_SUFFIX: Record<ValidPageId, string> = {
-  home: "",
-  products: "/products",
-  "product-detail": "/products",
-  services: "/services",
-  about: "/about",
-  contact: "/contact",
-};
-
-function getFrontendPaths(pageId: ValidPageId) {
-  const suffix = PAGE_PATH_SUFFIX[pageId];
-  return SUPPORTED_LOCALES.map((locale) => {
-    if (locale === DEFAULT_LOCALE) {
-      return suffix || "/";
-    }
-    return suffix ? `/${locale}${suffix}` : `/${locale}`;
-  });
-}
 
 // GET /api/page-content?pageId=home&locale=zh
 export async function GET(req: Request) {
@@ -57,7 +47,13 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => null);
-  const { pageId, locale, data } = body ?? {};
+  const {
+    pageId,
+    locale,
+    data,
+    autoTranslateEnglish = false,
+    translationSaveMode = "manual",
+  } = body ?? {};
 
   if (!VALID_PAGE_IDS.includes(pageId as ValidPageId) || !isSupportedLocale(locale)) {
     return Response.json({ ok: false, error: "Invalid pageId or locale" }, { status: 400 });
@@ -67,22 +63,57 @@ export async function POST(req: Request) {
   }
 
   const repo = getPageContentRepo();
-  const payload = sanitizePageContentData(
+  const localeKey = locale as (typeof SUPPORTED_LOCALES)[number];
+  const cleanPayload = sanitizePageContentData(
     pageId as ValidPageId,
-    data as Record<string, string>
+    stripInternalPageContentFields(data as Record<string, string>)
   );
-  const sharedMediaFields = pickSharedMediaFields(payload);
+  const oldCurrentRecord = await repo.get(pageId as ValidPageId, localeKey);
+  let payload = cleanPayload;
+
+  if (localeKey === "en") {
+    const oldEnData = stripInternalPageContentFields(oldCurrentRecord?.data);
+    const changedFields = Object.keys(cleanPayload).filter(
+      (key) => (oldEnData[key] ?? "") !== (cleanPayload[key] ?? "")
+    );
+    const changedTranslationTargets = resolveTranslationTargets(
+      pageId as ValidPageId,
+      changedFields
+    );
+    const oldMeta = readPageContentTranslationMeta(oldCurrentRecord?.data);
+    let nextMeta = oldMeta;
+
+    if (translationSaveMode !== "auto") {
+      const manualTargets = changedTranslationTargets.filter(
+        ({ targetField }) => (cleanPayload[targetField] ?? "").trim() !== ""
+      );
+      const releasedTargets = changedTranslationTargets
+        .filter(({ targetField }) => (cleanPayload[targetField] ?? "").trim() === "")
+        .map(({ targetField }) => targetField);
+
+      nextMeta = markTranslationFieldsAsManual(
+        nextMeta,
+        manualTargets,
+        new Date().toISOString()
+      );
+      nextMeta = releaseTranslationFields(nextMeta, releasedTargets);
+    }
+
+    payload = writePageContentTranslationMeta(cleanPayload, nextMeta);
+  }
+
+  const sharedMediaFields = pickSharedMediaFields(cleanPayload);
   const oldRecords = await Promise.all(
     SUPPORTED_LOCALES.map((targetLocale) => repo.get(pageId as ValidPageId, targetLocale))
   );
   const oldUrls = oldRecords.flatMap((record) => collectPageContentMediaUrls(record?.data));
 
-  const record = await repo.upsert(pageId, locale, payload);
+  const record = await repo.upsert(pageId, localeKey, payload);
 
   if (Object.keys(sharedMediaFields).length > 0) {
     await syncSharedMediaFieldsToAllLocales(
       pageId as ValidPageId,
-      locale,
+      localeKey,
       sharedMediaFields
     );
   }
@@ -103,5 +134,23 @@ export async function POST(req: Request) {
     revalidatePath(path);
   }
 
-  return Response.json({ ok: true, data: record.data });
+  let translationJob: Awaited<ReturnType<typeof queuePageContentTranslationJob>> | null = null;
+  if (localeKey === "zh" && autoTranslateEnglish) {
+    const oldZhData = stripInternalPageContentFields(oldCurrentRecord?.data);
+    const changedSourceFields = Array.from(
+      new Set([...Object.keys(oldZhData), ...Object.keys(cleanPayload)]).values()
+    ).filter((key) => (oldZhData[key] ?? "") !== (cleanPayload[key] ?? ""));
+
+    translationJob = await queuePageContentTranslationJob({
+      pageId: pageId as ValidPageId,
+      zhData: cleanPayload,
+      changedSourceFields,
+    });
+  }
+
+  return Response.json({
+    ok: true,
+    data: stripInternalPageContentFields(record.data),
+    translationJob,
+  });
 }

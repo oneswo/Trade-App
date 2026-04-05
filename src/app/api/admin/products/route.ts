@@ -8,6 +8,19 @@ const STATUS_ENUM = z.enum(["DRAFT", "PUBLISHED"]);
 const specSchema = z.object({
   key: z.string().trim().min(1).max(80),
   value: z.string().trim().min(1).max(200),
+  keyZh: z.string().trim().max(80).optional(),
+  keyEn: z.string().trim().max(80).optional(),
+  valueZh: z.string().trim().max(200).optional(),
+  valueEn: z.string().trim().max(200).optional(),
+});
+
+const coreMetricValuesSchema = z.object({
+  year: z.string().optional(),
+  hours: z.string().optional(),
+  tonnage: z.string().optional(),
+  location: z.string().optional(),
+  model: z.string().optional(),
+  brand: z.string().optional(),
 });
 
 const mediaUrlSchema = z
@@ -30,6 +43,12 @@ const coreMetricsSchema = z.object({
   location: z.string().optional(),
   model: z.string().optional(),
   brand: z.string().optional(),
+  i18n: z.object({
+    zh: coreMetricValuesSchema.optional(),
+    en: coreMetricValuesSchema.optional(),
+    descriptionZh: z.string().max(10000).optional(),
+    descriptionEn: z.string().max(10000).optional(),
+  }).optional(),
   mediaSlots: z
     .array(
       z.object({

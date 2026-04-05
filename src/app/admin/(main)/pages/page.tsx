@@ -43,6 +43,19 @@ const PAGES_LIST = [
 // ─── 主页面 ───────────────────────────────────────────────────────────────────
 
 type SaveState = "idle" | "saving" | "success" | "error";
+type TranslationJobStatus = "pending" | "running" | "completed" | "failed";
+
+type TranslationJobState = {
+  id: string;
+  pageId: string;
+  pageName: string;
+  status: TranslationJobStatus;
+  message: string;
+  total: number;
+  completed: number;
+  currentField: string | null;
+  error: string | null;
+};
 
 export default function PagesManagementPage() {
   const [activePageId, setActivePageId] = useState("home");
@@ -53,9 +66,13 @@ export default function PagesManagementPage() {
   /** 初始 true：避免 hydration 后首帧 fields 为空时用 defaultValue 闪一屏，再被接口结果替换 */
   const [isLoading, setIsLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [translationJob, setTranslationJob] = useState<TranslationJobState | null>(null);
   const sessionUploadedUrlsRef = useRef<Set<string>>(new Set());
   const didInitLoadRef = useRef(false);
   const pageContentLoadIdRef = useRef(0);
+  const translationPollTimerRef = useRef<number | null>(null);
+
+  const activePage = PAGES_LIST.find((p) => p.id === activePageId)!;
 
   // 客户端 hydration 后读取 localStorage
   useEffect(() => {
@@ -137,6 +154,7 @@ export default function PagesManagementPage() {
     (name: string, fallback: string) => fields[name] ?? fallback,
     [fields]
   );
+  const has = useCallback((name: string) => Object.prototype.hasOwnProperty.call(fields, name), [fields]);
   const set = useCallback((name: string, val: string) => {
     setFields((prev) => ({ ...prev, [name]: val }));
   }, []);
@@ -152,12 +170,83 @@ export default function PagesManagementPage() {
 
   useEffect(() => {
     return () => {
+      if (translationPollTimerRef.current !== null) {
+        window.clearTimeout(translationPollTimerRef.current);
+      }
       cleanupPendingSessionUploads(true);
     };
   }, [cleanupPendingSessionUploads]);
 
+  const stopTranslationPolling = useCallback(() => {
+    if (translationPollTimerRef.current !== null) {
+      window.clearTimeout(translationPollTimerRef.current);
+      translationPollTimerRef.current = null;
+    }
+  }, []);
+
+  const pollTranslationJob = useCallback((jobId: string, pageId: string, pageName: string) => {
+    stopTranslationPolling();
+
+    const tick = async () => {
+      try {
+        const res = await fetch(`/api/admin/page-translation-jobs/${jobId}`, {
+          cache: "no-store",
+        });
+        const json = await res.json();
+        if (!json.ok || !json.job) {
+          setTranslationJob((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  status: "failed",
+                  message: "自动翻译状态查询失败",
+                  error: json.error || "自动翻译状态查询失败",
+                }
+              : prev
+          );
+          return;
+        }
+
+        const nextJob = json.job as Omit<TranslationJobState, "pageId" | "pageName">;
+        setTranslationJob({
+          ...nextJob,
+          pageId,
+          pageName,
+        });
+
+        if (nextJob.status === "completed") {
+          clearPageContentCache(pageId, "en");
+          stopTranslationPolling();
+          return;
+        }
+
+        if (nextJob.status === "failed") {
+          stopTranslationPolling();
+          return;
+        }
+
+        translationPollTimerRef.current = window.setTimeout(tick, 1200);
+      } catch (error) {
+        setTranslationJob((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: "failed",
+                message: "自动翻译状态查询失败",
+                error: error instanceof Error ? error.message : "自动翻译状态查询失败",
+              }
+            : prev
+        );
+        stopTranslationPolling();
+      }
+    };
+
+    void tick();
+  }, [stopTranslationPolling]);
+
   const handleSave = async () => {
     setSaveState("saving");
+    stopTranslationPolling();
     try {
       const res = await fetch("/api/page-content", {
         method: "POST",
@@ -166,6 +255,7 @@ export default function PagesManagementPage() {
           pageId: activePageId,
           locale: activeLang,
           data: fields,
+          autoTranslateEnglish: activeLang === "zh",
         }),
       });
       const json = await res.json();
@@ -174,6 +264,28 @@ export default function PagesManagementPage() {
         sessionUploadedUrlsRef.current.clear();
         await cleanupTrackedMediaUrls(trackedUrls, Object.values(fields));
         clearPageContentCache(activePageId, activeLang, fields);
+
+        if (activeLang === "zh" && json.translationJob) {
+          const job = json.translationJob as Omit<TranslationJobState, "pageId" | "pageName">;
+          if (job.total > 0 || job.status === "failed") {
+            setTranslationJob({
+              ...job,
+              pageId: activePageId,
+              pageName: activePage.name,
+            });
+          } else {
+            setTranslationJob(null);
+          }
+
+          if (job.status === "pending" || job.status === "running") {
+            pollTranslationJob(job.id, activePageId, activePage.name);
+          } else if (job.status === "completed") {
+            clearPageContentCache(activePageId, "en");
+          }
+        } else {
+          setTranslationJob(null);
+        }
+
         setSaveState("success");
       } else {
         setSaveState("error");
@@ -183,8 +295,6 @@ export default function PagesManagementPage() {
     }
     setTimeout(() => setSaveState("idle"), 3000);
   };
-
-  const activePage = PAGES_LIST.find((p) => p.id === activePageId)!;
   const zh = activeLang === "zh";
 
   const renderFields = () => {
@@ -216,7 +326,7 @@ export default function PagesManagementPage() {
   }
 
   return (
-    <Ctx.Provider value={{ get, set, trackUploadedUrl, isZh: zh, allFields: activeLang === 'zh' ? fields : zhFields }}>
+    <Ctx.Provider value={{ get, has, set, trackUploadedUrl, isZh: zh, allFields: activeLang === 'zh' ? fields : zhFields }}>
       <div className="h-[calc(100vh-100px)] flex flex-col">
         <div className="flex-1 min-h-0 grid grid-cols-[220px_1fr] gap-6">
           <section className="flex flex-col rounded-xl border border-black/[0.06] bg-white shadow-sm overflow-hidden">
@@ -277,7 +387,7 @@ export default function PagesManagementPage() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  disabled={saveState === "saving" || isLoading}
+                  disabled={saveState === "saving" || isLoading || translationJob?.status === "running" || translationJob?.status === "pending"}
                   className="flex items-center gap-2 rounded-lg bg-[#111111] px-4 py-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-black/80 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saveState === "saving" ? (
@@ -344,6 +454,75 @@ export default function PagesManagementPage() {
           </section>
         </div>
       </div>
+      {translationJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[#111111] text-white">
+                {translationJob.status === "failed" ? (
+                  <AlertCircle size={18} />
+                ) : translationJob.status === "completed" ? (
+                  <CheckCircle size={18} />
+                ) : (
+                  <Loader2 size={18} className="animate-spin" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[16px] font-bold text-[#111111]">
+                  {translationJob.status === "completed"
+                    ? "英文已自动保存"
+                    : translationJob.status === "failed"
+                      ? "自动翻译未完成"
+                      : "正在自动翻译英文"}
+                </h3>
+                <p className="mt-1 text-[12px] leading-5 text-[#111111]/55">
+                  页面：{translationJob.pageName}
+                </p>
+                <p className="mt-3 text-[13px] leading-6 text-[#111111]/75">
+                  {translationJob.message}
+                </p>
+                {translationJob.total > 0 && (
+                  <>
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/[0.06]">
+                      <div
+                        className="h-full rounded-full bg-[#111111] transition-all"
+                        style={{
+                          width: `${Math.max(
+                            translationJob.completed === 0 ? 6 : 0,
+                            Math.round((translationJob.completed / translationJob.total) * 100)
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="mt-2 text-[12px] text-[#111111]/50">
+                      {translationJob.completed} / {translationJob.total}
+                      {translationJob.currentField ? ` · ${translationJob.currentField}` : ""}
+                    </p>
+                  </>
+                )}
+                {translationJob.error && (
+                  <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] leading-5 text-red-600">
+                    {translationJob.error}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  if (translationJob.status === "pending" || translationJob.status === "running") return;
+                  setTranslationJob(null);
+                }}
+                disabled={translationJob.status === "pending" || translationJob.status === "running"}
+                className="rounded-lg border border-black/[0.08] px-4 py-2 text-[12px] font-semibold text-[#111111] transition-colors hover:bg-black/[0.03] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {translationJob.status === "pending" || translationJob.status === "running" ? "处理中…" : "关闭"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Ctx.Provider>
   );
 }

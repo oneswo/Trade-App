@@ -34,6 +34,9 @@ const emptyState = (): SlotUploadState => ({
   showSuccess: false,
 });
 
+const looksLikeEnglishText = (value?: string) =>
+  Boolean(value?.trim()) && /[A-Za-z]/.test(value ?? "") && !/[\u4e00-\u9fff]/.test(value ?? "");
+
 export default function ProductEditorForm({
   productId,
 }: {
@@ -55,6 +58,8 @@ export default function ProductEditorForm({
     nameEn: "",
     summaryZh: "",
     summaryEn: "",
+    descriptionZh: "",
+    descriptionEn: "",
   });
   const [coreMetrics, setCoreMetrics] = useState<ProductEditorCoreMetrics>({
     year: "",
@@ -63,14 +68,25 @@ export default function ProductEditorForm({
     location: "",
     model: "",
     brand: "",
+    yearZh: "",
+    yearEn: "",
+    hoursZh: "",
+    hoursEn: "",
+    tonnageZh: "",
+    tonnageEn: "",
+    locationZh: "",
+    locationEn: "",
+    modelZh: "",
+    modelEn: "",
+    brandZh: "",
+    brandEn: "",
   });
   const [specs, setSpecs] = useState<ProductEditorSpec[]>([
-    { key: "Engine Model (型号)", value: "CAT C6.4 ACERT" },
-    { key: "Net Power (净功率)", value: "103 kW (138 hp)" },
-    { key: "Bucket Capacity (铲斗容量)", value: "1.2 m³" },
-    { key: "Max Digging Depth (挖掘深度)", value: "6,650 mm" },
+    { keyZh: "发动机型号", keyEn: "Engine Model", valueZh: "CAT C6.4 ACERT", valueEn: "CAT C6.4 ACERT" },
+    { keyZh: "净功率", keyEn: "Net Power", valueZh: "103 kW (138 hp)", valueEn: "103 kW (138 hp)" },
+    { keyZh: "铲斗容量", keyEn: "Bucket Capacity", valueZh: "1.2 m³", valueEn: "1.2 m³" },
+    { keyZh: "最大挖掘深度", keyEn: "Max Digging Depth", valueZh: "6,650 mm", valueEn: "6,650 mm" },
   ]);
-  const [description, setDescription] = useState("");
   const [mediaSlots, setMediaSlots] = useState<MediaSlot[]>(
     () => Array.from({ length: SLOT_COUNT }, createEmptyProductMediaSlot),
   );
@@ -195,6 +211,8 @@ export default function ProductEditorForm({
             nameEn: product.nameEn || "",
             summaryZh: product.summaryZh || "",
             summaryEn: product.summaryEn || "",
+            descriptionZh: product.coreMetrics?.i18n?.descriptionZh || product.description || "",
+            descriptionEn: product.coreMetrics?.i18n?.descriptionEn || "",
           });
           if (product.coreMetrics) {
             setCoreMetrics({
@@ -204,13 +222,38 @@ export default function ProductEditorForm({
               location: product.coreMetrics.location || "",
               model: product.coreMetrics.model || "",
               brand: product.coreMetrics.brand || "",
+              yearZh: product.coreMetrics.i18n?.zh?.year || product.coreMetrics.year || "",
+              yearEn: product.coreMetrics.i18n?.en?.year || "",
+              hoursZh: product.coreMetrics.i18n?.zh?.hours || product.coreMetrics.hours || "",
+              hoursEn: product.coreMetrics.i18n?.en?.hours || "",
+              tonnageZh: product.coreMetrics.i18n?.zh?.tonnage || product.coreMetrics.tonnage || "",
+              tonnageEn: product.coreMetrics.i18n?.en?.tonnage || "",
+              locationZh: product.coreMetrics.i18n?.zh?.location || product.coreMetrics.location || "",
+              locationEn: product.coreMetrics.i18n?.en?.location || "",
+              modelZh: product.coreMetrics.i18n?.zh?.model || product.coreMetrics.model || "",
+              modelEn: product.coreMetrics.i18n?.en?.model || "",
+              brandZh: product.coreMetrics.i18n?.zh?.brand || product.coreMetrics.brand || "",
+              brandEn: product.coreMetrics.i18n?.en?.brand || "",
               mediaSlots: product.coreMetrics.mediaSlots || [],
             });
           }
           if (product.specs && product.specs.length > 0) {
-            setSpecs(product.specs);
+            setSpecs(
+              product.specs.map((spec: {
+                key?: string;
+                keyZh?: string;
+                keyEn?: string;
+                value?: string;
+                valueZh?: string;
+                valueEn?: string;
+              }) => ({
+                keyZh: spec.keyZh || spec.key || "",
+                keyEn: spec.keyEn || (looksLikeEnglishText(spec.key) ? spec.key || "" : ""),
+                valueZh: spec.valueZh || spec.value || "",
+                valueEn: spec.valueEn || (looksLikeEnglishText(spec.value) ? spec.value || "" : ""),
+              }))
+            );
           }
-          setDescription(product.description || "");
 
           // 从旧字段还原到 slots
           const loaded = product.coreMetrics?.mediaSlots
@@ -275,13 +318,47 @@ export default function ProductEditorForm({
         summary: content.summaryZh || content.summaryEn || "",
         summaryZh: content.summaryZh,
         summaryEn: content.summaryEn,
-        description,
+        description: content.descriptionZh || content.descriptionEn || "",
         stockAmount,
         coreMetrics: {
-          ...coreMetrics,
+          year: coreMetrics.yearZh || coreMetrics.yearEn || coreMetrics.year || "",
+          hours: coreMetrics.hoursZh || coreMetrics.hoursEn || coreMetrics.hours || "",
+          tonnage: coreMetrics.tonnageZh || coreMetrics.tonnageEn || coreMetrics.tonnage || "",
+          location: coreMetrics.locationZh || coreMetrics.locationEn || coreMetrics.location || "",
+          model: coreMetrics.modelZh || coreMetrics.modelEn || coreMetrics.model || "",
+          brand: coreMetrics.brandZh || coreMetrics.brandEn || coreMetrics.brand || "",
           mediaSlots: normalizedMediaSlots,
+          i18n: {
+            zh: {
+              year: coreMetrics.yearZh,
+              hours: coreMetrics.hoursZh,
+              tonnage: coreMetrics.tonnageZh,
+              location: coreMetrics.locationZh,
+              model: coreMetrics.modelZh,
+              brand: coreMetrics.brandZh,
+            },
+            en: {
+              year: coreMetrics.yearEn,
+              hours: coreMetrics.hoursEn,
+              tonnage: coreMetrics.tonnageEn,
+              location: coreMetrics.locationEn,
+              model: coreMetrics.modelEn,
+              brand: coreMetrics.brandEn,
+            },
+            descriptionZh: content.descriptionZh,
+            descriptionEn: content.descriptionEn,
+          },
         },
-        specs: specs.filter((spec) => spec.key.trim() && spec.value.trim()),
+        specs: specs
+          .filter((spec) => (spec.keyZh.trim() || spec.keyEn.trim()) && (spec.valueZh.trim() || spec.valueEn.trim()))
+          .map((spec) => ({
+            key: spec.keyZh || spec.keyEn,
+            value: spec.valueZh || spec.valueEn,
+            keyZh: spec.keyZh,
+            keyEn: spec.keyEn,
+            valueZh: spec.valueZh,
+            valueEn: spec.valueEn,
+          })),
         coverImageUrl,
         galleryImageUrls,
         videoUrl,
@@ -319,13 +396,18 @@ export default function ProductEditorForm({
     }
   };
 
-  const addSpecLine = () => setSpecs([...specs, { key: "", value: "" }]);
+  const addSpecLine = () =>
+    setSpecs([...specs, { keyZh: "", keyEn: "", valueZh: "", valueEn: "" }]);
 
   const removeSpecLine = (index: number) => {
     setSpecs(specs.filter((_, i) => i !== index));
   };
 
-  const updateSpec = (index: number, field: "key" | "value", value: string) => {
+  const updateSpec = (
+    index: number,
+    field: "keyZh" | "keyEn" | "valueZh" | "valueEn",
+    value: string
+  ) => {
     setSpecs(specs.map((spec, i) =>
       i === index ? { ...spec, [field]: value } : spec
     ));
@@ -416,18 +498,18 @@ export default function ProductEditorForm({
               category={category}
               categories={categories}
               onCategoryChange={setCategory}
-              description={description}
-              onDescriptionChange={setDescription}
             />
           </div>
         </div>
 
         <CoreSpecsSection
+          lang={lang}
           coreMetrics={coreMetrics}
           onCoreMetricsChange={setCoreMetrics}
         />
 
         <TechSpecsSection
+          lang={lang}
           specs={specs}
           onAddSpec={addSpecLine}
           onRemoveSpec={removeSpecLine}

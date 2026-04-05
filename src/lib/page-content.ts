@@ -1,4 +1,5 @@
 import { getPageContentRepo } from "@/lib/data/repository";
+import { stripInternalPageContentFields } from "@/lib/admin/page-content-translation";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/i18n/locales";
 
 export const VALID_PAGE_IDS = [
@@ -11,6 +12,15 @@ export const VALID_PAGE_IDS = [
 ] as const;
 
 export type ValidPageId = (typeof VALID_PAGE_IDS)[number];
+
+const PAGE_PATH_SUFFIX: Record<ValidPageId, string> = {
+  home: "",
+  products: "/products",
+  "product-detail": "/products",
+  services: "/services",
+  about: "/about",
+  contact: "/contact",
+};
 
 const OBSOLETE_PAGE_CONTENT_PREFIXES: Partial<Record<ValidPageId, string[]>> = {
   home: ["cta.", "hero.tag", "hero.subtitle", "hero.btn1", "hero.btn2", "hero.posterUrl", "hero.videoUrl", "depth."],
@@ -56,6 +66,16 @@ export function isSharedMediaField(fieldName: string) {
   return /(?:^|\.)(?:bgImage|image|photo|posterUrl|videoUrl)$/.test(fieldName);
 }
 
+export function getFrontendPaths(pageId: ValidPageId) {
+  const suffix = PAGE_PATH_SUFFIX[pageId];
+  return SUPPORTED_LOCALES.map((locale) => {
+    if (locale === "en") {
+      return suffix || "/";
+    }
+    return suffix ? `/${locale}${suffix}` : `/${locale}`;
+  });
+}
+
 export function pickSharedMediaFields(data: Record<string, string>) {
   return Object.fromEntries(
     Object.entries(data).filter(
@@ -95,13 +115,13 @@ export async function getPageContentData(
 ) {
   const repo = getPageContentRepo();
   const currentRecord = await repo.get(pageId, locale);
-  const currentData = currentRecord?.data ?? {};
+  const currentData = stripInternalPageContentFields(currentRecord?.data);
   const mergedData = { ...currentData };
 
   for (const otherLocale of SUPPORTED_LOCALES) {
     if (otherLocale === locale) continue;
     const otherRecord = await repo.get(pageId, otherLocale);
-    const otherData = otherRecord?.data ?? {};
+    const otherData = stripInternalPageContentFields(otherRecord?.data);
     for (const [key, value] of Object.entries(otherData)) {
       if (isSharedMediaField(key) && !mergedData[key] && value) {
         mergedData[key] = value;

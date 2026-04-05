@@ -1,5 +1,9 @@
 import { DEFAULT_LOCALE, type SupportedLocale } from "@/lib/i18n/locales";
-import type { ProductRecord } from "@/lib/data/repository";
+import type {
+  ProductCoreMetrics,
+  ProductRecord,
+  ProductSpec,
+} from "@/lib/data/repository";
 import {
   buildLegacyProductMediaSlots,
   getOrderedProductImages,
@@ -50,18 +54,7 @@ interface ApiProductListItem {
   summary: string;
   summaryZh?: string;
   summaryEn?: string;
-  coreMetrics?: {
-    year?: string;
-    hours?: string;
-    tonnage?: string;
-    location?: string;
-    model?: string;
-    brand?: string;
-    mediaSlots?: Array<{
-      url?: string;
-      type?: "image" | "video" | "";
-    }>;
-  };
+  coreMetrics?: ProductCoreMetrics;
   stockAmount?: number;
   coverImageUrl: string | null;
   videoUrl: string | null;
@@ -70,7 +63,7 @@ interface ApiProductListItem {
 
 interface ApiProductDetailItem extends ApiProductListItem {
   description: string;
-  specs: Array<{ key: string; value: string }>;
+  specs: ProductSpec[];
   galleryImageUrls: string[];
   videoUrl: string | null;
 }
@@ -220,8 +213,39 @@ function resolveProductMedia(item: ApiProductDetailItem | ApiProductListItem) {
   };
 }
 
+function getLocalizedMetricValue(
+  metrics: ProductCoreMetrics | undefined,
+  locale: SupportedLocale,
+  key: "year" | "hours" | "tonnage" | "location" | "model" | "brand"
+) {
+  if (!metrics) return "";
+  const localized = metrics.i18n?.[locale]?.[key];
+  return localized || metrics[key] || "";
+}
+
+function getLocalizedDescription(
+  item: ProductDetailSource,
+  locale: SupportedLocale
+) {
+  if (locale === "zh") {
+    return item.coreMetrics?.i18n?.descriptionZh || item.description || "";
+  }
+  return item.coreMetrics?.i18n?.descriptionEn || item.description || "";
+}
+
+function getLocalizedDetailedSpecs(specs: ProductSpec[], locale: SupportedLocale) {
+  return specs
+    .map((spec) => ({
+      label: locale === "zh" ? (spec.keyZh || spec.key) : (spec.keyEn || spec.key),
+      value: locale === "zh" ? (spec.valueZh || spec.value) : (spec.valueEn || spec.value),
+    }))
+    .filter((spec) => spec.label.trim() && spec.value.trim());
+}
+
 export function toCatalogProductCard(item: ProductListSource, locale: SupportedLocale): CatalogProductCard {
-  const year = item.coreMetrics?.year || String(new Date(item.createdAt).getFullYear() || "--");
+  const year =
+    getLocalizedMetricValue(item.coreMetrics, locale, "year") ||
+    String(new Date(item.createdAt).getFullYear() || "--");
   const title = locale === "zh" ? (item.nameZh || item.name) : (item.nameEn || item.name);
   const { primary, images } = resolveProductMedia(item);
   
@@ -229,12 +253,12 @@ export function toCatalogProductCard(item: ProductListSource, locale: SupportedL
     id: item.id,
     slug: item.slug,
     title,
-    brand: localizeBrand(item.coreMetrics?.brand || "KXTJ", locale),
+    brand: localizeBrand(getLocalizedMetricValue(item.coreMetrics, locale, "brand") || "KXTJ", locale),
     year,
-    weight: localizeWeight(item.coreMetrics?.tonnage || "--", locale),
-    hours: localizeHours(item.coreMetrics?.hours || "--", locale),
-    engine: item.coreMetrics?.model || "--",
-    location: localizeLocation(item.coreMetrics?.location || "Shanghai", locale),
+    weight: localizeWeight(getLocalizedMetricValue(item.coreMetrics, locale, "tonnage") || "--", locale),
+    hours: localizeHours(getLocalizedMetricValue(item.coreMetrics, locale, "hours") || "--", locale),
+    engine: getLocalizedMetricValue(item.coreMetrics, locale, "model") || "--",
+    location: localizeLocation(getLocalizedMetricValue(item.coreMetrics, locale, "location") || "Shanghai", locale),
     category: localizeCategory(item.category || "Excavator", locale),
     categorySlug: (item.category || "").trim().toLowerCase(),
     image: images[0] ?? null,
@@ -249,17 +273,22 @@ export function toCatalogProductDetail(item: ProductDetailSource, locale: Suppor
   const { images } = resolveProductMedia(item);
 
   const summary = locale === "zh" ? (item.summaryZh || item.summary) : (item.summaryEn || item.summary);
-  // Optional: add descriptionZh to DB if needed, fallback to description for now
-  const description = item.description || "";
+  const description = getLocalizedDescription(item, locale);
 
   const coreSpecs: ProductSpecItem[] = [];
   if (item.coreMetrics) {
-    if (item.coreMetrics.year) coreSpecs.push({ label: localizeSpecLabel("Year", locale), value: item.coreMetrics.year });
-    if (item.coreMetrics.hours) coreSpecs.push({ label: localizeSpecLabel("Hours", locale), value: localizeSpecValue(item.coreMetrics.hours, locale) });
-    if (item.coreMetrics.tonnage) coreSpecs.push({ label: localizeSpecLabel("Operating Weight", locale), value: localizeSpecValue(item.coreMetrics.tonnage, locale) });
-    if (item.coreMetrics.location) coreSpecs.push({ label: localizeSpecLabel("Location", locale), value: localizeLocation(item.coreMetrics.location, locale) });
-    if (item.coreMetrics.model) coreSpecs.push({ label: localizeSpecLabel("Engine Model", locale), value: item.coreMetrics.model });
-    if (item.coreMetrics.brand) coreSpecs.push({ label: localizeSpecLabel("Brand", locale), value: localizeBrand(item.coreMetrics.brand, locale) });
+    const year = getLocalizedMetricValue(item.coreMetrics, locale, "year");
+    const hours = getLocalizedMetricValue(item.coreMetrics, locale, "hours");
+    const tonnage = getLocalizedMetricValue(item.coreMetrics, locale, "tonnage");
+    const location = getLocalizedMetricValue(item.coreMetrics, locale, "location");
+    const model = getLocalizedMetricValue(item.coreMetrics, locale, "model");
+    const brand = getLocalizedMetricValue(item.coreMetrics, locale, "brand");
+    if (year) coreSpecs.push({ label: localizeSpecLabel("Year", locale), value: year });
+    if (hours) coreSpecs.push({ label: localizeSpecLabel("Hours", locale), value: localizeSpecValue(hours, locale) });
+    if (tonnage) coreSpecs.push({ label: localizeSpecLabel("Operating Weight", locale), value: localizeSpecValue(tonnage, locale) });
+    if (location) coreSpecs.push({ label: localizeSpecLabel("Location", locale), value: localizeLocation(location, locale) });
+    if (model) coreSpecs.push({ label: localizeSpecLabel("Engine Model", locale), value: model });
+    if (brand) coreSpecs.push({ label: localizeSpecLabel("Brand", locale), value: localizeBrand(brand, locale) });
   }
 
   return {
@@ -276,8 +305,8 @@ export function toCatalogProductDetail(item: ProductDetailSource, locale: Suppor
       { label: localizeSpecLabel("Stock Status", locale), value: localizeSpecValue("In Stock", locale) },
     ],
     detailedSpecs: specs.length > 0
-      ? specs.map((spec) => ({
-          label: spec.key,
+      ? getLocalizedDetailedSpecs(specs, locale).map((spec) => ({
+          label: spec.label,
           value: localizeSpecValue(spec.value, locale),
         }))
       : [

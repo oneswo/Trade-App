@@ -4,15 +4,21 @@ import { Plus, Settings2, Trash2 } from "lucide-react";
 import type { ProductEditorSpec } from "./types";
 
 export function TechSpecsSection({
+  lang,
   specs,
   onAddSpec,
   onRemoveSpec,
   onUpdateSpec,
 }: {
+  lang: "zh" | "en";
   specs: ProductEditorSpec[];
   onAddSpec: () => void;
   onRemoveSpec: (index: number) => void;
-  onUpdateSpec: (index: number, field: "key" | "value", value: string) => void;
+  onUpdateSpec: (
+    index: number,
+    field: "keyZh" | "keyEn" | "valueZh" | "valueEn",
+    value: string
+  ) => void;
 }) {
   return (
     <section className="bg-white rounded-xl p-8 border border-black/[0.06] shadow-sm">
@@ -23,17 +29,19 @@ export function TechSpecsSection({
             全规格参数阵列档案 (Full Tech Specs)
           </h2>
           <p className="text-[11px] text-[#111111]/40 pl-6 transform">
-            此表格所有新增与修改，会在前端底部的瀑布流技术表中同步体现。
+            此表格所有新增与修改，会在前台底部的瀑布流技术表中同步体现。
           </p>
         </div>
-        <button
-          onClick={onAddSpec}
-          type="button"
-          className="text-[12px] font-semibold tracking-wider uppercase bg-[#FAFAFA] border border-black/[0.08] hover:bg-black/[0.02] text-[#111111] px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm"
-        >
-          <Plus size={14} />
-          新增规范参数行
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={onAddSpec}
+            type="button"
+            className="text-[12px] font-semibold tracking-wider uppercase bg-[#FAFAFA] border border-black/[0.08] hover:bg-black/[0.02] text-[#111111] px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm"
+          >
+            <Plus size={14} />
+            新增规范参数行
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3">
@@ -47,9 +55,9 @@ export function TechSpecsSection({
             </div>
             <input
               type="text"
-              value={spec.key}
-              onChange={(e) => onUpdateSpec(i, "key", e.target.value)}
-              placeholder="标签，如：Engine"
+              value={lang === "zh" ? spec.keyZh : spec.keyEn}
+              onChange={(e) => onUpdateSpec(i, lang === "zh" ? "keyZh" : "keyEn", e.target.value)}
+              placeholder={lang === "zh" ? "标签，如：发动机型号" : "Label, e.g. Engine Model"}
               className="w-[45%] bg-transparent px-4 py-2 text-[12px] font-semibold text-[#111111]/50 focus:outline-none focus:bg-white focus:ring-1 focus:ring-black/10 rounded-md transition-all ml-1"
             />
 
@@ -57,9 +65,9 @@ export function TechSpecsSection({
 
             <input
               type="text"
-              value={spec.value}
-              onChange={(e) => onUpdateSpec(i, "value", e.target.value)}
-              placeholder="参数值，如：V6 3.0L"
+              value={lang === "zh" ? spec.valueZh : spec.valueEn}
+              onChange={(e) => onUpdateSpec(i, lang === "zh" ? "valueZh" : "valueEn", e.target.value)}
+              placeholder={lang === "zh" ? "参数值，如：103 kW" : "Value, e.g. 103 kW"}
               className="flex-1 bg-transparent px-4 py-2 text-[13px] font-bold text-[#111111] focus:outline-none focus:bg-white focus:ring-1 focus:ring-black/10 rounded-md transition-all"
             />
 

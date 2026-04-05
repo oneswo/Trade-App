@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ImageIcon, Film, Loader2, Sparkles, CheckCircle, XCircle } from "lucide-react";
 import { useCtx } from "./_context";
 
@@ -50,7 +50,7 @@ export function TextInput({
   defaultValue?: string;
   translateFrom?: string;
 }) {
-  const { get, set, isZh, allFields } = useCtx();
+  const { get, has, set, isZh, allFields } = useCtx();
   const [translating, setTranslating] = useState(false);
   const [translateResult, setTranslateResult] = useState<{ success: boolean; message: string } | null>(null);
   
@@ -58,6 +58,13 @@ export function TextInput({
   const zhValue = translateFrom ? allFields[translateFrom] || '' : '';
   const currentValue = get(name, defaultValue);
   const showTranslateBtn = !isZh && translateFrom && zhValue && !currentValue;
+
+  useEffect(() => {
+    if (!isZh) return;
+    if (defaultValue === "") return;
+    if (has(name)) return;
+    set(name, defaultValue);
+  }, [defaultValue, has, isZh, name, set]);
 
   const handleTranslate = async () => {
     if (!zhValue) return;
@@ -154,7 +161,7 @@ export function TextArea({
   rows?: number;
   translateFrom?: string;
 }) {
-  const { get, set, isZh, allFields } = useCtx();
+  const { get, has, set, isZh, allFields } = useCtx();
   const [translating, setTranslating] = useState(false);
   const [translateResult, setTranslateResult] = useState<{ success: boolean; message: string } | null>(null);
   
@@ -162,6 +169,13 @@ export function TextArea({
   const zhValue = translateFrom ? allFields[translateFrom] || '' : '';
   const currentValue = get(name, defaultValue);
   const showTranslateBtn = !isZh && translateFrom && zhValue && !currentValue;
+
+  useEffect(() => {
+    if (!isZh) return;
+    if (defaultValue === "") return;
+    if (has(name)) return;
+    set(name, defaultValue);
+  }, [defaultValue, has, isZh, name, set]);
 
   const handleTranslate = async () => {
     if (!zhValue) return;
@@ -259,12 +273,19 @@ export function DarkInput({
   gold?: boolean;
   translateFrom?: string;
 }) {
-  const { get, set, isZh, allFields } = useCtx();
+  const { get, has, set, isZh, allFields } = useCtx();
   const [translating, setTranslating] = useState(false);
   const [translateResult, setTranslateResult] = useState<{ success: boolean; message: string } | null>(null);
   const zhValue = translateFrom ? allFields[translateFrom] || '' : '';
   const currentValue = get(name, defaultValue);
   const showTranslateBtn = !isZh && translateFrom && zhValue && !currentValue;
+
+  useEffect(() => {
+    if (!isZh) return;
+    if (defaultValue === "") return;
+    if (has(name)) return;
+    set(name, defaultValue);
+  }, [defaultValue, has, isZh, name, set]);
 
   const handleTranslate = async () => {
     if (!zhValue) return;
@@ -361,12 +382,19 @@ export function DarkArea({
   rows?: number;
   translateFrom?: string;
 }) {
-  const { get, set, isZh, allFields } = useCtx();
+  const { get, has, set, isZh, allFields } = useCtx();
   const [translating, setTranslating] = useState(false);
   const [translateResult, setTranslateResult] = useState<{ success: boolean; message: string } | null>(null);
   const zhValue = translateFrom ? allFields[translateFrom] || '' : '';
   const currentValue = get(name, defaultValue);
   const showTranslateBtn = !isZh && translateFrom && zhValue && !currentValue;
+
+  useEffect(() => {
+    if (!isZh) return;
+    if (defaultValue === "") return;
+    if (has(name)) return;
+    set(name, defaultValue);
+  }, [defaultValue, has, isZh, name, set]);
 
   const handleTranslate = async () => {
     if (!zhValue) return;
