@@ -5,6 +5,23 @@ import { ADMIN_SESSION_COOKIE } from "@/lib/auth/constants";
 import { verifyToken } from "@/lib/auth/session";
 import { deleteR2Objects, diffR2Urls } from "@/lib/storage/media-storage";
 
+function getSettingsErrorMessage(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return "Failed to update settings";
+  }
+
+  const maybeError = error as { code?: unknown; message?: unknown };
+  if (
+    maybeError.code === "PGRST204" &&
+    typeof maybeError.message === "string" &&
+    maybeError.message.includes("translation_provider")
+  ) {
+    return "site_settings 表缺少翻译配置字段，请先执行新增 translation_* 列的 SQL 脚本";
+  }
+
+  return "Failed to update settings";
+}
+
 async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value ?? "";
@@ -47,6 +64,9 @@ export async function PUT(request: Request) {
     return Response.json({ ok: true, data: settings });
   } catch (error) {
     console.error("Failed to update site settings:", error);
-    return Response.json({ ok: false, error: "Failed to update settings" }, { status: 500 });
+    return Response.json(
+      { ok: false, error: getSettingsErrorMessage(error) },
+      { status: 500 }
+    );
   }
 }

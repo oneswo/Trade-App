@@ -17,10 +17,10 @@ export function HomeFields({ zh }: { zh: boolean }) {
       <div className="space-y-5">
         <SectionHeader title="首页首屏" note="第一屏标题、背景图和 4 个统计数字" />
         <FieldRow label="主标题上半句">
-          <TextInput name="hero.title1" defaultValue={zh ? "铸塑未来的" : "Built to Power"} />
+          <TextInput name="hero.title1" defaultValue={zh ? "铸塑未来的" : "Built to Power"} translateFrom="hero.title1" />
         </FieldRow>
         <FieldRow label="主标题高亮词">
-          <TextInput name="hero.titleGold" defaultValue={zh ? "重工力量" : "the World's Work."} />
+          <TextInput name="hero.titleGold" defaultValue={zh ? "重工力量" : "the World's Work."} translateFrom="hero.titleGold" />
         </FieldRow>
         <ImageUpload
           name="hero.bgImage"
@@ -40,7 +40,7 @@ export function HomeFields({ zh }: { zh: boolean }) {
           ].map((s, i) => (
             <div key={i} className="grid grid-cols-[80px_1fr] gap-2 items-center">
               <TextInput name={`hero.stat${i + 1}.num`} defaultValue={s.num} />
-              <TextInput name={`hero.stat${i + 1}.label`} defaultValue={zh ? s.zh_l : s.en_l} />
+              <TextInput name={`hero.stat${i + 1}.label`} defaultValue={zh ? s.zh_l : s.en_l} translateFrom={`hero.stat${i + 1}.label`} />
             </div>
           ))}
         </div>
@@ -49,13 +49,13 @@ export function HomeFields({ zh }: { zh: boolean }) {
       <div className="space-y-5">
         <SectionHeader title="分类展示区" note="分类卡片本身来自「分类管理」，这里只改标题和说明" />
         <FieldRow label="区块标题">
-          <TextInput name="categories.title" defaultValue={zh ? "全矩阵设备覆盖" : "Full-Spectrum Equipment Coverage"} />
+          <TextInput name="categories.title" defaultValue={zh ? "全矩阵设备覆盖" : "Full-Spectrum Equipment Coverage"} translateFrom="categories.title" />
         </FieldRow>
         <FieldRow label="区块说明">
-          <TextArea name="categories.desc" defaultValue={zh ? "无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。" : "Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum."} />
+          <TextArea name="categories.desc" defaultValue={zh ? "无论您的工程面临何种极端挑战，我们都能为您提供从强力挖掘、重型装载到路面打造的全场景、无死角的高端重装解决方案。" : "Whatever your project demands, we deliver high-performance heavy equipment solutions across the full spectrum."} translateFrom="categories.desc" />
         </FieldRow>
         <FieldRow label="无分类时提示文案">
-          <TextInput name="categories.emptyText" defaultValue={zh ? "暂无分类，请在后台「分类管理」中添加" : "No categories yet. Add them in the admin panel."} />
+          <TextInput name="categories.emptyText" defaultValue={zh ? "暂无分类，请在后台「分类管理」中添加" : "No categories yet. Add them in the admin panel."} translateFrom="categories.emptyText" />
         </FieldRow>
         {/* ⚠️ 分类卡片（名称 + 图片）已迁移至独立的「分类管理」模块统一管理 */}
         <div className="rounded-xl border border-[#D4AF37]/30 bg-[#FFFBF0] p-4 space-y-1.5">
@@ -71,29 +71,29 @@ export function HomeFields({ zh }: { zh: boolean }) {
       <div className="space-y-5">
         <SectionHeader title="热销产品区" note="产品卡片本身来自「产品管理」，这里只改标题和标签" />
         <FieldRow label="区块标题">
-          <TextInput name="hot.title" defaultValue={zh ? "严选热销机皇" : "Top-Rated Machines, Handpicked"} />
+          <TextInput name="hot.title" defaultValue={zh ? "严选热销机皇" : "Top-Rated Machines, Handpicked"} translateFrom="hot.title" />
         </FieldRow>
         <FieldRow label="区块说明">
-          <TextArea name="hot.desc" defaultValue={zh ? "这些顶级现货机型经过 100 项全案严苛过滤，代表着本月极低的故障率和极高的投资回报比，是全球大型基建的首选制胜装备。" : "Every unit has passed a rigorous 100-point inspection — the lowest failure rates and highest ROI of the month."} />
+          <TextArea name="hot.desc" defaultValue={zh ? "这些顶级现货机型经过 100 项全案严苛过滤，代表着本月极低的故障率和极高的投资回报比，是全球大型基建的首选制胜装备。" : "Every unit has passed a rigorous 100-point inspection — the lowest failure rates and highest ROI of the month."} translateFrom="hot.desc" />
         </FieldRow>
         <FieldRow label="查看全部按钮文字">
-          <TextInput name="hot.btnText" defaultValue={zh ? "游览所有 300+ 在线设备" : "View All 300+ Listed Machines"} />
+          <TextInput name="hot.btnText" defaultValue={zh ? "游览所有 300+ 在线设备" : "View All 300+ Listed Machines"} translateFrom="hot.btnText" />
         </FieldRow>
         <FieldRow label="卡片标签：现货状态">
-          <TextInput name="hot.inStockLabel" defaultValue={zh ? "现货就绪" : "In Stock"} />
+          <TextInput name="hot.inStockLabel" defaultValue={zh ? "现货就绪" : "In Stock"} translateFrom="hot.inStockLabel" />
         </FieldRow>
         <FieldRow label="无产品时提示文案">
-          <TextInput name="hot.emptyText" defaultValue={zh ? "暂无在售产品，请在后台「产品列表」中添加" : "No products yet. Add them in the admin panel."} />
+          <TextInput name="hot.emptyText" defaultValue={zh ? "暂无在售产品，请在后台「产品列表」中添加" : "No products yet. Add them in the admin panel."} translateFrom="hot.emptyText" />
         </FieldRow>
       </div>
 
       <div className="space-y-5">
         <SectionHeader title="服务卡片区" note="首页中段 6 张服务卡片" />
         <FieldRow label="区块标题">
-          <TextInput name="s5.title" defaultValue={zh ? "世界级的交付与服务标准" : "World-Class Delivery & After-Sales Standards"} />
+          <TextInput name="s5.title" defaultValue={zh ? "世界级的交付与服务标准" : "World-Class Delivery & After-Sales Standards"} translateFrom="s5.title" />
         </FieldRow>
         <FieldRow label="区块说明">
-          <TextArea name="s5.desc" defaultValue={zh ? "在跨国重装采购中，物流与售后往往是最大的阻碍。我们将为您彻底铲除这些摩擦力，提供真正的端到端出海服务体系。" : "In cross-border heavy equipment procurement, logistics and after-sales are often the greatest barriers. We eliminate that friction entirely."} />
+          <TextArea name="s5.desc" defaultValue={zh ? "在跨国重装采购中，物流与售后往往是最大的阻碍。我们将为您彻底铲除这些摩擦力，提供真正的端到端出海服务体系。" : "In cross-border heavy equipment procurement, logistics and after-sales are often the greatest barriers. We eliminate that friction entirely."} translateFrom="s5.desc" />
         </FieldRow>
         {[
           { zh_t: "100项隐患全排查",   en_t: "100-Point Pre-Export Inspection",   zh_d: "从发动机、液压主泵到外观履带，严格执行原厂级全案检测体系，出具全流程权威视频报告。",   en_d: "From the engine and hydraulic main pump to undercarriage, every unit undergoes a factory-grade inspection with video report." },
@@ -104,22 +104,22 @@ export function HomeFields({ zh }: { zh: boolean }) {
           { zh_t: "跨洋海运零盲区清关", en_t: "Door-to-Port Shipping & Customs", zh_d: "凭借深耕非洲、南美的高能航运合作伙伴，打磨出包税清关、滚装直航一体化的极简提货路线。",  en_d: "Backed by partners across Africa and South America, we provide all-inclusive customs clearance and RO-RO shipping." },
         ].map((c, i) => (
           <CardBlock key={i} index={i + 1} label="服务卡片">
-            <FieldRow label="卡片标题"><TextInput name={`s5.card.${i}.title`} defaultValue={zh ? c.zh_t : c.en_t} /></FieldRow>
-            <FieldRow label="卡片描述"><TextArea name={`s5.card.${i}.desc`} rows={2} defaultValue={zh ? c.zh_d : c.en_d} /></FieldRow>
+            <FieldRow label="卡片标题"><TextInput name={`s5.card.${i}.title`} defaultValue={zh ? c.zh_t : c.en_t} translateFrom={`s5.card.${i}.title`} /></FieldRow>
+            <FieldRow label="卡片描述"><TextArea name={`s5.card.${i}.desc`} rows={2} defaultValue={zh ? c.zh_d : c.en_d} translateFrom={`s5.card.${i}.desc`} /></FieldRow>
           </CardBlock>
         ))}
         <FieldRow label="底部跳转按钮文字">
-          <TextInput name="s5.btnText" defaultValue={zh ? "探索完整增值出海体系" : "Explore Our Full Export Service Suite"} />
+          <TextInput name="s5.btnText" defaultValue={zh ? "探索完整增值出海体系" : "Explore Our Full Export Service Suite"} translateFrom="s5.btnText" />
         </FieldRow>
       </div>
 
       <div className="space-y-5">
         <SectionHeader title="交付动态区" note="首页底部 4 张动态卡片" />
         <FieldRow label="区块标题">
-          <TextInput name="news.title" defaultValue={zh ? "交机实录与动态" : "Live Delivery Updates"} />
+          <TextInput name="news.title" defaultValue={zh ? "交机实录与动态" : "Live Delivery Updates"} translateFrom="news.title" />
         </FieldRow>
         <FieldRow label="区块说明">
-          <TextArea name="news.desc" defaultValue={zh ? "真实发盘、跨国海运、开箱验收。我们为您展示实时的设备全球周转录像与物流快讯，亲眼见证我们的端到端跨国履约与重装交付能力。" : "Real shipments. International ocean freight. On-site unboxing. We share live footage and logistics updates from active global dispatches."} />
+          <TextArea name="news.desc" defaultValue={zh ? "真实发盘、跨国海运、开箱验收。我们为您展示实时的设备全球周转录像与物流快讯，亲眼见证我们的端到端跨国履约与重装交付能力。" : "Real shipments. International ocean freight. On-site unboxing. We share live footage and logistics updates from active global dispatches."} translateFrom="news.desc" />
         </FieldRow>
 
         {[
@@ -161,7 +161,7 @@ export function HomeFields({ zh }: { zh: boolean }) {
               <TextInput name={`delivery.${i}.titleZh`} defaultValue={card.zh_title} />
             </FieldRow>
             <FieldRow label="卡片标题（英文）">
-              <TextInput name={`delivery.${i}.titleEn`} defaultValue={card.en_title} />
+              <TextInput name={`delivery.${i}.titleEn`} defaultValue={card.en_title} translateFrom={`delivery.${i}.titleZh`} />
             </FieldRow>
           </CardBlock>
         ))}

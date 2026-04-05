@@ -13,6 +13,13 @@ import {
   Loader2,
   Check,
   Copyright,
+  Bot,
+  Eye,
+  EyeOff,
+  Copy,
+  CheckCircle,
+  XCircle,
+  Sparkles,
 } from "lucide-react";
 import { clearSettingsCache } from "@/hooks/useSiteSettings";
 import { cleanupTrackedMediaUrls } from "@/lib/admin/media-cleanup";
@@ -32,6 +39,9 @@ interface SiteSettings {
   copyrightText: string;
   copyrightTextEn: string;
   copyrightUrl: string;
+  translationProvider: 'openai' | 'qwen' | 'deepl' | '';
+  translationApiKey: string;
+  translationApiBaseUrl: string;
 }
 
 function FieldHint({ children }: { children: React.ReactNode }) {
@@ -79,6 +89,14 @@ export default function SettingsPage() {
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const sessionUploadedUrlsRef = useRef<Set<string>>(new Set());
+  
+  // AI 翻译相关状态
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
+  const [pendingProvider, setPendingProvider] = useState<string | null>(null);
 
   const ERROR_MESSAGES: Record<string, string> = {
     image_too_large: "图片超过 8MB 限制，请压缩后重试",
@@ -117,7 +135,16 @@ export default function SettingsPage() {
     fetch("/api/admin/settings")
       .then((res) => res.json())
       .then((result) => {
-        if (result.ok && result.data) setSettings(result.data);
+        if (result.ok && result.data) {
+          // 确保翻译配置字段有默认值
+          const settingsData = {
+            translationProvider: '',
+            translationApiKey: '',
+            translationApiBaseUrl: '',
+            ...result.data,
+          };
+          setSettings(settingsData);
+        }
       })
       .finally(() => setLoading(false));
   }, []);
@@ -171,6 +198,86 @@ export default function SettingsPage() {
     if (!settings) return;
     setSettings({ ...settings, [key]: value });
   };
+
+  // AI 翻译相关函数
+  const handleCopyApiKey = () => {
+    if (!settings?.translationApiKey) return;
+    navigator.clipboard.writeText(settings.translationApiKey);
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 2000);
+  };
+
+  const handleProviderSelect = (providerKey: string) => {
+    if (!settings) return;
+    if (settings.translationProvider && settings.translationProvider !== providerKey) {
+      // 已经有其他服务商配置,显示确认弹窗
+      setPendingProvider(providerKey);
+      setShowSwitchConfirm(true);
+    } else {
+      // 直接切换
+      updateField('translationProvider', providerKey as any);
+      setTestResult(null);
+    }
+  };
+
+  const confirmSwitchProvider = () => {
+    if (pendingProvider) {
+      updateField('translationApiKey', '');
+      updateField('translationApiBaseUrl', '');
+      updateField('translationProvider', pendingProvider as any);
+      setTestResult(null);
+      setShowSwitchConfirm(false);
+      setPendingProvider(null);
+    }
+  };
+
+  const cancelSwitchProvider = () => {
+    setShowSwitchConfirm(false);
+    setPendingProvider(null);
+  };
+
+  const handleTestConnection = async () => {
+    if (!settings?.translationApiKey || !settings.translationProvider) {
+      setTestResult({ success: false, message: '请先选择翻译服务并填写 API Key' });
+      return;
+    }
+    
+    setTestingConnection(true);
+    setTestResult(null);
+    
+    try {
+      const res = await fetch('/api/admin/translate-test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: settings.translationProvider,
+          apiKey: settings.translationApiKey,
+          baseUrl: settings.translationApiBaseUrl || undefined,
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.ok) {
+        setTestResult({ success: true, message: data.message || '连接成功！API Key 有效' });
+      } else {
+        setTestResult({ success: false, message: data.error || '连接失败，请检查配置' });
+      }
+    } catch (err) {
+      setTestResult({ 
+        success: false, 
+        message: err instanceof Error ? err.message : '网络错误，请检查网络连接' 
+      });
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
+  const TRANSLATION_PROVIDERS = [
+    { key: 'qwen' as const, label: '阿里云千问', hint: '国内访问快，性价比高，兼容 OpenAI', placeholder: 'sk-...', apiDocUrl: 'https://dashscope.console.aliyun.com/' },
+    { key: 'openai' as const, label: 'OpenAI', hint: 'GPT-4o-mini 翻译质量高，价格便宜', placeholder: 'sk-...', apiDocUrl: 'https://platform.openai.com/api-keys' },
+    { key: 'deepl' as const, label: 'DeepL', hint: '专业翻译引擎，质量极高', placeholder: '...', apiDocUrl: 'https://www.deepl.com/pro-api' },
+  ];
 
   if (loading) {
     return (
@@ -511,7 +618,227 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* ══════════════════════════════════════════
+            4. AI 翻译设置 (Translation API)
+        ══════════════════════════════════════════ */}
+        <section className="rounded-xl border border-black/[0.06] bg-white p-8 shadow-sm">
+          <h2 className="text-base font-bold tracking-[0.08em] text-[#111111] uppercase mb-6 flex items-center gap-2">
+            <Bot size={17} className="text-[#111111]/40" />
+            AI 翻译设置 (Translation API)
+          </h2>
+          
+          <div className="space-y-6">
+            {/* 翻译服务提供商选择 */}
+            <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
+              <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase flex items-center gap-1.5">
+                <Sparkles size={13} className="text-[#D4AF37]" /> 翻译服务提供商
+              </label>
+              <FieldHint>→ 选择后填写对应的 API Key 即可在页面内容管理中使用 AI 翻译功能</FieldHint>
+              
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {TRANSLATION_PROVIDERS.map((provider) => {
+                  const isSelected = settings.translationProvider === provider.key;
+                  return (
+                    <button
+                      key={provider.key}
+                      type="button"
+                      onClick={() => handleProviderSelect(provider.key)}
+                      className={`relative flex flex-col items-start p-4 rounded-xl border-2 transition-all text-left ${
+                        isSelected
+                          ? 'border-[#D4AF37] bg-[#FFFBF0] shadow-sm'
+                          : 'border-black/[0.08] bg-white hover:border-black/20 hover:bg-black/[0.02]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          isSelected ? 'border-[#D4AF37]' : 'border-black/20'
+                        }`}>
+                          {isSelected && <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />}
+                        </div>
+                        <span className={`text-[15px] font-bold ${
+                          isSelected ? 'text-[#111111]' : 'text-[#111111]/70'
+                        }`}>
+                          {provider.label}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-[12px] text-[#111111]/50 leading-relaxed">
+                        {provider.hint}
+                      </p>
+                      <a
+                        href={provider.apiDocUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 text-[11px] text-[#D4AF37] hover:underline font-medium"
+                      >
+                        获取 API Key →
+                      </a>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* API Key 输入 */}
+            {settings.translationProvider && (
+              <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
+                <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase">
+                  API Key
+                </label>
+                <FieldHint>
+                  → {TRANSLATION_PROVIDERS.find(p => p.key === settings.translationProvider)?.label} API Key，请妥善保管
+                </FieldHint>
+                
+                <div className="mt-4 relative">
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    value={settings.translationApiKey}
+                    onChange={(e) => {
+                      updateField('translationApiKey', e.target.value);
+                      setTestResult(null);
+                    }}
+                    placeholder={TRANSLATION_PROVIDERS.find(p => p.key === settings.translationProvider)?.placeholder}
+                    className="w-full rounded-lg border border-black/10 bg-white px-4 pr-28 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 font-mono"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="p-2 text-[#111111]/40 hover:text-[#111111] transition-colors rounded-lg hover:bg-black/[0.04]"
+                      title={showApiKey ? '隐藏' : '显示'}
+                    >
+                      {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyApiKey}
+                      disabled={!settings.translationApiKey}
+                      className="p-2 text-[#111111]/40 hover:text-[#111111] transition-colors rounded-lg hover:bg-black/[0.04] disabled:opacity-30 disabled:cursor-not-allowed"
+                      title="复制"
+                    >
+                      {copiedKey ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* API 自定义地址 (仅 OpenAI 和 千问) */}
+            {(settings.translationProvider === 'openai' || settings.translationProvider === 'qwen') && (
+              <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
+                <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase">
+                  API 自定义地址（可选）
+                </label>
+                <FieldHint>
+                  → {settings.translationProvider === 'qwen' 
+                    ? '千问默认地址: https://dashscope.aliyuncs.com/compatible-mode/v1' 
+                    : '使用代理时填写，留空使用默认地址 https://api.openai.com/v1'}
+                </FieldHint>
+                <input
+                  type="text"
+                  value={settings.translationApiBaseUrl}
+                  onChange={(e) => updateField('translationApiBaseUrl', e.target.value)}
+                  placeholder={settings.translationProvider === 'qwen' 
+                    ? 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+                    : 'https://api.openai.com/v1'}
+                  className="mt-4 w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-[15px] text-[#111111] outline-none transition-colors focus:border-black/30 font-mono"
+                />
+              </div>
+            )}
+
+            {/* 测试连接 */}
+            {settings.translationProvider && (
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleTestConnection}
+                  disabled={testingConnection || !settings.translationApiKey}
+                  className="flex items-center gap-2 rounded-lg border border-black/10 bg-white px-5 py-2.5 text-[13px] font-bold text-[#111111] transition-all hover:bg-[#FAFAFA] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {testingConnection ? (
+                    <>
+                      <Loader2 size={15} className="animate-spin" /> 测试中...
+                    </>
+                  ) : (
+                    <>🔌 测试连接</>
+                  )}
+                </button>
+                
+                {testResult && (
+                  <div className={`flex items-center gap-2 text-[13px] font-semibold ${
+                    testResult.success ? 'text-green-600' : 'text-red-500'
+                  }`}>
+                    {testResult.success ? (
+                      <><CheckCircle size={16} /> {testResult.message}</>
+                    ) : (
+                      <><XCircle size={16} /> {testResult.message}</>
+                    )}
+                  </div>
+                )}
+                
+                {!settings.translationApiKey && (
+                  <p className="text-[12px] text-[#111111]/40">
+                    请先填写 API Key
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* 未配置时的提示 */}
+            {!settings.translationProvider && (
+              <div className="rounded-xl border border-[#D4AF37]/30 bg-[#FFFBF0] p-4 space-y-1.5">
+                <p className="text-[13px] font-semibold text-[#B8860B]">💡 如何使用 AI 翻译？</p>
+                <p className="text-[12px] text-[#B8860B]/70 leading-relaxed">
+                  1. 选择上方的翻译服务提供商<br />
+                  2. 填写对应的 API Key<br />
+                  3. 保存设置后即可在「页面内容」管理中使用 AI 翻译功能<br />
+                  4. 填写中文内容后，切换到英文 tab 即可看到翻译按钮
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+
       </div>
+
+      {/* 切换服务商确认弹窗 */}
+      {showSwitchConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-md rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                  <span className="text-2xl">⚠️</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-[#111111]">
+                    切换翻译服务商
+                  </h3>
+                  <p className="mt-2 text-[14px] text-[#111111]/60 leading-relaxed">
+                    切换后将清空当前已填写的 <strong className="text-[#111111]">API Key</strong> 和 <strong className="text-[#111111]">API 地址</strong>，是否需要继续？
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 border-t border-black/[0.06] bg-[#FAFAFA] px-6 py-4 rounded-b-2xl">
+              <button
+                type="button"
+                onClick={cancelSwitchProvider}
+                className="flex-1 rounded-lg border border-black/10 bg-white px-4 py-2.5 text-[14px] font-bold text-[#111111] transition-all hover:bg-[#F5F5F5]"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={confirmSwitchProvider}
+                className="flex-1 rounded-lg bg-[#111111] px-4 py-2.5 text-[14px] font-bold text-white transition-all hover:bg-black/80"
+              >
+                确认切换
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

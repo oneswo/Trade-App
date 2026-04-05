@@ -49,6 +49,7 @@ export default function PagesManagementPage() {
   const [activeLang, setActiveLang] = useState("zh");
   const [isHydrated, setIsHydrated] = useState(false);
   const [fields, setFields] = useState<Record<string, string>>({});
+  const [zhFields, setZhFields] = useState<Record<string, string>>({}); // 中文字段数据
   /** 初始 true：避免 hydration 后首帧 fields 为空时用 defaultValue 闪一屏，再被接口结果替换 */
   const [isLoading, setIsLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -86,7 +87,9 @@ export default function PagesManagementPage() {
     setIsLoading(true);
 
     const controller = new AbortController();
+    let zhController: AbortController | null = null;
 
+    // 加载当前语言的数据
     fetch(`/api/page-content?pageId=${activePageId}&locale=${activeLang}`, {
       signal: controller.signal,
     })
@@ -104,7 +107,30 @@ export default function PagesManagementPage() {
         if (loadId === pageContentLoadIdRef.current) setIsLoading(false);
       });
 
-    return () => controller.abort();
+    // 英文 tab 始终加载当前页面的中文数据，避免切页后误用上一页的中文字段
+    if (activeLang === 'en') {
+      setZhFields({});
+      zhController = new AbortController();
+      fetch(`/api/page-content?pageId=${activePageId}&locale=zh`, {
+        signal: zhController.signal,
+      })
+        .then((r) => r.json())
+        .then((res) => {
+          if (res.ok && res.data) {
+            setZhFields(res.data);
+          }
+        })
+        .catch((err) => {
+          if (err instanceof Error && err.name !== "AbortError") {
+            console.error('Failed to load zh fields:', err);
+          }
+        });
+    }
+
+    return () => {
+      controller.abort();
+      zhController?.abort();
+    };
   }, [activePageId, activeLang, isHydrated]);
 
   const get = useCallback(
@@ -190,7 +216,7 @@ export default function PagesManagementPage() {
   }
 
   return (
-    <Ctx.Provider value={{ get, set, trackUploadedUrl }}>
+    <Ctx.Provider value={{ get, set, trackUploadedUrl, isZh: zh, allFields: activeLang === 'zh' ? fields : zhFields }}>
       <div className="h-[calc(100vh-100px)] flex flex-col">
         <div className="flex-1 min-h-0 grid grid-cols-[220px_1fr] gap-6">
           <section className="flex flex-col rounded-xl border border-black/[0.06] bg-white shadow-sm overflow-hidden">

@@ -10,10 +10,15 @@ export const Ctx = createContext<{
   get: (name: string, fallback: string) => string;
   set: (name: string, val: string) => void;
   trackUploadedUrl: (url: string) => void;
+  // 翻译相关
+  isZh: boolean; // 当前是否中文 tab
+  allFields: Record<string, string>; // 所有字段值(用于读取对应中文)
 }>({
   get: (_, fallback) => fallback,
   set: () => {},
   trackUploadedUrl: () => {},
+  isZh: true,
+  allFields: {},
 });
 
 export function useCtx() {

@@ -23,6 +23,14 @@ function rowToSiteSettings(r: Record<string, unknown>): SiteSettings {
     copyrightTextEn:
       (r.copyright_text_en as string) || DEFAULT_SITE_SETTINGS.copyrightTextEn,
     copyrightUrl: (r.copyright_url as string) || DEFAULT_SITE_SETTINGS.copyrightUrl,
+    translationProvider:
+      (r.translation_provider as SiteSettings["translationProvider"]) ||
+      DEFAULT_SITE_SETTINGS.translationProvider,
+    translationApiKey:
+      (r.translation_api_key as string) || DEFAULT_SITE_SETTINGS.translationApiKey,
+    translationApiBaseUrl:
+      (r.translation_api_base_url as string) ||
+      DEFAULT_SITE_SETTINGS.translationApiBaseUrl,
     updatedAt: (r.updated_at as string) || new Date().toISOString(),
   };
 }
@@ -63,6 +71,15 @@ export const supabaseSiteSettingsRepo: SiteSettingsRepo = {
       patch.copyright_text_en = input.copyrightTextEn;
     }
     if (input.copyrightUrl !== undefined) patch.copyright_url = input.copyrightUrl;
+    if (input.translationProvider !== undefined) {
+      patch.translation_provider = input.translationProvider;
+    }
+    if (input.translationApiKey !== undefined) {
+      patch.translation_api_key = input.translationApiKey;
+    }
+    if (input.translationApiBaseUrl !== undefined) {
+      patch.translation_api_base_url = input.translationApiBaseUrl;
+    }
     const { data, error } = await db
       .from("site_settings")
       .upsert({ id: "default", ...patch }, { onConflict: "id" })

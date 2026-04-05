@@ -204,6 +204,10 @@ export interface SiteSettings {
   copyrightText: string;
   copyrightTextEn: string;
   copyrightUrl: string;
+  // AI 翻译配置
+  translationProvider: 'openai' | 'qwen' | 'deepl' | '';
+  translationApiKey: string;
+  translationApiBaseUrl: string;
   updatedAt: string;
 }
 
@@ -229,5 +233,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   copyrightText: "海沃克斯",
   copyrightTextEn: "CHINA MACHINERY",
   copyrightUrl: "www.heavox.com",
+  translationProvider: '',
+  translationApiKey: '',
+  translationApiBaseUrl: '',
   updatedAt: new Date().toISOString(),
 };

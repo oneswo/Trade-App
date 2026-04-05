@@ -18,7 +18,7 @@ export function ServicesFields({ zh }: { zh: boolean }) {
       <div className="space-y-5">
         <SectionHeader title="服务卡片区" note="前 5 张白卡 + 1 张黑金 CTA 卡" />
         <FieldRow label="区块标题">
-          <TextInput name="matrix.title" defaultValue={zh ? "重装出海全维保障体系" : "Premium Heavy Equipment Services"} />
+          <TextInput name="matrix.title" defaultValue={zh ? "重装出海全维保障体系" : "Premium Heavy Equipment Services"} translateFrom="matrix.title" />
         </FieldRow>
         {[
           {
@@ -53,23 +53,23 @@ export function ServicesFields({ zh }: { zh: boolean }) {
           },
         ].map((card, i) => (
           <CardBlock key={i} index={i + 1} label="服务卡片">
-            <FieldRow label="卡片标题"><TextInput name={`matrix.card.${i}.title`} defaultValue={zh ? card.zh_t : card.en_t} /></FieldRow>
-            <FieldRow label="卡片描述"><TextArea name={`matrix.card.${i}.desc`} rows={3} defaultValue={zh ? card.zh_d : card.en_d} /></FieldRow>
+            <FieldRow label="卡片标题"><TextInput name={`matrix.card.${i}.title`} defaultValue={zh ? card.zh_t : card.en_t} translateFrom={`matrix.card.${i}.title`} /></FieldRow>
+            <FieldRow label="卡片描述"><TextArea name={`matrix.card.${i}.desc`} rows={3} defaultValue={zh ? card.zh_d : card.en_d} translateFrom={`matrix.card.${i}.desc`} /></FieldRow>
           </CardBlock>
         ))}
         <div className="rounded-xl border border-[#D4AF37]/30 p-4 space-y-3 bg-[#111111]">
           <span className="text-[10px] font-bold tracking-widest text-[#D4AF37]/60 uppercase">服务卡片 6（重点 CTA）</span>
-          <FieldRow label="主标题第一行"><DarkInput name="matrix.cta.title1" defaultValue={zh ? "急需稀缺" : "Need a Hard-to-Find"} /></FieldRow>
-          <FieldRow label="主标题第二行"><DarkInput name="matrix.cta.title2" defaultValue={zh ? "特种机型？" : "Specialist Machine?"} /></FieldRow>
-          <FieldRow label="卡片描述"><DarkArea name="matrix.cta.desc" defaultValue={zh ? "独家内网通道，为您直接截胡暂未面市的厂矿顶配成色一手退役机资源。" : "Through our exclusive off-market network, we source premium first-owner decommissioned units directly from factories and mines — before they ever reach the open market."} /></FieldRow>
-          <FieldRow label="按钮文字"><DarkInput name="matrix.cta.btn" defaultValue={zh ? "立即委托寻车" : "Commission a Search Now"} gold /></FieldRow>
+          <FieldRow label="主标题第一行"><DarkInput name="matrix.cta.title1" defaultValue={zh ? "急需稀缺" : "Need a Hard-to-Find"} translateFrom="matrix.cta.title1" /></FieldRow>
+          <FieldRow label="主标题第二行"><DarkInput name="matrix.cta.title2" defaultValue={zh ? "特种机型？" : "Specialist Machine?"} translateFrom="matrix.cta.title2" /></FieldRow>
+          <FieldRow label="卡片描述"><DarkArea name="matrix.cta.desc" defaultValue={zh ? "独家内网通道，为您直接截胡暂未面市的厂矿顶配成色一手退役机资源。" : "Through our exclusive off-market network, we source premium first-owner decommissioned units directly from factories and mines — before they ever reach the open market."} translateFrom="matrix.cta.desc" /></FieldRow>
+          <FieldRow label="按钮文字"><DarkInput name="matrix.cta.btn" defaultValue={zh ? "立即委托寻车" : "Commission a Search Now"} gold translateFrom="matrix.cta.btn" /></FieldRow>
         </div>
       </div>
 
       <div className="space-y-5">
         <SectionHeader title="信任背书区" note="3 列信任说明" />
         <FieldRow label="区块标题">
-          <TextInput name="trust.title" defaultValue={zh ? "赢得全球矿企与基建商的绝对信赖" : "Trusted by Global Mining & Infrastructure Operators"} />
+          <TextInput name="trust.title" defaultValue={zh ? "赢得全球矿企与基建商的绝对信赖" : "Trusted by Global Mining & Infrastructure Operators"} translateFrom="trust.title" />
         </FieldRow>
         {[
           {
@@ -92,8 +92,8 @@ export function ServicesFields({ zh }: { zh: boolean }) {
           },
         ].map((p, i) => (
           <CardBlock key={i} index={i + 1} label="信任支柱">
-            <FieldRow label="支柱标题"><TextInput name={`trust.${i}.title`} defaultValue={zh ? p.zh_t : p.en_t} /></FieldRow>
-            <FieldRow label="支柱描述"><TextArea name={`trust.${i}.desc`} rows={4} defaultValue={zh ? p.zh_d : p.en_d} /></FieldRow>
+            <FieldRow label="支柱标题"><TextInput name={`trust.${i}.title`} defaultValue={zh ? p.zh_t : p.en_t} translateFrom={`trust.${i}.title`} /></FieldRow>
+            <FieldRow label="支柱描述"><TextArea name={`trust.${i}.desc`} rows={4} defaultValue={zh ? p.zh_d : p.en_d} translateFrom={`trust.${i}.desc`} /></FieldRow>
           </CardBlock>
         ))}
       </div>
@@ -101,7 +101,7 @@ export function ServicesFields({ zh }: { zh: boolean }) {
       <div className="space-y-5">
         <SectionHeader title="发运流程区" note="4 步流程：图片、标题、说明" />
         <FieldRow label="区块标题">
-          <TextInput name="process.title" defaultValue={zh ? "二手重型设备验交与发运标准" : "Used Equipment Inspection & Dispatch Standards"} />
+          <TextInput name="process.title" defaultValue={zh ? "二手重型设备验交与发运标准" : "Used Equipment Inspection & Dispatch Standards"} translateFrom="process.title" />
         </FieldRow>
         {[
           {
@@ -132,8 +132,8 @@ export function ServicesFields({ zh }: { zh: boolean }) {
           <div key={i} className="rounded-xl border border-black/[0.06] p-4 space-y-3 bg-[#FAFAFA]">
             <span className="text-[10px] font-bold tracking-widest text-[#111111]/30 uppercase">步骤 0{i + 1}</span>
             <ImageUpload name={`process.${i}.image`} label="步骤图片" aspectHint="建议 16:9" previewAspect="aspect-video" previewFit="contain" />
-            <FieldRow label="步骤标题"><TextInput name={`process.${i}.title`} defaultValue={zh ? s.zh_t : s.en_t} /></FieldRow>
-            <FieldRow label="步骤描述"><TextArea name={`process.${i}.desc`} rows={4} defaultValue={zh ? s.zh_d : s.en_d} /></FieldRow>
+            <FieldRow label="步骤标题"><TextInput name={`process.${i}.title`} defaultValue={zh ? s.zh_t : s.en_t} translateFrom={`process.${i}.title`} /></FieldRow>
+            <FieldRow label="步骤描述"><TextArea name={`process.${i}.desc`} rows={4} defaultValue={zh ? s.zh_d : s.en_d} translateFrom={`process.${i}.desc`} /></FieldRow>
           </div>
         ))}
       </div>
