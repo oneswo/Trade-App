@@ -225,6 +225,7 @@ export interface SiteSettings {
   translationProvider: 'openai' | 'qwen' | 'deepl' | '';
   translationApiKey: string;
   translationApiBaseUrl: string;
+  translationModel: string;
   updatedAt: string;
 }
 
@@ -253,5 +254,6 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   translationProvider: '',
   translationApiKey: '',
   translationApiBaseUrl: '',
+  translationModel: '',
   updatedAt: new Date().toISOString(),
 };

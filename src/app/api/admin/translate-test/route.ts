@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { provider, apiKey, baseUrl } = body;
+    const { provider, apiKey, baseUrl, model } = body;
 
     if (!provider || !apiKey) {
       return NextResponse.json(
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       };
 
       payload = {
-        model: provider === 'qwen' ? 'qwen-turbo' : 'gpt-4o-mini',
+        model: model || (provider === 'qwen' ? 'qwen-turbo' : 'gpt-4o-mini'),
         messages: [
           { role: 'user', content: 'Hi' }
         ],

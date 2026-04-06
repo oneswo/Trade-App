@@ -42,6 +42,7 @@ interface SiteSettings {
   translationProvider: 'openai' | 'qwen' | 'deepl' | '';
   translationApiKey: string;
   translationApiBaseUrl: string;
+  translationModel: string;
 }
 
 function FieldHint({ children }: { children: React.ReactNode }) {
@@ -141,6 +142,7 @@ export default function SettingsPage() {
             translationProvider: '',
             translationApiKey: '',
             translationApiBaseUrl: '',
+            translationModel: '',
             ...result.data,
           };
           setSettings(settingsData);
@@ -225,6 +227,7 @@ export default function SettingsPage() {
     if (pendingProvider) {
       updateField('translationApiKey', '');
       updateField('translationApiBaseUrl', '');
+      updateField('translationModel', '');
       updateField('translationProvider', pendingProvider as any);
       setTestResult(null);
       setShowSwitchConfirm(false);
@@ -254,6 +257,7 @@ export default function SettingsPage() {
           provider: settings.translationProvider,
           apiKey: settings.translationApiKey,
           baseUrl: settings.translationApiBaseUrl || undefined,
+          model: settings.translationModel || undefined,
         }),
       });
       
@@ -279,6 +283,23 @@ export default function SettingsPage() {
     { key: 'openai' as const, label: 'OpenAI', hint: 'GPT-4o-mini 翻译质量高，价格便宜', placeholder: 'sk-...', apiDocUrl: 'https://platform.openai.com/api-keys' },
     { key: 'deepl' as const, label: 'DeepL', hint: '专业翻译引擎，质量极高', placeholder: '...', apiDocUrl: 'https://www.deepl.com/pro-api' },
   ];
+
+  const MODEL_OPTIONS: Record<string, { value: string; label: string; desc: string }[]> = {
+    qwen: [
+      { value: 'qwen-turbo', label: 'Qwen Turbo', desc: '速度快，成本低' },
+      { value: 'qwen-plus', label: 'Qwen Plus', desc: '效果更好，均衡之选' },
+      { value: 'qwen-max', label: 'Qwen Max', desc: '最强效果，成本较高' },
+      { value: 'qwen-long', label: 'Qwen Long', desc: '超长文本，32k 上下文' },
+      { value: 'qwen-turbo-latest', label: 'Qwen Turbo (Latest)', desc: '最新版本 Turbo' },
+      { value: 'qwen-plus-latest', label: 'Qwen Plus (Latest)', desc: '最新版本 Plus' },
+    ],
+    openai: [
+      { value: 'gpt-4o-mini', label: 'GPT-4o Mini', desc: '便宜快速，翻译够用' },
+      { value: 'gpt-4o', label: 'GPT-4o', desc: '更强效果，成本较高' },
+      { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini', desc: '最新迷你模型' },
+      { value: 'gpt-4.1-nano', label: 'GPT-4.1 Nano', desc: '极致低价' },
+    ],
+  };
 
   if (loading) {
     return (
@@ -722,6 +743,73 @@ export default function SettingsPage() {
                 </div>
               </div>
             )}
+
+            {/* 模型选择 (仅 OpenAI 和 千问) */}
+            {(settings.translationProvider === 'openai' || settings.translationProvider === 'qwen') && (() => {
+              const presets = MODEL_OPTIONS[settings.translationProvider] || [];
+              const currentModel = settings.translationModel || presets[0]?.value || '';
+              const isCustom = currentModel !== '' && !presets.some(m => m.value === currentModel);
+              return (
+              <div className="rounded-2xl border border-black/[0.06] bg-[#FCFCFC] p-5">
+                <label className="text-[14.5px] font-bold tracking-wider text-[#111111]/80 uppercase">
+                  翻译模型
+                </label>
+                <FieldHint>
+                  → 点选常用模型，或手动输入任意模型名称；免费额度用完可随时切换
+                </FieldHint>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {presets.map((m) => {
+                    const isActive = currentModel === m.value;
+                    return (
+                      <button
+                        key={m.value}
+                        type="button"
+                        onClick={() => updateField('translationModel', m.value)}
+                        className={`flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left ${
+                          isActive
+                            ? 'border-[#D4AF37] bg-[#FFFBF0] shadow-sm'
+                            : 'border-black/[0.08] bg-white hover:border-black/20 hover:bg-black/[0.02]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${
+                            isActive ? 'border-[#D4AF37]' : 'border-black/20'
+                          }`}>
+                            {isActive && <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />}
+                          </div>
+                          <span className={`text-[14px] font-bold ${
+                            isActive ? 'text-[#111111]' : 'text-[#111111]/70'
+                          }`}>
+                            {m.label}
+                          </span>
+                        </div>
+                        <p className="mt-1 ml-5.5 text-[11px] text-[#111111]/50 leading-relaxed">
+                          {m.desc}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* 自定义模型输入 */}
+                <div className="mt-3 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={isCustom ? currentModel : ''}
+                    onChange={(e) => updateField('translationModel', e.target.value)}
+                    placeholder="或手动输入模型名称，如 qwen3-235b-a22b"
+                    className={`flex-1 rounded-lg border bg-white px-4 py-2.5 text-[14px] text-[#111111] outline-none transition-colors font-mono ${
+                      isCustom ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]/30' : 'border-black/10 focus:border-black/30'
+                    }`}
+                  />
+                  {isCustom && (
+                    <span className="shrink-0 rounded-full bg-[#D4AF37]/15 px-2.5 py-1 text-[11px] font-bold text-[#B8860B]">
+                      自定义
+                    </span>
+                  )}
+                </div>
+              </div>
+              );
+            })()}
 
             {/* API 自定义地址 (仅 OpenAI 和 千问) */}
             {(settings.translationProvider === 'openai' || settings.translationProvider === 'qwen') && (

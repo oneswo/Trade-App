@@ -31,6 +31,9 @@ function rowToSiteSettings(r: Record<string, unknown>): SiteSettings {
     translationApiBaseUrl:
       (r.translation_api_base_url as string) ||
       DEFAULT_SITE_SETTINGS.translationApiBaseUrl,
+    translationModel:
+      (r.translation_model as string) ||
+      DEFAULT_SITE_SETTINGS.translationModel,
     updatedAt: (r.updated_at as string) || new Date().toISOString(),
   };
 }
@@ -79,6 +82,9 @@ export const supabaseSiteSettingsRepo: SiteSettingsRepo = {
     }
     if (input.translationApiBaseUrl !== undefined) {
       patch.translation_api_base_url = input.translationApiBaseUrl;
+    }
+    if (input.translationModel !== undefined) {
+      patch.translation_model = input.translationModel;
     }
     const { data, error } = await db
       .from("site_settings")

@@ -11,7 +11,7 @@ export async function translateText(text: string, sourceLang = "zh", targetLang 
 
   const settingsRepo = getSiteSettingsRepo();
   const settings = await settingsRepo.get();
-  const { translationProvider, translationApiKey, translationApiBaseUrl } = settings;
+  const { translationProvider, translationApiKey, translationApiBaseUrl, translationModel } = settings;
 
   if (!translationProvider || !translationApiKey) {
     throw new Error("请先在「全局设置」中配置翻译 API");
@@ -44,7 +44,7 @@ export async function translateText(text: string, sourceLang = "zh", targetLang 
     }. Only return the translated text, no explanations.`;
 
     payload = {
-      model: translationProvider === "qwen" ? "qwen-turbo" : "gpt-4o-mini",
+      model: translationModel || (translationProvider === "qwen" ? "qwen-turbo" : "gpt-4o-mini"),
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: text },
