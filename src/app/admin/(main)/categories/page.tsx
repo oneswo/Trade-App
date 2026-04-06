@@ -99,6 +99,8 @@ export default function CategoriesPage() {
           selectCategory(json.data[0]);
         }
       }
+    } catch (err) {
+      console.error("Failed to load categories:", err);
     } finally {
       setLoading(false);
     }
@@ -160,6 +162,8 @@ export default function CategoriesPage() {
           else { setSelectedId(null); setForm({ slug: "", nameZh: "", nameEn: "", imageUrl: "", enabled: true }); }
         }
       }
+    } catch (err) {
+      console.error("Failed to delete category:", err);
     } finally {
       setDeleting(false);
     }
@@ -167,17 +171,17 @@ export default function CategoriesPage() {
 
   // ── 新建 ──────────────────────────────────────────────────────
   const handleCreate = async () => {
-    if (!newForm.nameEn) return; // 英文名是必填的（用于生成 slug）
+    if (!newForm.nameEn) return; // 英���名是必填的（���于生成 slug）
     setCreating(true);
     try {
       const slug = newForm.nameEn.trim().replace(/\s+/g, "-").toLowerCase();
       const res = await fetch("/api/admin/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          slug, 
+        body: JSON.stringify({
+          slug,
           nameZh: newForm.nameZh || newForm.nameEn, // 如果没填中文，默认用英文兜底
-          nameEn: newForm.nameEn 
+          nameEn: newForm.nameEn
         }),
       });
       const json = await res.json();
@@ -187,6 +191,8 @@ export default function CategoriesPage() {
         setShowNew(false);
         setNewForm({ nameZh: "", nameEn: "" });
       }
+    } catch (err) {
+      console.error("Failed to create category:", err);
     } finally {
       setCreating(false);
     }

@@ -146,6 +146,7 @@ export default function SettingsPage() {
           setSettings(settingsData);
         }
       })
+      .catch((err) => console.error("Failed to load settings:", err))
       .finally(() => setLoading(false));
   }, []);
 
