@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Plus, Folder, Save, Trash2, Loader2, ImageIcon, GripVertical, CheckCircle, AlertCircle } from "lucide-react";
+import { Plus, Folder, Save, Trash2, Loader2, ImageIcon, GripVertical, CheckCircle, AlertCircle, Sparkles } from "lucide-react";
 import AdminModal from "@/components/admin/AdminModal";
 import type { CategoryRecord } from "@/lib/data/repository";
 
@@ -13,7 +13,7 @@ const LANG_TABS = [
 ] as const;
 type LangKey = "zh" | "en";
 
-// ─── 图片上传组件 ──────────────────────────────────────────────────────────────
+// ─── 图��上传组件 ──────────────────────────────────────────────────────────────
 
 function ImageUpload({ value, onChange }: { value: string; onChange: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
@@ -64,6 +64,55 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
   );
 }
 
+// ─── 翻译按钮组件 ────────────────────────────────────────────────────────────
+
+function TranslateButton({
+  sourceText,
+  onTranslated,
+}: {
+  sourceText: string;
+  onTranslated: (text: string) => void;
+}) {
+  const [translating, setTranslating] = useState(false);
+
+  const handleTranslate = async () => {
+    if (!sourceText.trim()) return;
+    setTranslating(true);
+    try {
+      const res = await fetch("/api/admin/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: sourceText, sourceLang: "zh", targetLang: "en" }),
+      });
+      const data = await res.json();
+      if (data.ok && data.translatedText) {
+        onTranslated(data.translatedText);
+      }
+    } catch (err) {
+      console.error("Translation failed:", err);
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  if (!sourceText.trim()) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={handleTranslate}
+      disabled={translating}
+      className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white text-[11px] font-bold hover:from-blue-600 hover:to-purple-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+    >
+      {translating ? (
+        <><Loader2 size={11} className="animate-spin" /><span>翻译中</span></>
+      ) : (
+        <><Sparkles size={11} /><span>AI翻译</span></>
+      )}
+    </button>
+  );
+}
+
 // ─── 主页面 ───────────────────────────────────────────────────────────────────
 
 export default function CategoriesPage() {
@@ -74,8 +123,8 @@ export default function CategoriesPage() {
 
   // 编辑表单状态
   const [form, setForm] = useState<{
-    slug: string; nameZh: string; nameEn: string; imageUrl: string; enabled: boolean;
-  }>({ slug: "", nameZh: "", nameEn: "", imageUrl: "", enabled: true });
+    slug: string; nameZh: string; nameEn: string; imageUrl: string;
+  }>({ slug: "", nameZh: "", nameEn: "", imageUrl: "" });
 
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<"ok" | "err" | null>(null);
@@ -110,7 +159,7 @@ export default function CategoriesPage() {
 
   const selectCategory = (cat: CategoryRecord) => {
     setSelectedId(cat.id);
-    setForm({ slug: cat.slug, nameZh: cat.nameZh, nameEn: cat.nameEn, imageUrl: cat.imageUrl ?? "", enabled: cat.enabled });
+    setForm({ slug: cat.slug, nameZh: cat.nameZh, nameEn: cat.nameEn, imageUrl: cat.imageUrl ?? "" });
     setSaveResult(null);
   };
 
@@ -129,7 +178,7 @@ export default function CategoriesPage() {
           nameZh: form.nameZh,
           nameEn: form.nameEn,
           imageUrl: form.imageUrl || null,
-          enabled: form.enabled,
+          enabled: true,
         }),
       });
       const json = await res.json();
@@ -159,7 +208,7 @@ export default function CategoriesPage() {
         setDeleteId(null);
         if (selectedId === deleteId) {
           if (remaining.length > 0) selectCategory(remaining[0]);
-          else { setSelectedId(null); setForm({ slug: "", nameZh: "", nameEn: "", imageUrl: "", enabled: true }); }
+          else { setSelectedId(null); setForm({ slug: "", nameZh: "", nameEn: "", imageUrl: "" }); }
         }
       }
     } catch (err) {
@@ -171,7 +220,7 @@ export default function CategoriesPage() {
 
   // ── 新建 ──────────────────────────────────────────────────────
   const handleCreate = async () => {
-    if (!newForm.nameEn) return; // 英���名是必填的（���于生成 slug）
+    if (!newForm.nameEn) return;
     setCreating(true);
     try {
       const slug = newForm.nameEn.trim().replace(/\s+/g, "-").toLowerCase();
@@ -180,7 +229,7 @@ export default function CategoriesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           slug,
-          nameZh: newForm.nameZh || newForm.nameEn, // 如果没填中文，默认用英文兜底
+          nameZh: newForm.nameZh || newForm.nameEn,
           nameEn: newForm.nameEn
         }),
       });
@@ -235,10 +284,7 @@ export default function CategoriesPage() {
                         <p className="text-[11px] text-[#111111]/35">{cat.nameEn}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      {!cat.enabled && <span className="text-[10px] text-[#111111]/30 bg-black/[0.04] px-1.5 py-0.5 rounded-full">已禁用</span>}
-                      <GripVertical size={14} className="text-[#111111]/20 opacity-0 group-hover:opacity-100" />
-                    </div>
+                    <GripVertical size={14} className="text-[#111111]/20 opacity-0 group-hover:opacity-100" />
                   </div>
                 ))}
               </div>
@@ -267,19 +313,6 @@ export default function CategoriesPage() {
 
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
-                {/* 启用开关 */}
-                <div className="flex items-center justify-between rounded-xl border border-black/[0.04] p-4 bg-[#FAFAFA]">
-                  <div>
-                    <span className="text-[12px] font-semibold tracking-wider text-[#111111] uppercase block">启用状态</span>
-                    <span className="text-[11px] text-[#111111]/40">关闭后前台不显示此分类</span>
-                  </div>
-                  <button type="button"
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ${form.enabled ? "bg-green-500" : "bg-gray-200"}`}
-                    onClick={() => setForm((f) => ({ ...f, enabled: !f.enabled }))}>
-                    <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition ${form.enabled ? "translate-x-4" : "translate-x-0"}`} />
-                  </button>
-                </div>
-
                 {/* 分类图片 */}
                 <div className="space-y-2">
                   <label className="text-[12px] font-semibold tracking-widest text-[#111111]/40 uppercase">分类图片</label>
@@ -304,19 +337,38 @@ export default function CategoriesPage() {
                       placeholder="中文显示名称，如：挖掘机"
                       className="w-full border-b border-black/10 bg-transparent py-3 text-[15px] text-[#111111] placeholder:text-[#111111]/25 outline-none focus:border-black/30" />
                   ) : (
-                    <input value={form.nameEn} onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value }))}
-                      placeholder="English name, e.g.: Excavators"
-                      className="w-full border-b border-black/10 bg-transparent py-3 text-[15px] text-[#111111] placeholder:text-[#111111]/25 outline-none focus:border-black/30" />
+                    <div className="flex items-center gap-2">
+                      <input value={form.nameEn} onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value }))}
+                        placeholder="English name, e.g.: Excavators"
+                        className="flex-1 border-b border-black/10 bg-transparent py-3 text-[15px] text-[#111111] placeholder:text-[#111111]/25 outline-none focus:border-black/30" />
+                      <TranslateButton
+                        sourceText={form.nameZh}
+                        onTranslated={(text) => setForm((f) => ({ ...f, nameEn: text }))}
+                      />
+                    </div>
                   )}
                 </div>
 
-                {/* 标识符 */}
+                {/* 筛选标识符 */}
                 <div className="space-y-2">
                   <label className="text-[12px] font-semibold tracking-widest text-[#111111]/40 uppercase">筛选标识符</label>
-                  <p className="text-[11px] text-[#111111]/30">产品所属分类 & 产品页筛选参数，建议英文，修改后需同步更新产品数据</p>
-                  <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                    placeholder="如：Excavators"
-                    className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2.5 text-[15px] text-[#111111] outline-none focus:border-black/30" />
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                    <p className="text-[12px] text-amber-700 font-medium leading-relaxed">
+                      用于产品分类归属和前台筛选，请填写英文。修改后需同步更新已有产��的分类。
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                      placeholder="如：Excavators"
+                      className="flex-1 rounded-lg border border-black/[0.08] bg-white px-3 py-2.5 text-[15px] text-[#111111] outline-none focus:border-black/30" />
+                    <TranslateButton
+                      sourceText={form.nameZh}
+                      onTranslated={(text) => {
+                        const slug = text.trim().replace(/\s+/g, "-");
+                        setForm((f) => ({ ...f, slug }));
+                      }}
+                    />
+                  </div>
                 </div>
 
               </div>
